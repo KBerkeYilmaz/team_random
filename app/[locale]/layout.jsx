@@ -2,7 +2,11 @@ import { Inter } from "next/font/google";
 import ".././globals.css";
 import { NextIntlClientProvider, useMessages } from "next-intl";
 import { ThemeProvider } from "@/providers/theme-provider";
+
 import SessionProvider from "@/providers/SessionProvider";
+
+import { Navbar } from "@/components/Navbar";
+
 const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
   title: "Create Next App",
