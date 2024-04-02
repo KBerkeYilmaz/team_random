@@ -13,7 +13,7 @@ import { Separator } from "./ui/separator";
 
 export const Navbar = () => {
   return (
-    <div className="flex items-center fixed w-full justify-between px-8 py-4 bg-white dark:bg-gray-800 shadow-md">
+    <div className="flex items-center fixed w-full justify-between px-8 py-4 dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-md">
       <Link className="flex items-center gap-2" href="/">
         <span className="text-lg font-semibold">LOGO</span>
       </Link>
