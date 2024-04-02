@@ -41,6 +41,12 @@ export const Navbar = () => {
         >
           Contact Us
         </Link>
+        <Link
+          className="text-lg hover:text-foreground/40 transition-all duration-200"
+          href="/login"
+        >
+          Login
+        </Link>
       </div>
       <div className="hidden lg:flex gap-4">
         <LangSwitch />
@@ -87,6 +93,12 @@ export const Navbar = () => {
               href="/contact"
             >
               <SheetClose>Contact Us</SheetClose>
+            </Link>
+            <Link
+              className="text-lg hover:text-foreground/40 transition-all duration-200"
+              href="/login"
+            >
+              <SheetClose>Login</SheetClose>
             </Link>
           </div>
         </SheetContent>
