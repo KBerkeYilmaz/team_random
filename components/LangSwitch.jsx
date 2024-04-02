@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useTranslations } from "next-intl";
+import { Globe } from "lucide-react";
 
 function LangSwitch() {
   const [open, setOpen] = useState(false);
@@ -41,12 +42,14 @@ function LangSwitch() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          className="flex justify-center"
           variant="outline"
+          size="icon"
           role="combobox"
           aria-expanded={open}
-          className="w-fit justify-between"
         >
-          {t("title")}
+          <Globe strokeWidth={1.25} size={20} />
+          <span className="sr-only">Toggle theme</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-fit p-0">
