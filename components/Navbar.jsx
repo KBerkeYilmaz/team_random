@@ -9,6 +9,7 @@ import { Link } from "@/navigation";
 import { Menu } from "lucide-react";
 import LangSwitch from "./LangSwitch";
 import { ModeToggle } from "./ModeToggle";
+import { Separator } from "./ui/separator";
 
 export const Navbar = () => {
   return (
@@ -47,6 +48,12 @@ export const Navbar = () => {
         >
           Login
         </Link>
+        <Link
+          className="text-lg hover:text-foreground/40 transition-all duration-200"
+          href="/dashboard"
+        >
+          Dashboard
+        </Link>
       </div>
       <div className="hidden lg:flex gap-4">
         <LangSwitch />
@@ -60,7 +67,7 @@ export const Navbar = () => {
           </Button>
         </SheetTrigger>
         <SheetContent side="right">
-          <div className="flex justify-between mt-6 px-2">
+          <div className="flex justify-between mt-6 mb-4 px-2">
             <Link className="flex items-center gap-2" href="/">
               <span className="text-lg font-semibold">LOGO</span>
             </Link>
@@ -69,36 +76,49 @@ export const Navbar = () => {
               <ModeToggle />
             </div>
           </div>
-          <div className="grid w-[200px] p-4">
+          {/* <Separator /> */}
+
+          <div className="grid w-full p-4">
             <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200"
+              className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
               href="/"
             >
               <SheetClose>Home</SheetClose>
             </Link>
+            <Separator />
             <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200"
+              className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
               href="/about"
             >
               <SheetClose>About</SheetClose>
             </Link>
+            <Separator />
             <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200"
+              className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
               href="/works"
             >
               <SheetClose>Works</SheetClose>
             </Link>
+            <Separator />
             <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200"
+              className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
               href="/contact"
             >
               <SheetClose>Contact Us</SheetClose>
             </Link>
+            <Separator />
             <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200"
+              className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
               href="/login"
             >
               <SheetClose>Login</SheetClose>
+            </Link>
+            <Separator />
+            <Link
+              className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+              href="/dashboard"
+            >
+              <SheetClose>Dashboard</SheetClose>
             </Link>
           </div>
         </SheetContent>
