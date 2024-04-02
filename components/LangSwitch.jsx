@@ -42,7 +42,7 @@ function LangSwitch() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          className="flex justify-center"
+          className="flex justify-center dark:hover:bg-background/30"
           variant="outline"
           size="icon"
           role="combobox"
