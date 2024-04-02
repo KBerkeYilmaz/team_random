@@ -16,10 +16,7 @@ export const metadata = {
 export default function LocaleLayout({ children, params: { locale } }) {
   const messages = useMessages();
   return (
-    <html
-      suppressHydrationWarning
-      lang={locale}
-    >
+    <html suppressHydrationWarning lang={locale}>
       <body>
         <SessionProvider>
           <ThemeProvider
@@ -29,6 +26,7 @@ export default function LocaleLayout({ children, params: { locale } }) {
             disableTransitionOnChange
           >
             <NextIntlClientProvider messages={messages}>
+              <Navbar />
               {children}
             </NextIntlClientProvider>
           </ThemeProvider>
