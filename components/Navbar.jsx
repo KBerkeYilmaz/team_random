@@ -32,7 +32,7 @@ export const Navbar = () => {
     <div className={`flex items-center justify-center w-full fixed`}>
       <div
         className={`flex dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-lg items-center w-full justify-between px-8 py-4 transition-all duration-500  ${
-          isScrolled && "backdrop-blur-sm opacity-90 mt-6 w-11/12 rounded-full"
+          isScrolled && "backdrop-blur-sm opacity-90 mt-6 mx-6 rounded-full"
         }`}
       >
         <Link className="flex items-center gap-2" href="/">
