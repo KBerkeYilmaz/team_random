@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "@/navigation";
+import { Button } from "../ui/button";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -61,13 +62,9 @@ const LoginForm = () => {
             />
           </div>
         </div>
-        <button
-          id="form-submit-btn"
-          className="form-submit-btn w-full h-[3.12rem] rounded-md bg-background"
-          type="submit"
-        >
+        <Button id="form-submit-btn" type="submit">
           Login
-        </button>
+        </Button>
       </div>
     </form>
   );
