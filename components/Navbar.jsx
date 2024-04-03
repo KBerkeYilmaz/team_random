@@ -37,7 +37,7 @@ export const Navbar = () => {
   return (
     <div className={`flex items-center justify-center w-full fixed`}>
       <div
-        className={`flex grow dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-lg items-center w-full justify-between px-8 py-4 transition-all duration-500 ${
+        className={`grid grid-cols-2 md:grid-cols-3 dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-lg items-center w-full justify-between px-8 py-4 transition-all duration-500 ${
           isScrolled && "backdrop-blur-sm opacity-90 mt-6 mx-6 rounded-[50px]"
         }`}
       >
@@ -46,7 +46,7 @@ export const Navbar = () => {
             <span className="text-lg font-semibold">LOGO</span>
           </Link>
         </div>
-        <div className="hidden md:flex grow gap-4 justify-center">
+        <div className="hidden md:flex grow gap-2 justify-center">
           <Link
             className="text-lg hover:text-foreground/40 transition-all duration-200"
             href="/"
@@ -69,9 +69,16 @@ export const Navbar = () => {
             className="text-lg hover:text-foreground/40 transition-all duration-200"
             href="/contactus"
           >
-            Contact Us
+            Contact
           </Link>
-          {!session && (
+          {session ? (
+            <Link
+              className="text-lg hover:text-foreground/40 transition-all duration-200 animate-fadeIn"
+              href="/dashboard"
+            >
+              Dashboard
+            </Link>
+          ) : (
             <Link
               className="text-lg hover:text-foreground/40 transition-all duration-200 animate-fadeIn"
               href="/login"
@@ -79,20 +86,12 @@ export const Navbar = () => {
               Login
             </Link>
           )}
-          {session && (
-            <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200 animate-fadeIn"
-              href="/dashboard"
-            >
-              Dashboard
-            </Link>
-          )}
         </div>
-        <div className="hidden lg:flex grow gap-4 justify-end">
+        <div className="hidden lg:flex grow gap-2 justify-end">
           <LangSwitch />
           <ModeToggle />
         </div>
-        <div className="lg:hidden flex grow gap-4 justify-end">
+        <div className="lg:hidden flex grow gap-2 justify-end">
           <Sheet>
             <SheetTrigger asChild>
               <Button className="lg:hidden" size="icon" variant="outline">
