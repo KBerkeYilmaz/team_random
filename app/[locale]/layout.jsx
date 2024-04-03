@@ -28,7 +28,7 @@ export default function LocaleLayout({ children, params: { locale } }) {
             <NextIntlClientProvider messages={messages}>
               <div className="grid h-screen">
                 <Navbar />
-                <div className="pt-[72px] flex h-full w-full">{children}</div>
+                <div className="flex h-full w-full">{children}</div>
               </div>
             </NextIntlClientProvider>
           </ThemeProvider>
