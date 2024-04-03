@@ -26,8 +26,10 @@ export default function LocaleLayout({ children, params: { locale } }) {
             disableTransitionOnChange
           >
             <NextIntlClientProvider messages={messages}>
-              <Navbar />
-              {children}
+              <div className="grid h-screen">
+                <Navbar />
+                <div className="pt-[72px] flex h-full w-full">{children}</div>
+              </div>
             </NextIntlClientProvider>
           </ThemeProvider>
         </SessionProvider>

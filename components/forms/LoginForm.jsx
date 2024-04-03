@@ -61,11 +61,7 @@ const LoginForm = () => {
             />
           </div>
         </div>
-        <Button
-          id="form-submit-btn"
-          className="form-submit-btn w-full h-[3.12rem] rounded-md"
-          type="submit"
-        >
+        <Button id="form-submit-btn" type="submit">
           Login
         </Button>
       </div>

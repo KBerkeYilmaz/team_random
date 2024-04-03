@@ -1,16 +1,11 @@
-"use client";
-
-import { signOut } from "next-auth/react";
-
-const Dashboard = () => {  
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "https://localhost:3000" });
-  };
-
+import { SignOutButton } from "@/components/SignOutButton";
+import { getServerSession } from "next-auth";
+const Dashboard = async () => {
+  const session = await getServerSession();
   return (
-    <div className="flex flex-col justify-center items-center w-screen h-screen">
-      <h1>Welcome to dashboard</h1>
-      <button onClick={handleSignOut}>Sign Out</button>
+    <div className="flex flex-col justify-center items-center w-full">
+      <h1>Welcome {session.user.email}</h1>
+      <SignOutButton />
     </div>
   );
 };

@@ -11,10 +11,10 @@ import { Menu } from "lucide-react";
 import LangSwitch from "./LangSwitch";
 import { ModeToggle } from "./ModeToggle";
 import { Separator } from "./ui/separator";
-import { useSession } from "next-auth/react"
+import { useSession } from "next-auth/react";
 
 export const Navbar = () => {
-  const { data: session } = useSession()
+  const { data: session } = useSession();
 
   return (
     <div className="flex items-center fixed w-full justify-between px-8 py-4 dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-md">
@@ -46,19 +46,22 @@ export const Navbar = () => {
         >
           Contact Us
         </Link>
-        <Link
-          className="text-lg hover:text-foreground/40 transition-all duration-200"
-          href="/login"
-        >
-          Login
-        </Link>
-        {session &&
-        <Link
-          className="text-lg hover:text-foreground/40 transition-all duration-200"
-          href="/dashboard"
-        >
-          Dashboard
-        </Link>}
+        {!session && (
+          <Link
+            className="text-lg hover:text-foreground/40 transition-all duration-200"
+            href="/login"
+          >
+            Login
+          </Link>
+        )}
+        {session && (
+          <Link
+            className="text-lg hover:text-foreground/40 transition-all duration-200"
+            href="/dashboard"
+          >
+            Dashboard
+          </Link>
+        )}
       </div>
       <div className="hidden lg:flex gap-4">
         <LangSwitch />
@@ -112,19 +115,23 @@ export const Navbar = () => {
               <SheetClose>Contact Us</SheetClose>
             </Link>
             <Separator />
-            <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-              href="/login"
-            >
-              <SheetClose>Login</SheetClose>
-            </Link>
-            <Separator />
-            <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-              href="/dashboard"
-            >
-              <SheetClose>Dashboard</SheetClose>
-            </Link>
+
+            {!session && (
+              <Link
+                className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                href="/login"
+              >
+                <SheetClose>Login</SheetClose>
+              </Link>
+            )}
+            {session && (
+              <Link
+                className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                href="/dashboard"
+              >
+                <SheetClose>Dashboard</SheetClose>
+              </Link>
+            )}
           </div>
         </SheetContent>
       </Sheet>

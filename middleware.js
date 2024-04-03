@@ -29,7 +29,6 @@ const authMiddleware = withAuth(
 );
 
 export default function middleware(req) {
-  console.log("middlw: ", req.body);
   const publicPathnameRegex = RegExp(
     `^(/(${locales.join('|')}))?(${publicPages
       .flatMap((p) => (p === '/' ? ['', '/'] : p))
