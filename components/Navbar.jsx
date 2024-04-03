@@ -12,12 +12,28 @@ import LangSwitch from "./LangSwitch";
 import { ModeToggle } from "./ModeToggle";
 import { Separator } from "./ui/separator";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
 
 export const Navbar = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
   const { data: session } = useSession();
 
+  const changeBackground = () => {
+    if (window.scrollY >= 80) {
+      setIsScrolled(true);
+    } else {
+      setIsScrolled(false);
+    }
+  };
+
+  window.addEventListener("scroll", changeBackground);
+
   return (
-    <div className="flex items-center w-11/12 justify-between px-8 py-4 dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-lg fixed mt-6 left-1/2 -translate-x-1/2 rounded-full">
+    <div
+      className={`flex items-center w-11/12 justify-between px-8 py-4 dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-lg fixed mt-6 left-1/2 -translate-x-1/2 rounded-full  transition-all duration-500 ${
+        isScrolled && "opacity-70 backdrop-blur-3xl"
+      }`}
+    >
       <Link className="flex items-center gap-2" href="/">
         <span className="text-lg font-semibold">LOGO</span>
       </Link>

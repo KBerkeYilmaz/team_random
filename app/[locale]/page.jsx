@@ -5,7 +5,7 @@ import { ModeToggle } from "@/components/ModeToggle";
 
 export default function Home() {
   return (
-    <main className="flex flex-col w-screen">
+    <main className="flex flex-col w-screen pt-[96px] ">
       <Counter />
     </main>
   );
