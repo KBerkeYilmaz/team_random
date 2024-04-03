@@ -47,7 +47,7 @@ const LoginForm = () => {
               type="email"
               onChange={handleEmailChange}
               name="email"
-              className="w-full rounded-md bg-input border border-[#BEBEBE] h-[40px] p-[0.75rem] text-black"
+              className="w-full rounded-md bg-input border h-[40px] p-[0.75rem]"
             />
           </div>
           <div>
@@ -56,14 +56,14 @@ const LoginForm = () => {
               id="user-password"
               type="password"
               name="password"
-              className="w-full rounded-md bg-input border border-[#BEBEBE] h-[40px] p-[0.75rem] text-black"
+              className="w-full rounded-md bg-input border h-[40px] p-[0.75rem]"
               onChange={handlePasswordChange}
             />
           </div>
         </div>
         <button
           id="form-submit-btn"
-          className="form-submit-btn w-full bg-primary text-black h-[3.12rem] rounded-md"
+          className="form-submit-btn w-full h-[3.12rem] rounded-md bg-background"
           type="submit"
         >
           Login
