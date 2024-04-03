@@ -5,7 +5,7 @@ import { ModeToggle } from "@/components/ModeToggle";
 
 export default function Home() {
   return (
-    <main className="flex flex-col w-full pt-[72px] ">
+    <main className="flex flex-col w-full ">
       <section
         id="hero"
         className="w-full flex h-screen  items-center justify-center"
