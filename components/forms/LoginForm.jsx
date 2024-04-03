@@ -4,11 +4,14 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "@/navigation";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
+import { useToast } from "../ui/use-toast";
+
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
   const handlePasswordChange = (e) => setPassword(e.target.value);
   const handleEmailChange = (e) => setEmail(e.target.value);
 
@@ -27,7 +30,11 @@ const LoginForm = () => {
       // Handle errors (e.g., display a message to the user)
       console.log(result.error || "Login failed!"); // Display error toast
     } else {
-      console.log("Login Submitting");
+      toast({
+        title: "Login Successful !",
+        description: "Redirecting to Dashboard",
+      });
+      console.log("Login Successful");
       setTimeout(() => {
         router.push(`/dashboard`); // Redirect to the user page
       }, 500); // Wait for 1 second before redirecting

@@ -2,10 +2,9 @@ import { Inter } from "next/font/google";
 import ".././globals.css";
 import { NextIntlClientProvider, useMessages } from "next-intl";
 import { ThemeProvider } from "@/providers/theme-provider";
-
 import SessionProvider from "@/providers/SessionProvider";
-
 import { Navbar } from "@/components/Navbar";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
@@ -33,6 +32,7 @@ export default function LocaleLayout({ children, params: { locale } }) {
             </NextIntlClientProvider>
           </ThemeProvider>
         </SessionProvider>
+        <Toaster />
       </body>
     </html>
   );
