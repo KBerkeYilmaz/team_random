@@ -12,7 +12,7 @@ import LangSwitch from "./LangSwitch";
 import { ModeToggle } from "./ModeToggle";
 import { Separator } from "./ui/separator";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -26,7 +26,13 @@ export const Navbar = () => {
     }
   };
 
-  window.addEventListener("scroll", changeBackground);
+  useEffect(() => {
+    window.addEventListener("scroll", changeBackground);
+
+    return () => {
+      window.removeEventListener("scroll", changeBackground);
+    };
+  }, []);
 
   return (
     <div className={`flex items-center justify-center w-full fixed`}>
