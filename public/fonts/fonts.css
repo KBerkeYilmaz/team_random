@@ -119,6 +119,14 @@
   }
   
 
+  .permanent-marker-bold {
+    font-family: "Permanent Marker", cursive;
+    font-weight: 700;
+    font-style: normal;
+  }
+  
+
+
   .pixelify-header-bold {
     font-family: "Pixelify Sans", sans-serif;
     font-optical-sizing: auto;
