@@ -36,7 +36,7 @@ export const Navbar = () => {
     };
   }, []);
 
-  if (pathname === '/dashboard') {
+  if (pathname.startsWith('/dashboard')) {
     return null;
   }
 
