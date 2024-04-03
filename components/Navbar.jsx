@@ -37,14 +37,16 @@ export const Navbar = () => {
   return (
     <div className={`flex items-center justify-center w-full fixed`}>
       <div
-        className={`flex dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-lg items-center w-full justify-between px-8 py-4 transition-all duration-500 ${
+        className={`flex grow dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-lg items-center w-full justify-between px-8 py-4 transition-all duration-500 ${
           isScrolled && "backdrop-blur-sm opacity-90 mt-6 mx-6 rounded-[50px]"
         }`}
       >
-        <Link className="flex items-center gap-2" href="/">
-          <span className="text-lg font-semibold">LOGO</span>
-        </Link>
-        <div className="hidden md:flex gap-4">
+        <div className="flex items-center grow gap-2 transition-all">
+          <Link href="/">
+            <span className="text-lg font-semibold">LOGO</span>
+          </Link>
+        </div>
+        <div className="hidden md:flex grow gap-4 justify-center">
           <Link
             className="text-lg hover:text-foreground/40 transition-all duration-200"
             href="/"
@@ -71,7 +73,7 @@ export const Navbar = () => {
           </Link>
           {!session && (
             <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200"
+              className="text-lg hover:text-foreground/40 transition-all duration-200 animate-fadeIn"
               href="/login"
             >
               Login
@@ -79,85 +81,87 @@ export const Navbar = () => {
           )}
           {session && (
             <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200"
+              className="text-lg hover:text-foreground/40 transition-all duration-200 animate-fadeIn"
               href="/dashboard"
             >
               Dashboard
             </Link>
           )}
         </div>
-        <div className="hidden lg:flex gap-4">
+        <div className="hidden lg:flex grow gap-4 justify-end">
           <LangSwitch />
           <ModeToggle />
         </div>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button className="lg:hidden" size="icon" variant="outline">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle navigation menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right">
-            <div className="flex justify-between mt-6 mb-4 px-2">
-              <Link className="flex items-center gap-2" href="/">
-                <span className="text-lg font-semibold">LOGO</span>
-              </Link>
-              <div className="flex gap-4">
-                <LangSwitch />
-                <ModeToggle />
+        <div className="lg:hidden flex grow gap-4 justify-end">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button className="lg:hidden" size="icon" variant="outline">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <div className="flex justify-between mt-6 mb-4 px-2">
+                <Link className="flex items-center gap-2" href="/">
+                  <span className="text-lg font-semibold">LOGO</span>
+                </Link>
+                <div className="flex gap-4">
+                  <LangSwitch />
+                  <ModeToggle />
+                </div>
               </div>
-            </div>
-            {/* <Separator /> */}
+              {/* <Separator /> */}
 
-            <div className="grid w-full p-4">
-              <Link
-                className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                href="/"
-              >
-                <SheetClose>Home</SheetClose>
-              </Link>
-              <Separator />
-              <Link
-                className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                href="/about"
-              >
-                <SheetClose>About</SheetClose>
-              </Link>
-              <Separator />
-              <Link
-                className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                href="/works"
-              >
-                <SheetClose>Works</SheetClose>
-              </Link>
-              <Separator />
-              <Link
-                className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                href="/contactus"
-              >
-                <SheetClose>Contact Us</SheetClose>
-              </Link>
-              <Separator />
-
-              {!session && (
+              <div className="grid w-full p-4">
                 <Link
                   className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                  href="/login"
+                  href="/"
                 >
-                  <SheetClose>Login</SheetClose>
+                  <SheetClose>Home</SheetClose>
                 </Link>
-              )}
-              {session && (
+                <Separator />
                 <Link
                   className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                  href="/dashboard"
+                  href="/about"
                 >
-                  <SheetClose>Dashboard</SheetClose>
+                  <SheetClose>About</SheetClose>
                 </Link>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+                <Separator />
+                <Link
+                  className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                  href="/works"
+                >
+                  <SheetClose>Works</SheetClose>
+                </Link>
+                <Separator />
+                <Link
+                  className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                  href="/contactus"
+                >
+                  <SheetClose>Contact Us</SheetClose>
+                </Link>
+                <Separator />
+
+                {!session && (
+                  <Link
+                    className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                    href="/login"
+                  >
+                    <SheetClose>Login</SheetClose>
+                  </Link>
+                )}
+                {session && (
+                  <Link
+                    className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                    href="/dashboard"
+                  >
+                    <SheetClose>Dashboard</SheetClose>
+                  </Link>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </div>
   );

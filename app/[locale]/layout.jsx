@@ -27,7 +27,7 @@ export default function LocaleLayout({ children, params: { locale } }) {
             <NextIntlClientProvider messages={messages}>
               <div className="grid h-screen">
                 <Navbar />
-                <div className="flex h-full w-full animate-fadeIn">{children}</div>
+                <div className="flex h-full w-full">{children}</div>
               </div>
             </NextIntlClientProvider>
           </ThemeProvider>
