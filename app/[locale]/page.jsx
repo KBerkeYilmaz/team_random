@@ -1,6 +1,6 @@
 export default function Home() {
   return (
-    <main className="flex flex-col w-full ">
+    <main className="flex flex-col w-full animate-fadeIn">
       <section
         id="hero"
         className="w-full flex h-screen  items-center justify-center"
