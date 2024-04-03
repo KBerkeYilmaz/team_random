@@ -2,7 +2,6 @@ import { SignOutButton } from "@/components/SignOutButton";
 import { getServerSession } from "next-auth";
 const Dashboard = async () => {
   const session = await getServerSession();
-  console.log("dash: ", session.user);
   return (
     <div className="flex flex-col justify-center items-center w-full">
       <h1>Welcome {session.user.email}</h1>
