@@ -3,15 +3,21 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "@/navigation";
 import { Button } from "../ui/button";
+import { Loader2 } from "lucide-react";
+import { useToast } from "../ui/use-toast";
+
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
   const handlePasswordChange = (e) => setPassword(e.target.value);
   const handleEmailChange = (e) => setEmail(e.target.value);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setIsSubmitting(true);
     // Use Next-Auth's signIn function instead of fetch
     const result = await signIn("credentials", {
       redirect: false, // Prevent Next-Auth from redirecting automatically
@@ -20,10 +26,19 @@ const LoginForm = () => {
     });
 
     if (result?.error) {
+      setIsSubmitting(false);
       // Handle errors (e.g., display a message to the user)
       console.log(result.error || "Login failed!"); // Display error toast
+      toast({
+        title: "Error !",
+        description: `- ${result.error}`,
+      });
     } else {
-      console.log("Login successful");
+      toast({
+        title: "Login Successful !",
+        description: "- Redirecting to Dashboard",
+      });
+      console.log("Login Successful");
       setTimeout(() => {
         router.push(`/dashboard`); // Redirect to the user page
       }, 500); // Wait for 1 second before redirecting
@@ -61,9 +76,16 @@ const LoginForm = () => {
             />
           </div>
         </div>
-        <Button id="form-submit-btn" type="submit">
-          Login
-        </Button>
+        {!isSubmitting ? (
+          <Button id="form-submit-btn" type="submit">
+            Login
+          </Button>
+        ) : (
+          <Button disabled>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Please wait
+          </Button>
+        )}
       </div>
     </form>
   );
