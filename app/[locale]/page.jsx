@@ -5,11 +5,10 @@ import { ModeToggle } from "@/components/ModeToggle";
 
 export default function Home() {
   return (
-    <main className="flex flex-col w-screen pt-[72px]">
-      {/* <Counter /> */}
+    <main className="flex flex-col w-full pt-[72px] animate-fadeIn">
       <section
         id="hero"
-        className="w-screen flex h-screen  items-center justify-center"
+        className="w-full flex h-screen  items-center justify-center"
       >
         <div className="w-fit h-fit">
           <h1 className="permanent-marker-bold text-6xl dark:text-orange-500">
@@ -20,7 +19,7 @@ export default function Home() {
       </section>
       <section
         id="about"
-        className="w-screen flex h-screen  items-center justify-center"
+        className="w-full flex h-screen  items-center justify-center"
       >
         <div className="w-fit h-fit">
           <h1 className="permanent-marker-bold text-6xl dark:text-orange-500">
@@ -31,7 +30,7 @@ export default function Home() {
       </section>
       <section
         id="services"
-        className="w-screen flex h-screen  items-center justify-center"
+        className="w-full flex h-screen  items-center justify-center"
       >
         <div className="w-fit h-fit">
           <h1 className="permanent-marker-bold text-6xl dark:text-orange-500">
@@ -42,7 +41,7 @@ export default function Home() {
       </section>
       <section
         id="cta"
-        className="w-screen flex h-screen items-center justify-center"
+        className="w-full flex h-screen items-center justify-center"
       >
         <div className="w-fit h-fit">
           <h1 className="permanent-marker-bold text-6xl dark:text-orange-500">
