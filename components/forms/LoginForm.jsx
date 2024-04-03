@@ -26,13 +26,17 @@ const LoginForm = () => {
     });
 
     if (result?.error) {
-      setIsSubmitting(fasle);
+      setIsSubmitting(false);
       // Handle errors (e.g., display a message to the user)
       console.log(result.error || "Login failed!"); // Display error toast
+      toast({
+        title: "Error !",
+        description: `- ${result.error}`,
+      });
     } else {
       toast({
         title: "Login Successful !",
-        description: "Redirecting to Dashboard",
+        description: "- Redirecting to Dashboard",
       });
       console.log("Login Successful");
       setTimeout(() => {

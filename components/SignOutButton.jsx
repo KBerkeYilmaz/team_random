@@ -14,7 +14,7 @@ export const SignOutButton = () => {
     signOut({ callbackUrl: "https://localhost:3000" });
     toast({
       title: "Sign Out Successful !",
-      description: "Redirecting to Home",
+      description: "- Redirecting to Home",
     });
   };
   return (
