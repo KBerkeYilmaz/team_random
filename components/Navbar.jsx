@@ -1,4 +1,5 @@
 "use client";
+import { usePathname } from "next/navigation"; 
 import { Button } from "@/components/ui/button";
 import {
   SheetTrigger,
@@ -17,6 +18,7 @@ import { useEffect, useState } from "react";
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const { data: session } = useSession();
+  const pathname = usePathname()
 
   const changeBackground = () => {
     if (window.scrollY >= 80) {
@@ -33,6 +35,10 @@ export const Navbar = () => {
       window.removeEventListener("scroll", changeBackground);
     };
   }, []);
+
+  if (pathname === '/dashboard') {
+    return null;
+  }
 
   return (
     <div className={`flex items-center justify-center w-full fixed`}>
