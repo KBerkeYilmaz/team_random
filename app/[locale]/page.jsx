@@ -5,8 +5,10 @@ import { ModeToggle } from "@/components/ModeToggle";
 
 export default function Home() {
   return (
-    <main className="flex flex-col w-screen pt-[96px] ">
+    <main className="flex flex-col w-screen pt-[72px] ">
       <Counter />
+      <div className="h-96"></div>
+      <div className="h-96"></div>
     </main>
   );
 }

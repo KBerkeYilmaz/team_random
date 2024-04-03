@@ -32,7 +32,7 @@ const LoginForm = () => {
 
   return (
     <form
-      className="sign-in-form lg:px-[8.15rem] w-screen flex justify-center h-screen items-center max-w-[1024px]"
+      className="sign-in-form lg:px-[8.15rem] w-screen flex justify-center  items-center max-w-[1024px]"
       id="sign-in-form"
       onSubmit={handleSubmit}
     >

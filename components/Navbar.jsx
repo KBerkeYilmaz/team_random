@@ -59,7 +59,7 @@ export const Navbar = () => {
           </Link>
           <Link
             className="text-lg hover:text-foreground/40 transition-all duration-200"
-            href="/contact"
+            href="/contactus"
           >
             Contact Us
           </Link>
@@ -127,7 +127,7 @@ export const Navbar = () => {
               <Separator />
               <Link
                 className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                href="/contact"
+                href="/contactus"
               >
                 <SheetClose>Contact Us</SheetClose>
               </Link>
