@@ -16,25 +16,21 @@ async function auth(req, res) {
         },
         authorize: async (credentials) => {
           const email = credentials.email;
-          console.log("This is the cred email" + email);
+
           const password = credentials.password;
-          console.log("This is the cred pass " + password);
-          console.log(email, password);
+
           // Your existing login logic here, adapted from the original function
           await connectDB();
           const user = await User.findOne({ userMail: email }).exec(); // Assuming your user schema has an 'email' field
           if (!user) {
-            console.log("User not found with email:", email);
             throw new Error("No user found with the given email");
           }
           // User found, now compare the submitted password with the hashed password stored
           const isMatch = await bcrypt.compare(password, user.userPassword); // Assuming your user schema has a 'password' field for the hashed password
           if (!isMatch) {
             // If the password doesn't match
-            console.log("Password does not match for user:", email);
             throw new Error("Password does not match");
           }
-          console.log("User authenticated:", user);
 
           // If no error and we have user data, return it
           if (user) {
@@ -50,12 +46,10 @@ async function auth(req, res) {
     },
     callbacks: {
       async jwt({ token, user }) {
-        console.log("JWT callback - user:", user);
         if (user) {
           token.id = user.id; // Correctly access the nested 'id'
           token.email = user.userMail; // Example of adding more user details to the token
         }
-        console.log("JWT callback - token:", token);
         return token;
       },
       async session({ session, token }) {
