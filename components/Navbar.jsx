@@ -46,7 +46,7 @@ export const Navbar = () => {
             <span className="text-lg font-semibold">LOGO</span>
           </Link>
         </div>
-        <div className="hidden md:flex grow gap-2 justify-center">
+        <div className="hidden md:flex grow gap-2 justify-center animate-fadeIn">
           <Link
             className="text-lg hover:text-foreground/40 transition-all duration-200"
             href="/"
