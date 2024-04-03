@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   SheetTrigger,
@@ -10,8 +11,11 @@ import { Menu } from "lucide-react";
 import LangSwitch from "./LangSwitch";
 import { ModeToggle } from "./ModeToggle";
 import { Separator } from "./ui/separator";
+import { useSession } from "next-auth/react"
 
 export const Navbar = () => {
+  const { data: session } = useSession()
+
   return (
     <div className="flex items-center fixed w-full justify-between px-8 py-4 dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-md">
       <Link className="flex items-center gap-2" href="/">
@@ -48,12 +52,13 @@ export const Navbar = () => {
         >
           Login
         </Link>
+        {session &&
         <Link
           className="text-lg hover:text-foreground/40 transition-all duration-200"
           href="/dashboard"
         >
           Dashboard
-        </Link>
+        </Link>}
       </div>
       <div className="hidden lg:flex gap-4">
         <LangSwitch />

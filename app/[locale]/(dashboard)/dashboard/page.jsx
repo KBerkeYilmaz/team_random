@@ -8,7 +8,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center text-black w-screen h-screen">
+    <div className="flex flex-col justify-center items-center w-screen h-screen">
       <h1>Welcome to dashboard</h1>
       <button onClick={handleSignOut}>Sign Out</button>
     </div>
