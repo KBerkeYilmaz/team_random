@@ -17,7 +17,7 @@ export const Navbar = () => {
   const { data: session } = useSession();
 
   return (
-    <div className="flex items-center fixed w-full justify-between px-8 py-4 dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-md">
+    <div className="flex items-center w-11/12 justify-between px-8 py-4 dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-lg fixed mt-6 left-1/2 -translate-x-1/2 rounded-full">
       <Link className="flex items-center gap-2" href="/">
         <span className="text-lg font-semibold">LOGO</span>
       </Link>
