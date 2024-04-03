@@ -5,10 +5,52 @@ import { ModeToggle } from "@/components/ModeToggle";
 
 export default function Home() {
   return (
-    <main className="flex flex-col w-screen pt-[72px] ">
-      <Counter />
-      <div className="h-96"></div>
-      <div className="h-96"></div>
+    <main className="flex flex-col justify-start  w-screen">
+      {/* <Counter /> */}
+      <section
+        id="hero"
+        className="w-screen flex h-screen  items-center justify-center"
+      >
+        <div className="w-fit h-fit">
+          <h1 className="permanent-marker-bold text-6xl dark:text-orange-500">
+            Coding your digital future <br />{" "}
+            <span className="pixelify-header-bold">pixel by pixel</span>
+          </h1>
+        </div>
+      </section>
+      <section
+        id="about"
+        className="w-screen flex h-screen  items-center justify-center"
+      >
+        <div className="w-fit h-fit">
+          <h1 className="permanent-marker-bold text-6xl dark:text-orange-500">
+            This is about section(kinda) <br />{" "}
+            <span className="pixelify-header-bold">pixel by pixel</span>
+          </h1>
+        </div>
+      </section>
+      <section
+        id="services"
+        className="w-screen flex h-screen  items-center justify-center"
+      >
+        <div className="w-fit h-fit">
+          <h1 className="permanent-marker-bold text-6xl dark:text-orange-500">
+            This is services section <br />{" "}
+            <span className="pixelify-header-bold">pixel by pixel</span>
+          </h1>
+        </div>
+      </section>
+      <section
+        id="cta"
+        className="w-screen flex h-screen items-center justify-center"
+      >
+        <div className="w-fit h-fit">
+          <h1 className="permanent-marker-bold text-6xl dark:text-orange-500">
+            This is cta <br />{" "}
+            <span className="pixelify-header-bold">pixel by pixel</span>
+          </h1>
+        </div>
+      </section>
     </main>
   );
 }

@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('../public/fonts/fonts.css');
 
 @layer base {
   :root {
