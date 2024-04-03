@@ -6,8 +6,6 @@ import bcrypt from "bcrypt";
 
 async function auth(req, res) {
   // Do whatever you want here, before the request is passed down to `NextAuth`
-  console.log("Request:", req.method, req.url, req.body);
-
   return await NextAuth(req, res, {
     providers: [
       CredentialsProvider({
