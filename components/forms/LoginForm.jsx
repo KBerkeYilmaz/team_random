@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "@/navigation";
-
+import { Button } from "../ui/button";
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,14 +32,14 @@ const LoginForm = () => {
 
   return (
     <form
-      className="sign-in-form lg:px-[8.15rem]  w-screen flex justify-center items-center max-w-[1024px]"
+      className="sign-in-form lg:px-[8.15rem] w-screen flex justify-center h-screen items-center max-w-[1024px]"
       id="sign-in-form"
       onSubmit={handleSubmit}
     >
       <div className="py-[15%] px-[1.87rem] flex flex-col gap-[8px] w-full">
-        <h3 className="pb-[0.9rem] font-bold text-[35px] text-left">Sign In</h3>
+        <h3 className="pb-[0.9rem] font-bold text-[35px] text-left">Login</h3>
 
-        <div className="grid grid-rows-2 grid-cols-1 gap-[0.6rem]">
+        <div className="grid grid-rows-2 grid-cols-1 gap-3 mb-4">
           <div className="w-full">
             <label htmlFor="user-email">E-Mail</label>
             <input
@@ -61,13 +61,13 @@ const LoginForm = () => {
             />
           </div>
         </div>
-        <button
+        <Button
           id="form-submit-btn"
-          className="form-submit-btn w-full h-[3.12rem] rounded-md bg-background"
+          className="form-submit-btn w-full h-[3.12rem] rounded-md"
           type="submit"
         >
           Login
-        </button>
+        </Button>
       </div>
     </form>
   );
