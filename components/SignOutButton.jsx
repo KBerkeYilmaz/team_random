@@ -20,9 +20,11 @@ export const SignOutButton = () => {
   return (
     <>
       {!isSigningOut ? (
-        <Button onClick={handleSignOut}>Sign Out</Button>
+        <Button className="w-full" onClick={handleSignOut}>
+          Sign Out
+        </Button>
       ) : (
-        <Button disabled>
+        <Button className="w-full" disabled>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Please wait
         </Button>
