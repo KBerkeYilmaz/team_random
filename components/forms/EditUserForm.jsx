@@ -33,7 +33,6 @@ export const EditUserForm = ({ user }) => {
   const [file, setFile] = useState();
   const { edgestore } = useEdgeStore();
 
-  console.log(user);
   const { toast } = useToast();
 
   const handleFullName = async () => {

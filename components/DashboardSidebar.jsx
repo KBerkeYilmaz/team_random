@@ -2,9 +2,7 @@ import { ModeToggle } from "@/components/ModeToggle";
 import { SignOutButton } from "@/components/SignOutButton";
 import {
   Bell,
-  CircleUser,
   Home,
-  LineChart,
   Menu,
   Package,
   Package2,
@@ -15,16 +13,9 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import AccountMenu from "./AccountMenu";
 import { Link } from "@/navigation";
 
 const DashboardSidebar = ({ children }) => {
@@ -151,22 +142,7 @@ const DashboardSidebar = ({ children }) => {
             </form>
           </div>
           <ModeToggle />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <CircleUser className="h-5 w-5" />
-                <span className="sr-only">Toggle user menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <SignOutButton />
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <AccountMenu />
         </header>
         {children}
       </div>
