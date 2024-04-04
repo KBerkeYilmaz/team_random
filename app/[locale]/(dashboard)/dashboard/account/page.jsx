@@ -4,7 +4,8 @@ import { Separator } from "@/components/ui/separator";
 import { getServerSession } from "next-auth";
 
 const Account = async () => {
-  const { user } = await getServerSession();
+  const session = await getServerSession();
+  console.log(session);
 
   return (
     <div className="h-full w-full flex flex-col gap-4 justify-start items-start p-10 animate-fadeIn">
@@ -18,16 +19,16 @@ const Account = async () => {
           <div className="flex flex-col w-full">
             <div className="flex items-center gap-1 w-full">
               <Label className="text-md">Name: </Label>
-              <p className="break-all">{user.name}</p>
+              <p className="break-all">{session.user.name}</p>
             </div>
             <div className="flex items-center gap-1 w-full">
               <Label className="text-md">Email: </Label>
-              <p className="break-all">{user.email}</p>
+              <p className="break-all">{session.user.email}</p>
             </div>
           </div>
         </div>
         <div>
-          <EditUserForm user={user} />
+          <EditUserForm user={session.user} />
         </div>
       </div>
     </div>
