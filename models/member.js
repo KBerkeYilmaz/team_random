@@ -21,17 +21,18 @@ const memberSchema = new mongoose.Schema(
     memberGithub: {
       type: String,
       required: false,
-      unique: true,
     },
     memberPersonal: {
       type: String,
       required: false,
-      unique: true,
     },
     memberLinkedin: {
       type: String,
-      required: true,
-      unique: true,
+      required: false,
+    },
+    memberImage: {
+      type: String,
+      required: false,
     },
   },
   { timestamps: true }
