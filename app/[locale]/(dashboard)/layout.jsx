@@ -10,7 +10,7 @@ export const metadata = {
 export default function DashboardLayout({ children }) {
   return (
     <DashboardSidebar>
-      <main>{children}</main>
+        <main>{children}</main>
     </DashboardSidebar>
   );
 }

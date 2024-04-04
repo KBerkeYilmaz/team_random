@@ -38,7 +38,7 @@ const DashboardSidebar = ({ children }) => {
               className="flex items-center gap-2 font-semibold"
             >
               <Package2 className="h-6 w-6" />
-              <span className="">Acme Inc</span>
+              <span className="sr-only">Acme Inc</span>
             </Link>
             <Button
               variant="outline"
@@ -52,13 +52,6 @@ const DashboardSidebar = ({ children }) => {
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
               <Link
-                href="#"
-                className="flex items-center gap-2 text-lg font-semibold"
-              >
-                <Package2 className="h-6 w-6" />
-                <span className="sr-only">Acme Inc</span>
-              </Link>
-              <Link
                 href="/dashboard"
                 className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
               >
@@ -66,7 +59,7 @@ const DashboardSidebar = ({ children }) => {
                 Dashboard
               </Link>
               <Link
-                href="#"
+                href="/dashboard/messages"
                 className="mx-[-0.65rem] flex items-center gap-4 rounded-xl bg-muted px-3 py-2 text-foreground hover:text-foreground"
               >
                 <ShoppingCart className="h-5 w-5" />

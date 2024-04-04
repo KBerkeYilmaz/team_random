@@ -11,7 +11,7 @@ export const SignOutButton = () => {
 
   const handleSignOut = () => {
     setIsSigningOut(true);
-    signOut({ callbackUrl: "https://localhost:3000" });
+    signOut({ callbackUrl: "/" });
     toast({
       title: "Sign Out Successful !",
       description: "- Redirecting to Home",

@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import SessionProvider from "@/providers/SessionProvider";
 import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
+import { EdgeStoreProvider } from "@/lib/edgestore";
 
 const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
@@ -15,23 +16,28 @@ export const metadata = {
 export default function LocaleLayout({ children, params: { locale } }) {
   const messages = useMessages();
   return (
-    <html suppressHydrationWarning lang={locale}>
+    <html
+      suppressHydrationWarning
+      lang={locale}
+    >
       <body>
-        <SessionProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <NextIntlClientProvider messages={messages}>
-              <div className="grid h-screen">
-                <Navbar />
-                <div className="flex h-full w-full">{children}</div>
-              </div>
-            </NextIntlClientProvider>
-          </ThemeProvider>
-        </SessionProvider>
+        <EdgeStoreProvider>
+          <SessionProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <NextIntlClientProvider messages={messages}>
+                <div className="grid h-screen">
+                  <Navbar />
+                  <div className="flex h-full w-full">{children}</div>
+                </div>
+              </NextIntlClientProvider>
+            </ThemeProvider>
+          </SessionProvider>
+        </EdgeStoreProvider>
         <Toaster />
       </body>
     </html>
