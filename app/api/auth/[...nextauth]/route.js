@@ -16,7 +16,6 @@ async function auth(req, res) {
         },
         authorize: async (credentials) => {
           const email = credentials.email;
-
           const password = credentials.password;
 
           // Your existing login logic here, adapted from the original function
@@ -31,7 +30,6 @@ async function auth(req, res) {
             // If the password doesn't match
             throw new Error("Password does not match");
           }
-
           // If no error and we have user data, return it
           if (user) {
             return user; // The user object will be encoded in the JWT
@@ -47,8 +45,10 @@ async function auth(req, res) {
     callbacks: {
       async jwt({ token, user }) {
         if (user) {
-          token.id = user.id; // Correctly access the nested 'id'
-          token.email = user.userMail; // Example of adding more user details to the token
+          token.id = user._id.toString();; // Correctly access the nested 'id'
+          token.email = user.userMail; // Example of adding more user details to the token 
+          token.name = user.fullName; // Example of adding more user details to the token
+          token.image = user.img; // Example of adding more user details to the token
         }
         return token;
       },
@@ -57,6 +57,8 @@ async function auth(req, res) {
         // Use the token to set custom session values or modify the session object
         session.user.id = token.id;
         session.user.email = token.email; // Add email to session
+        session.user.name = token.name; // Add name to session
+        session.user.image = token.image; // Add image to session
         return session;
       },
     },

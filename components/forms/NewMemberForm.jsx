@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,19 @@ import { SingleImageDropzone } from "@/components/SingleImageDropzone";
 import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
-  memberName: z.string().min(2, {
-    message: "memberName must be at least 2 characters.",
+  memberName: z.string().min(3, {
+    message: "Member name must be at least 3 characters.",
   }),
+  memberLastName: z.string().min(3, {
+    message: "Last name must be at least 3 characters.",
+  }),
+  memberTitle: z.string().min(3, {
+    message: "Title must be at least 3 characters.",
+  }),
+  memberBio: z.string().optional(), // Optional field
+  memberPersonal: z.string().url().optional(), // Optional URL
+  memberGithub: z.string().url().optional(), // Optional URL
+  memberLinkedin: z.string().url().optional(), // Optional URL
 });
 
 const NewMemberForm = () => {
@@ -112,7 +123,7 @@ const NewMemberForm = () => {
             setFile(file);
           }}
         />
-        {/* <button
+        <button
           onClick={async () => {
             if (file) {
               const res = await edgestore.publicFiles.upload({
@@ -124,12 +135,12 @@ const NewMemberForm = () => {
               });
               // you can run some server action or api here
               // to add the necessary data to your database
-              console.log(res);
+              console.log(res.url);
             }
           }}
         >
           Upload
-        </button> */}
+        </button>
       </div>
     </div>
   );

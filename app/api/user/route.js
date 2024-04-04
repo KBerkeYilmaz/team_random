@@ -10,9 +10,12 @@ const handler = async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(res.password, 10);
     // Create a new user with the hashed password
+    console.log(res)
     const user = await User.create({
       userMail: res.email,
       userPassword: hashedPassword,
+      fullName: res.fullName,
+      img: res.img,
     });
     // Respond with the created user (excluding the password)
     const { password, ...userWithoutPassword } = user.toObject();
