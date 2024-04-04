@@ -1,7 +1,51 @@
-"use server"
-
+"use server";
+import { revalidatePath } from "next/cache";
 import Member from "@/models/member";
+import connectDB from "@/lib/database";
+import { z } from "zod";
 
-async function createMember(member) {
-  return await Member.create(member);
+export async function createMember(formData) {
+  const newMemberSchema = z.object({
+    memberName: z.string().min(3, "Member name must be at least 3 characters."),
+    memberLastName: z.string().min(3, "Last name must be at least 3 characters."),
+    memberTitle: z.string().min(3, "Title must be at least 3 characters."),
+    memberBio: z.string().optional(), // Optional field
+    memberPersonal: z.string().url().optional().or(z.literal("")), // Optional URL
+    memberGithub: z.string().url().optional().or(z.literal("")), // Optional URL
+    memberLinkedin: z.string().url().optional().or(z.literal("")), // Optional URL
+    memberImage: z.string().url().optional().or(z.literal("")), // Optional URL
+  });
+
+  const validatedFields = newMemberSchema.safeParse({
+    memberName: formData.memberName,
+    memberLastName: formData.memberLastName,
+    memberTitle: formData.memberTitle,
+    memberBio: formData.memberBio,
+    memberPersonal: formData.memberPersonal,
+    memberGithub: formData.memberGithub,
+    memberLinkedin: formData.memberLinkedin,
+    memberImage: formData.memberImage,
+  });
+
+  // Return early if the form data is invalid
+  if (!validatedFields.success) {
+    console.log(validatedFields.error);
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+  try {
+    await connectDB();
+    const member = await Member.create(validatedFields.data);
+    revalidatePath("/");
+    return {
+      message: `New member ${validatedFields.data.memberName}, welcome!`,
+    }; // Return the created member object
+  } catch (error) {
+    console.error("Failed to create member:", error);
+    // Handle database errors, e.g., connection issues or constraints violations
+    return {
+      error: `Failed to create the member due to ${error.message}`,
+    };
+  }
 }
