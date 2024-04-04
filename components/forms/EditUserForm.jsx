@@ -27,18 +27,18 @@ import { useToast } from "../ui/use-toast";
 //     message: "Name must be at least 3 characters.",
 //   }),
 // });
-
 export const EditUserForm = ({ user }) => {
   const [open, setOpen] = useState(false);
   const [fullName, setFullName] = useState("");
   const [file, setFile] = useState();
   const { edgestore } = useEdgeStore();
 
+  console.log(user);
   const { toast } = useToast();
 
   const handleFullName = async () => {
-    const result = await updateUserName(fullName);
-
+    const result = await updateUserName(fullName, user.email);
+    console.log(fullName);
     if (result.error) {
       toast({
         variant: "destructive",
