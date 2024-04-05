@@ -10,4 +10,3 @@ const Dashboard = async () => {
 };
 
 export default Dashboard;
-
