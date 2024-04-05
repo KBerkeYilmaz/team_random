@@ -61,7 +61,7 @@ async function auth(req, res) {
           }
           return token;
         // }
-=======
+
         if (user) {
           token.id = user._id.toString();; // Correctly access the nested 'id'
           token.email = user.userMail; // Example of adding more user details to the token 
