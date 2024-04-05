@@ -42,6 +42,7 @@ async function auth(req, res) {
     session: {
       strategy: "jwt",
     },
+    maxAge: 24 * 60 * 60, // 1 hour
     callbacks: {
       async jwt({ token, user }) {
         if (user) {
@@ -53,7 +54,6 @@ async function auth(req, res) {
         return token;
       },
       async session({ session, token }) {
-        session.expires = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // Set session expiry to 30 minutes
         // Use the token to set custom session values or modify the session object
         session.user.id = token.id;
         session.user.email = token.email; // Add email to session
