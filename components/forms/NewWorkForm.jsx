@@ -6,16 +6,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEdgeStore } from "@/lib/edgestore";
-import { SingleImageDropzone } from "@/components/SingleImageDropzone";
 import { Separator } from "@/components/ui/separator";
 import { createMember } from "@/actions/memberAction";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { MultiImageDropzone } from "@/components/MultiImageDropzone";
 
-const NewMemberForm = () => {
+const NewWorkForm = () => {
   const { edgestore } = useEdgeStore();
   const [pending, setPending] = useState(false);
-  const [file, setFile] = useState();
+  const [fileStates, setFileStates] = useState([]);
   const { toast } = useToast();
   const nameInputRef = useRef(null);
   const lastNameInputRef = useRef(null);
@@ -24,6 +24,19 @@ const NewMemberForm = () => {
   const personalInputRef = useRef(null);
   const githubInputRef = useRef(null);
   const linkedinInputRef = useRef(null);
+
+  //   function updateFileProgress(key, progress) {
+  //     setFileStates((fileStates) => {
+  //       const newFileStates = structuredClone(fileStates);
+  //       const fileState = newFileStates.find(
+  //         (fileState) => fileState.key === key
+  //       );
+  //       if (fileState) {
+  //         fileState.progress = progress;
+  //       }
+  //       return newFileStates;
+  //     });
+  //   }
 
   async function newMember(e) {
     e.preventDefault();
@@ -69,9 +82,11 @@ const NewMemberForm = () => {
       setFile(null);
       toast({
         description: "Member Created !",
-      })
+      });
     } catch (error) {
-      toast({description: `Error creating member: ${error.message || error}`});
+      toast({
+        description: `Error creating member: ${error.message || error}`,
+      });
       // Handle error, e.g., show error message
     } finally {
       setPending(false); // Reset pending status
@@ -180,16 +195,40 @@ const NewMemberForm = () => {
       </p> */}
 
       <div>
-        <SingleImageDropzone
-          width={220}
-          height={220}
-          value={file}
+        <MultiImageDropzone
+          value={fileStates}
           dropzoneOptions={{
-            maxSize: 1024 * 1024 * 2, // 2MB
-            maxFiles: 1,
+            maxFiles: 6,
           }}
-          onChange={(file) => {
-            setFile(file);
+          onChange={(files) => {
+            setFileStates(files);
+          }}
+          onFilesAdded={async (addedFiles) => {
+            setFileStates([...fileStates, ...addedFiles]);
+            await Promise.all(
+              addedFiles.map(async (addedFileState) => {
+                try {
+                  const res = await edgestore.publicFiles.upload({
+                    file: addedFileState.file,
+                    // onProgressChange: async (progress) => {
+                    //   updateFileProgress(addedFileState.key, progress);
+                    //   if (progress === 100) {
+                    //     // wait 1 second to set it to complete
+                    //     // so that the user can see the progress bar at 100%
+                    //     await new Promise((resolve) =>
+                    //       setTimeout(resolve, 1000)
+                    //     );
+                    //     updateFileProgress(addedFileState.key, "COMPLETE");
+                    //   }
+                    // },
+                  });
+                  console.log(res);
+                } catch (err) {
+                //   updateFileProgress(addedFileState.key, "ERROR");
+                console.log(err)
+                }
+              })
+            );
           }}
         />
       </div>
@@ -197,4 +236,4 @@ const NewMemberForm = () => {
   );
 };
 
-export default NewMemberForm;
+export default NewWorkForm;
