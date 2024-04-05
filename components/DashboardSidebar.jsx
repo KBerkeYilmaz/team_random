@@ -18,7 +18,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AccountMenu from "./AccountMenu";
 import { Link } from "@/navigation";
 
-const DashboardSidebar = ({ children }) => {
+const DashboardSidebar = async ({ children }) => {
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
