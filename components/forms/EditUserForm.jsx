@@ -1,8 +1,7 @@
 "use client";
-import Image from "next/image";
+
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEdgeStore } from "@/lib/edgestore";
@@ -37,7 +36,7 @@ export const EditUserForm = ({ user }) => {
   const { toast } = useToast();
 
   const handleFullName = async () => {
-    const result = await updateUserName(fullName, user.email);
+    const result = await updateUserName(fullName, user.id);
     console.log(fullName);
     if (result.error) {
       toast({
@@ -55,7 +54,7 @@ export const EditUserForm = ({ user }) => {
   };
 
   const handlePicture = async (imgUrl) => {
-    const result = await updateUserImage(imgUrl, user.email);
+    const result = await updateUserImage(imgUrl, user.id);
     console.log("handlePicture: ", file);
     console.log("handlePicture: ", imgUrl);
     if (result.error) {
