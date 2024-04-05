@@ -4,13 +4,18 @@ import Image from "next/image";
 import { EditUserForm } from "@/components/forms/EditUserForm";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
 
 function MyAccount() {
   const { data } = useSession();
   console.log(data);
 
   if (!data) {
-    return <div>loading...</div>;
+    return (
+      <div className="flex w-full justify-center mt-10">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      </div>
+    );
   }
 
   return (

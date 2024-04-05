@@ -3,6 +3,9 @@ import connectDB from "@/lib/database"
 import User from "@/models/user"
 
 export const updateUserName = async (formdata, id) => {
+
+    //Todo - Validations
+
     try {
         await connectDB();
         const result = await User.findByIdAndUpdate(id, { fullName: formdata }, { new: true })
@@ -17,6 +20,9 @@ export const updateUserName = async (formdata, id) => {
 }
 
 export const updateUserImage = async (imgUrl, id) => {
+
+    //Todo - Validations
+
 
     try {
         await connectDB();

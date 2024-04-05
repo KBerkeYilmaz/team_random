@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useEdgeStore } from "@/lib/edgestore";
 import { SingleImageDropzone } from "@/components/SingleImageDropzone";
 import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -15,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { updateUserImage, updateUserName } from "@/actions/userActions";
 import { useToast } from "../ui/use-toast";
+//Todo - Validations
 // const formSchema = z.object({
 //   fullName: z.string().min(3, {
 //     message: "Name must be at least 3 characters.",
@@ -29,13 +32,15 @@ import { useToast } from "../ui/use-toast";
 export const EditUserForm = ({ user }) => {
   const [open, setOpen] = useState(false);
   const [fullName, setFullName] = useState("");
-  // const [imgUrl, setImgUrl] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [file, setFile] = useState();
   const { edgestore } = useEdgeStore();
 
   const { toast } = useToast();
 
   const handleFullName = async () => {
+    setIsSubmitting(true);
     const result = await updateUserName(fullName, user.id);
     console.log(fullName);
     if (result.error) {
@@ -44,11 +49,13 @@ export const EditUserForm = ({ user }) => {
         title: "Error !",
         description: `- ${result.error}`,
       });
+      setIsSubmitting(false);
     } else {
       toast({
         title: "Update Successful !",
         description: `- User name updated to: "${fullName}"`,
       });
+      setIsSubmitting(false);
       setOpen(false);
     }
   };
@@ -63,11 +70,13 @@ export const EditUserForm = ({ user }) => {
         title: "Error !",
         description: `- ${result.error}`,
       });
+      setIsSubmitting(false);
     } else {
       toast({
         title: "Update Successful !",
         // description: `- User name updated to: "${fullName}"`,
       });
+      setIsSubmitting(false);
       setOpen(false);
     }
   };
@@ -108,26 +117,34 @@ export const EditUserForm = ({ user }) => {
                       }}
                     />
                   </div>
-                  <Button
-                    onClick={async () => {
-                      if (file) {
-                        const res = await edgestore.publicFiles.upload({
-                          file,
-                          onProgressChange: (progress) => {
-                            // you can use this to show a progress bar
-                            console.log(progress);
-                          },
-                        });
-                        // you can run some server action or api here
-                        // to add the necessary data to your database
-                        console.log(res.url);
-                        // setImgUrl(res.url);
-                        handlePicture(res.url);
-                      }
-                    }}
-                  >
-                    Update Image
-                  </Button>
+                  {!isSubmitting ? (
+                    <Button
+                      onClick={async () => {
+                        if (file) {
+                          setIsSubmitting(true);
+                          const res = await edgestore.publicFiles.upload({
+                            file,
+                            onProgressChange: (progress) => {
+                              // you can use this to show a progress bar
+                              console.log(progress);
+                            },
+                          });
+                          // you can run some server action or api here
+                          // to add the necessary data to your database
+                          console.log(res.url);
+                          // setImgUrl(res.url);
+                          handlePicture(res.url);
+                        }
+                      }}
+                    >
+                      Update Image
+                    </Button>
+                  ) : (
+                    <Button disabled>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Please wait
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -146,7 +163,14 @@ export const EditUserForm = ({ user }) => {
                     required
                   />
                 </div>
-                <Button>Update</Button>
+                {!isSubmitting ? (
+                  <Button>Update</Button>
+                ) : (
+                  <Button disabled>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </Button>
+                )}
               </div>
             </form>
           </div>
