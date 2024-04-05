@@ -93,20 +93,22 @@ export const EditUserForm = ({ user }) => {
               <Label className="text-lg" htmlFor="fullName">
                 User Image
               </Label>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center gap-4">
                 <div className="flex flex-col justify-between w-full gap-2">
-                  <SingleImageDropzone
-                    width={100}
-                    height={100}
-                    value={file}
-                    dropzoneOptions={{
-                      maxSize: 1024 * 1024 * 2, // 2MB
-                      maxFiles: 1,
-                    }}
-                    onChange={(file) => {
-                      setFile(file);
-                    }}
-                  />
+                  <div className="flex w-full justify-center">
+                    <SingleImageDropzone
+                      width={400}
+                      height={100}
+                      value={file}
+                      dropzoneOptions={{
+                        maxSize: 1024 * 1024 * 2, // 2MB
+                        maxFiles: 1,
+                      }}
+                      onChange={(file) => {
+                        setFile(file);
+                      }}
+                    />
+                  </div>
                   <Button
                     onClick={async () => {
                       if (file) {
