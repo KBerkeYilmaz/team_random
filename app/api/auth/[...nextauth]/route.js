@@ -4,7 +4,11 @@ import User from "@/models/user";
 import connectDB from "@/lib/database";
 import bcrypt from "bcrypt";
 
+
+const secret = process.env.NEXTAUTH_SECRET;
+
 async function auth(req, res) {
+
   // Do whatever you want here, before the request is passed down to `NextAuth`
   return await NextAuth(req, res, {
     providers: [
@@ -41,19 +45,24 @@ async function auth(req, res) {
     ],
     session: {
       strategy: "jwt",
+      secret: secret,
+      maxAge: 60 * 60, // 1 hour
+      updateAge: 60 * 60, // 1 hour
+  
     },
-    maxAge: 24 * 60 * 60, // 1 hour
     callbacks: {
       async jwt({ token, user }) {
-        if (user) {
-          token.id = user._id.toString();; // Correctly access the nested 'id'
-          token.email = user.userMail; // Example of adding more user details to the token 
-          token.name = user.fullName; // Example of adding more user details to the token
-          token.image = user.img; // Example of adding more user details to the token
-        }
-        return token;
+        // if (trigger === "update" && session?.name) {
+          if (user) {
+            token.id = user._id.toString(); // Correctly access the nested 'id'
+            token.email = user.userMail; // Example of adding more user details to the token
+            token.name = user.fullName; // Example of adding more user details to the token
+            token.image = user.img; // Example of adding more user details to the token
+          }
+          return token;
+        // }
       },
-      async session({ session, token }) {
+      async session({ session, token, user }) {
         // Use the token to set custom session values or modify the session object
         session.user.id = token.id;
         session.user.email = token.email; // Add email to session
