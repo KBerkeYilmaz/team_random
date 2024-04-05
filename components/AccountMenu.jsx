@@ -1,5 +1,4 @@
 "use client";
-import { CircleUser } from "lucide-react";
 import { useRouter } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,17 +11,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SignOutButton } from "./SignOutButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSession } from "next-auth/react";
 
-export default function AccountMenu({ user }) {
+export default function AccountMenu() {
   const router = useRouter();
+  const { data } = useSession();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="icon" className="rounded-full">
           <Avatar>
-            <AvatarImage src={user.image} />
-            <AvatarFallback>{user.name[0].toUpperCase()}</AvatarFallback>
+            <AvatarImage src={data?.user.image} />
+            <AvatarFallback>{data?.user.name[0].toUpperCase()}</AvatarFallback>
           </Avatar>
           <span className="sr-only">Toggle user menu</span>
         </Button>

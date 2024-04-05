@@ -17,11 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AccountMenu from "./AccountMenu";
 import { Link } from "@/navigation";
-import { getServerSession } from "next-auth";
 
 const DashboardSidebar = async ({ children }) => {
-  const { user } = await getServerSession();
-
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
@@ -145,7 +142,7 @@ const DashboardSidebar = async ({ children }) => {
             </form>
           </div>
           <ModeToggle />
-          <AccountMenu user={user} />
+          <AccountMenu />
         </header>
         {children}
       </div>
