@@ -1,6 +1,6 @@
 "use client";
 import { CircleUser } from "lucide-react";
-import { redirect, useRouter } from "@/navigation";
+import { useRouter } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,15 +11,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SignOutButton } from "./SignOutButton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export default function AccountMenu() {
+export default function AccountMenu({ user }) {
   const router = useRouter();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="icon" className="rounded-full">
-          <CircleUser className="h-5 w-5" />
+          <Avatar>
+            <AvatarImage src={user.image} />
+            <AvatarFallback>{user.name[0].toUpperCase()}</AvatarFallback>
+          </Avatar>
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>

@@ -46,6 +46,7 @@ async function auth(req, res) {
     callbacks: {
       async jwt({ token, user }) {
         if (user) {
+          console.log("callbacks-jwt: ", user);
           token.id = user._id.toString();; // Correctly access the nested 'id'
           token.email = user.userMail; // Example of adding more user details to the token 
           token.name = user.fullName; // Example of adding more user details to the token
