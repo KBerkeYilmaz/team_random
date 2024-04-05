@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SignOutButton } from "./SignOutButton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AccountMenu({ user }) {
   const router = useRouter();
@@ -19,17 +20,10 @@ export default function AccountMenu({ user }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="icon" className="rounded-full">
-          {user.image === undefined ? (
-            <CircleUser className="h-5 w-5" />
-          ) : (
-            <Image
-              src={user.image}
-              width={40}
-              height={40}
-              alt="Picture of the author"
-            />
-          )}
-
+          <Avatar>
+            <AvatarImage src={user.image} />
+            <AvatarFallback>{user.name[0].toUpperCase()}</AvatarFallback>
+          </Avatar>
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>
