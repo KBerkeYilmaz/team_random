@@ -98,3 +98,14 @@ export async function updateMember(formData, id) {
     };
   }
 }
+
+export async function getMembers() {
+  try {
+    await connectDB();
+    const result = await Member.find()
+    return result
+  } catch (error) {
+    console.log(error);
+    return { error: "Something went wrong" }
+  }
+}

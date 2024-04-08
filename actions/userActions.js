@@ -20,9 +20,7 @@ export const updateUserName = async (formdata, id) => {
 }
 
 export const updateUserImage = async (imgUrl, id) => {
-
     //Todo - Validations
-
 
     try {
         await connectDB();
