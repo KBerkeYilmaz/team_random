@@ -22,7 +22,6 @@ export default function MemberDetails({ member }) {
       </div>
     );
   }
-  console.log(member);
 
   const handleDelete = () => {
     try {
