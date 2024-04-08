@@ -3,6 +3,8 @@ import { Loader2 } from "lucide-react";
 import { Label } from "./ui/label";
 import { Link } from "@/navigation";
 import Image from "next/image";
+import { columns } from "./members-table/columns";
+import { DataTable } from "./members-table/dataTable";
 
 export default async function AllMembers() {
   const data = await getMembers();
@@ -14,9 +16,18 @@ export default async function AllMembers() {
     );
   }
 
+  // const memberOmmittedcolumns = columns.slice(1);
+
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <div className="flex flex-wrap gap-4">
+    <div className="flex flex-col gap-4 py-4 w-full">
+      <DataTable
+        // members={members}
+        rows={1}
+        columns={columns}
+        data={data}
+        // client={client}
+      />
+      {/* <div className="flex flex-wrap gap-4">
         {data.map((member, i) => {
           return (
             <div key={i} className="flex flex-wrap gap-4 w-full">
@@ -51,7 +62,7 @@ export default async function AllMembers() {
             </div>
           );
         })}
-      </div>
+      </div> */}
     </div>
   );
 }
