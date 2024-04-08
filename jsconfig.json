@@ -21,6 +21,12 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.js", "**/*.jsx", ".next/types/**/*.js"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.js",
+    "**/*.jsx",
+    ".next/types/**/*.js",
+    "components/members-table/dataTable.tsx"
+  ],
   "exclude": ["node_modules"]
 }

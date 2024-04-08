@@ -1,24 +1,14 @@
 "use client";
 import { Loader2 } from "lucide-react";
 import { Label } from "./ui/label";
-import Image from "next/image";
 import { deleteMember } from "@/actions/memberAction";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useToast } from "./ui/use-toast";
 import { useRouter } from "@/navigation";
 import { useState } from "react";
 import { DeleteAlert } from "./DeleteAlert";
+import Image from "next/image";
 
 export default function MemberDetails({ member }) {
   const [open, setOpen] = useState(false);
@@ -32,6 +22,7 @@ export default function MemberDetails({ member }) {
       </div>
     );
   }
+  console.log(member);
 
   const handleDelete = () => {
     try {
