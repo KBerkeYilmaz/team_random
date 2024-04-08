@@ -86,7 +86,7 @@ export async function updateMember(formData, id) {
     const result = await Member.findByIdAndUpdate(id, { fullName: formdata }, { new: true })
     console.log(result);
     return {}
-    // revalidatePath("/");
+    revalidatePath("/");
     // return {
     //   message: `New member ${validatedFields.data.memberName}, welcome!`,
     // }; // Return the created member object
