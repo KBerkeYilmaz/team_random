@@ -109,3 +109,29 @@ export async function getMembers() {
     return { error: "Something went wrong" }
   }
 }
+
+export async function getMember(id) {
+  try {
+    await connectDB();
+    const result = await Member.findById(id)
+
+    return result
+
+  } catch (error) {
+    console.log(error);
+    return { error: "Something went wrong" }
+  }
+}
+
+export async function deleteMember(id) {
+  try {
+    await connectDB();
+    const result = await Member.findByIdAndDelete(id)
+    console.log(result);
+    revalidatePath("/dashboard/members");
+    return { message: "Member deleted Successfully" }
+  } catch (error) {
+    console.log(error);
+    return { error: "Something went wrong" }
+  }
+}
