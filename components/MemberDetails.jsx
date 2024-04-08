@@ -5,8 +5,26 @@ import Image from "next/image";
 import { deleteMember } from "@/actions/memberAction";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useToast } from "./ui/use-toast";
+import { useRouter } from "@/navigation";
+import { useState } from "react";
+import { DeleteAlert } from "./DeleteAlert";
 
 export default function MemberDetails({ member }) {
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+
   if (!member) {
     return (
       <div className="flex w-full justify-center mt-10">
@@ -19,6 +37,10 @@ export default function MemberDetails({ member }) {
     try {
       console.log(member.id);
       deleteMember(member.id);
+      toast({
+        title: `Member "${member.name}" deleted successfully !`,
+      });
+      router.push("/dashboard/members");
       console.log("Delete Successful");
     } catch (error) {
       console.log(error);
@@ -67,8 +89,15 @@ export default function MemberDetails({ member }) {
           </div>
         </div>
         <div>
-          <Button onClick={handleDelete}>Delete Member</Button>
+          <Button onClick={() => setOpen(true)} variant="destructive">
+            Delete Member
+          </Button>
         </div>
+        <DeleteAlert
+          open={open}
+          setOpen={setOpen}
+          handleDelete={handleDelete}
+        />
       </div>
     </div>
   );
