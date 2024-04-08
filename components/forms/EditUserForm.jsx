@@ -33,6 +33,7 @@ export const EditUserForm = ({ user }) => {
   const [open, setOpen] = useState(false);
   const [fullName, setFullName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dropzoneWidth, setDropzoneWidth] = useState(400); // Default width
 
   const [file, setFile] = useState();
   const { edgestore } = useEdgeStore();
@@ -81,14 +82,39 @@ export const EditUserForm = ({ user }) => {
     }
   };
 
+  const updateDropzoneWidth = () => {
+    const viewportWidth = window.innerWidth;
+    const minWidth = 200; 
+    const maxWidth = 400; 
+
+    if (viewportWidth < 500) {
+      const responsiveWidth = Math.max(minWidth, viewportWidth * 0.8); // Calculate 80% of viewport width or minWidth
+      setDropzoneWidth(Math.min(responsiveWidth, maxWidth)); // Ensure width does not exceed maxWidth
+    } else {
+      setDropzoneWidth(maxWidth); // For larger screens, use maxWidth
+    }
+  };
+
+  useEffect(() => {
+    updateDropzoneWidth();
+    window.addEventListener("resize", updateDropzoneWidth);
+    return () => window.removeEventListener("resize", updateDropzoneWidth);
+  }, []); 
+
   useEffect(() => {
     setFullName(user.name);
   }, []);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+    >
       <DialogTrigger asChild>
-        <Button className="" variant="outline">
+        <Button
+          className=""
+          variant="outline"
+        >
           Edit User Info
         </Button>
       </DialogTrigger>
@@ -98,14 +124,17 @@ export const EditUserForm = ({ user }) => {
             <h2 className="text-2xl font-semibold">Edit User Info</h2>
             <Separator />
             <div className="flex-col flex gap-3">
-              <Label className="text-lg" htmlFor="fullName">
+              <Label
+                className="text-lg"
+                htmlFor="fullName"
+              >
                 User Image
               </Label>
               <div className="flex items-center justify-center gap-4">
                 <div className="flex flex-col justify-between w-full gap-2">
                   <div className="flex w-full justify-center">
                     <SingleImageDropzone
-                      width={400}
+                      width={dropzoneWidth}
                       height={100}
                       value={file}
                       dropzoneOptions={{
@@ -148,8 +177,14 @@ export const EditUserForm = ({ user }) => {
                 </div>
               </div>
             </div>
-            <form action={handleFullName} className="flex-col flex gap-3">
-              <Label className="text-lg" htmlFor="fullName">
+            <form
+              action={handleFullName}
+              className="flex-col flex gap-3"
+            >
+              <Label
+                className="text-lg"
+                htmlFor="fullName"
+              >
                 Full Name
               </Label>
               <div className="flex items-center gap-4">
