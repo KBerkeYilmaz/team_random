@@ -1,11 +1,11 @@
-import { Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react";
 
 const loading = () => {
-    return ( 
-        <div className="w-screen h-screen flex justify-center items-center">
-            <Loader2 className="mr-2 w-1/2 animate-spin" />
-        </div>
-    )
-}
+  return (
+    <div className="w-full h-screen -mt-[60px]  flex justify-center items-center">
+      <Loader2 className=" animate-spin" />
+    </div>
+  );
+};
 
 export default loading;
