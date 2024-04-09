@@ -1,43 +1,45 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
-const memberSchema = new mongoose.Schema(
+const workSchema = new mongoose.Schema(
   {
-    memberName: {
+    workTitle: {
       type: String,
       required: true,
     },
-    memberLastName: {
+    workGithubURL: {
+      type: String,
+      required: false,
+    },
+    workAppURL: {
+      type: String,
+      required: false,
+    },
+    workReadme: {
       type: String,
       required: true,
     },
-    memberTitle: {
+    workImages: [{
+      type: String,
+      required: true,
+    }],
+    workTechStack: {
       type: String,
       required: true,
     },
-    memberBio: {
+    // workContributors: [{
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'Member',
+    //   required: false,
+    // }],
+    workContributors: {
       type: String,
       required: false,
-    },
-    memberGithub: {
-      type: String,
-      required: false,
-    },
-    memberPersonal: {
-      type: String,
-      required: false,
-    },
-    memberLinkedin: {
-      type: String,
-      required: false,
-    },
-    memberImage: {
-      type: String,
-      required: false,
-    },
+    }, 
   },
   { timestamps: true }
 );
 
-const Member = mongoose.models.Member || mongoose.model("Member", memberSchema);
+const Work = mongoose.models.Work || mongoose.model("Work", workSchema);
 
-export default Member;
+export default Work;

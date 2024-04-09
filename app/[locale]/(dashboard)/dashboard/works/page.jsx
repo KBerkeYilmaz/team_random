@@ -1,6 +1,7 @@
 import NewWorkForm from "@/components/forms/NewWorkForm";
 import { columns } from "./columns";
 import DataTable from "@/components/ui/data-table";
+import { Separator } from "@/components/ui/separator";
 
 const data = [
   {
@@ -97,12 +98,13 @@ const Works = () => {
   return (
     <div className="h-full w-full flex flex-col justify-start items-start p-10 animate-fadeIn">
       <h1 className="text-4xl font-semibold">Works</h1>
+      <Separator className="my-4" />
       <div className="my-4 w-full">
-        <DataTable
+        {/* <DataTable
           columns={columns}
           data={data}
-        />
-        {/* <NewWorkForm /> */}
+        /> */}
+        <NewWorkForm />
       </div>
     </div>
   );
