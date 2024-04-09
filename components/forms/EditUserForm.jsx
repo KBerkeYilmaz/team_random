@@ -84,8 +84,8 @@ export const EditUserForm = ({ user }) => {
 
   const updateDropzoneWidth = () => {
     const viewportWidth = window.innerWidth;
-    const minWidth = 200; 
-    const maxWidth = 400; 
+    const minWidth = 200;
+    const maxWidth = 400;
 
     if (viewportWidth < 500) {
       const responsiveWidth = Math.max(minWidth, viewportWidth * 0.8); // Calculate 80% of viewport width or minWidth
@@ -99,22 +99,16 @@ export const EditUserForm = ({ user }) => {
     updateDropzoneWidth();
     window.addEventListener("resize", updateDropzoneWidth);
     return () => window.removeEventListener("resize", updateDropzoneWidth);
-  }, []); 
+  }, []);
 
   useEffect(() => {
     setFullName(user.name);
   }, []);
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-    >
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          className=""
-          variant="outline"
-        >
+        <Button className="" variant="outline">
           Edit User Info
         </Button>
       </DialogTrigger>
@@ -124,10 +118,7 @@ export const EditUserForm = ({ user }) => {
             <h2 className="text-2xl font-semibold">Edit User Info</h2>
             <Separator />
             <div className="flex-col flex gap-3">
-              <Label
-                className="text-lg"
-                htmlFor="fullName"
-              >
+              <Label className="text-lg" htmlFor="fullName">
                 User Image
               </Label>
               <div className="flex items-center justify-center gap-4">
@@ -177,14 +168,8 @@ export const EditUserForm = ({ user }) => {
                 </div>
               </div>
             </div>
-            <form
-              action={handleFullName}
-              className="flex-col flex gap-3"
-            >
-              <Label
-                className="text-lg"
-                htmlFor="fullName"
-              >
+            <form action={handleFullName} className="flex-col flex gap-3">
+              <Label className="text-lg" htmlFor="fullName">
                 Full Name
               </Label>
               <div className="flex items-center gap-4">
