@@ -9,6 +9,7 @@ import { useRouter } from "@/navigation";
 import { useState } from "react";
 import { DeleteAlert } from "./DeleteAlert";
 import Image from "next/image";
+import { EditMemberForm } from "./forms/EditMemberForm";
 
 export default function MemberDetails({ member }) {
   const [open, setOpen] = useState(false);
@@ -41,7 +42,7 @@ export default function MemberDetails({ member }) {
     <div className="h-full w-full flex flex-col gap-4 justify-start items-start p-10 animate-fadeIn">
       <h2 className="text-4xl font-semibold">Member Details</h2>
       <Separator />
-      <div className="flex flex-col gap-4 w-full">
+      <div className="flex gap-4 w-full">
         <div className="flex flex-col sm:flex-row gap-6 w-full">
           {member.memberImage === undefined ? (
             <div className=" w-60 aspect-square bg-gray-800 text-white flex justify-center items-center rounded">
@@ -89,6 +90,7 @@ export default function MemberDetails({ member }) {
           handleDelete={handleDelete}
         />
       </div>
+      <EditMemberForm member={member} />
     </div>
   );
 }

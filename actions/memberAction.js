@@ -59,7 +59,7 @@ export async function updateMember(formData, id) {
     memberPersonal: z.string().url().optional().or(z.literal("")), // Optional URL
     memberGithub: z.string().url().optional().or(z.literal("")), // Optional URL
     memberLinkedin: z.string().url().optional().or(z.literal("")), // Optional URL
-    memberImage: z.string().url().optional().or(z.literal("")), // Optional URL
+    // memberImage: z.string().url().optional().or(z.literal("")), // Optional URL
   });
 
   const validatedFields = newMemberSchema.safeParse({
@@ -70,7 +70,7 @@ export async function updateMember(formData, id) {
     memberPersonal: formData.memberPersonal,
     memberGithub: formData.memberGithub,
     memberLinkedin: formData.memberLinkedin,
-    memberImage: formData.memberImage,
+    // memberImage: formData.memberImage,
   });
 
   // Return early if the form data is invalid
@@ -81,22 +81,44 @@ export async function updateMember(formData, id) {
     };
   }
   try {
-
+    const updatedMember = {
+      memberName: formData.memberName,
+      memberLastName: formData.memberLastName,
+      memberTitle: formData.memberTitle,
+      memberBio: formData.memberBio,
+      memberPersonal: formData.memberPersonal,
+      memberGithub: formData.memberGithub,
+      memberLinkedin: formData.memberLinkedin,
+    }
     await connectDB();
-    const result = await Member.findByIdAndUpdate(id, { fullName: formdata }, { new: true })
+    const result = await Member.findByIdAndUpdate(id, updatedMember, { new: true })
     console.log(result);
-    return {}
     revalidatePath("/");
-    // return {
-    //   message: `New member ${validatedFields.data.memberName}, welcome!`,
-    // }; // Return the created member object
+    return {}
+
   } catch (error) {
-    console.error("Failed to create member:", error);
+    console.error("Failed to update member:", error);
     // Handle database errors, e.g., connection issues or constraints violations
     return {
-      error: `Failed to create the member due to ${error.message}`,
+      error: `Failed to update the member due to ${error.message}`,
     };
   }
+}
+
+export const updateMemberImage = async (imgUrl, id) => {
+  //Todo - Validations
+
+  try {
+    await connectDB();
+    const result = await Member.findByIdAndUpdate(id, { img: imgUrl }, { new: true })
+
+    console.log(result);
+    return {}
+  } catch (error) {
+    console.log(error);
+    return { error: "Something went wrong" }
+  }
+
 }
 
 export async function getMembers() {
