@@ -42,7 +42,7 @@ const NewWorkForm = () => {
     }),
     workContributors: z.string().optional(),
     // workImages: z.array().url().optional().or(z.literal("")),
-    // workImages: z.array(z.string().url()).optional(),
+    workImages: z.array(z.string().url()).optional(),
   });
 
   const form = useForm({
