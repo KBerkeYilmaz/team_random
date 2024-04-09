@@ -1,7 +1,8 @@
 import { getMembers } from "@/actions/memberAction";
 import { Loader2 } from "lucide-react";
-import { columns } from "./members-table/columns";
-import { DataTable } from "./members-table/dataTable";
+import { columns } from "@/app/[locale]/(dashboard)/dashboard/members/columns";
+import DataTable from "./ui/data-table";
+// import { DataTable } from "./members-table/dataTable";
 
 export default async function AllMembers() {
   const data = await getMembers();
@@ -31,7 +32,11 @@ export default async function AllMembers() {
 
   return (
     <div className="flex flex-col gap-4 py-4 w-full">
-      <DataTable rows={1} columns={columns} data={refactoredData} />
+      <DataTable
+        isMembersTable={true}
+        columns={columns}
+        data={refactoredData}
+      />
     </div>
   );
 }

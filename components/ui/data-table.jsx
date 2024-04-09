@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function DataTable({ columns, data }) {
+export default function DataTable({ columns, data, isMembersTable }) {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
@@ -55,30 +55,39 @@ export default function DataTable({ columns, data }) {
       rowSelection,
     },
     initialState: {
-        pagination: {
-            pageSize: 5,
-            pageIndex: 0
-        }
-    }
+      pagination: {
+        pageSize: 5,
+        pageIndex: 0,
+      },
+    },
   });
 
   return (
     <div>
       <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter title..."
-          value={table.getColumn("title")?.getFilterValue() ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+        {isMembersTable ? (
+          <Input
+            placeholder="Filter Name..."
+            value={table.getColumn("memberName")?.getFilterValue() ?? ""}
+            onChange={(event) =>
+              table.getColumn("memberName")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+        ) : (
+          <Input
+            placeholder="Filter title..."
+            value={table.getColumn("title")?.getFilterValue() ?? ""}
+            onChange={(event) =>
+              table.getColumn("title")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+        )}
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="ml-auto"
-            >
+            <Button variant="outline" className="ml-auto">
               Columns
             </Button>
           </DropdownMenuTrigger>
