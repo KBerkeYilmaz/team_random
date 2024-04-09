@@ -135,7 +135,7 @@ export const EditMemberForm = ({ member }) => {
     <div className="flex flex-col gap-4 w-full">
       <h2 className="text-3xl font-semibold">Edit Member Info</h2>
       <Separator />
-      <div className="flex flex-col w-full gap-2">
+      <div className="flex flex-col w-full gap-2  max-w-5xl">
         <div className="flex-col flex gap-3 w-full">
           <Label className="" htmlFor="fullName">
             Member Image
