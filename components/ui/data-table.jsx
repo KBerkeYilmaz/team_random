@@ -30,6 +30,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import NewMemberForm from "../forms/NewMemberForm";
 
 export default function DataTable({ columns, data, isMembersTable }) {
   const [sorting, setSorting] = React.useState([]);
@@ -63,34 +64,41 @@ export default function DataTable({ columns, data, isMembersTable }) {
   });
 
   return (
-    <div>
+    <>
       <div className="flex items-center py-4">
         {isMembersTable ? (
-          <Input
-            placeholder="Filter Name..."
-            value={table.getColumn("memberName")?.getFilterValue() ?? ""}
-            onChange={(event) =>
-              table.getColumn("memberName")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
+          <div className="w-full justify-between flex pr-2">
+            <Input
+              placeholder="Filter Name..."
+              value={table.getColumn("memberName")?.getFilterValue() ?? ""}
+              onChange={(event) =>
+                table
+                  .getColumn("memberName")
+                  ?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
+            <NewMemberForm />
+          </div>
         ) : (
-          <Input
-            placeholder="Filter title..."
-            value={table.getColumn("title")?.getFilterValue() ?? ""}
-            onChange={(event) =>
-              table.getColumn("title")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
+          <div className="w-full justify-between flex pr-2">
+            <Input
+              placeholder="Filter title..."
+              value={table.getColumn("title")?.getFilterValue() ?? ""}
+              onChange={(event) =>
+                table.getColumn("title")?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
+          </div>
         )}
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
               Columns
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent align="end">
             {table
               .getAllColumns()
@@ -112,8 +120,7 @@ export default function DataTable({ columns, data, isMembersTable }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
-      <div className="rounded-md border">
+      <div className="rounded-md border w-full">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -163,7 +170,7 @@ export default function DataTable({ columns, data, isMembersTable }) {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+      <div className="flex items-center justify-end w-full space-x-2 py-4">
         <Button
           variant="outline"
           size="sm"
@@ -181,6 +188,6 @@ export default function DataTable({ columns, data, isMembersTable }) {
           Next
         </Button>
       </div>
-    </div>
+    </>
   );
 }

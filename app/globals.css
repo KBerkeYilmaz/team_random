@@ -1,7 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url('../public/fonts/fonts.css');
+@import url("../public/fonts/fonts.css");
+
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
 
 @layer base {
   :root {
@@ -44,41 +56,41 @@
   }
 
   .dark {
-      /* Name: custom color palette
+    /* Name: custom color palette
          Author: Ilias Ism
          URL: https://gradient.page */
 
-      /* CSS: .bg-gradient { background: var(--gradient) } */
-      --gradient: linear-gradient(to top left, #ff8008, #ffc837);
+    /* CSS: .bg-gradient { background: var(--gradient) } */
+    --gradient: linear-gradient(to top left, #ff8008, #ffc837);
 
-      --background: 20 14.3% 4.1%;
-      --foreground: 31 10% 97.6%;
+    --background: 20 14.3% 4.1%;
+    --foreground: 31 10% 97.6%;
 
-      --muted: 31 50% 15.600000000000001%;
-      --muted-foreground: 31 10% 55.2%;
+    --muted: 31 50% 15.600000000000001%;
+    --muted-foreground: 31 10% 55.2%;
 
-      --popover: 31 45% 6.76%;
-      --popover-foreground: 31 10% 97.6%;
+    --popover: 31 45% 6.76%;
+    --popover-foreground: 31 10% 97.6%;
 
-      --card: 31 45% 6.76%;
-      --card-foreground: 31 10% 97.6%;
+    --card: 31 45% 6.76%;
+    --card-foreground: 31 10% 97.6%;
 
-      --border: 31 50% 15.600000000000001%;
-      --input: 31 50% 15.600000000000001%;
+    --border: 31 50% 15.600000000000001%;
+    --input: 31 50% 15.600000000000001%;
 
-      --primary: 31 100% 52%;
-      --primary-foreground: 31 10% 5.2%;
+    --primary: 31 100% 52%;
+    --primary-foreground: 31 10% 5.2%;
 
-      --secondary: 31 50% 15.600000000000001%;
-      --secondary-foreground: 31 10% 97.6%;
+    --secondary: 31 50% 15.600000000000001%;
+    --secondary-foreground: 31 10% 97.6%;
 
-      --accent: 31 50% 15.600000000000001%;
-      --accent-foreground: 31 10% 97.6%;
+    --accent: 31 50% 15.600000000000001%;
+    --accent-foreground: 31 10% 97.6%;
 
-      --destructive: 0 62.8% 30.6%;
-      --destructive-foreground: 31 10% 97.6%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 31 10% 97.6%;
 
-      --ring: 31 100% 52%;
+    --ring: 31 100% 52%;
   }
 }
 
