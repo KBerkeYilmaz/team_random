@@ -106,13 +106,12 @@ export async function updateMember(formData, id) {
 }
 
 export const updateMemberImage = async (imgUrl, id) => {
-  //Todo - Validations
-
   try {
     await connectDB();
-    const result = await Member.findByIdAndUpdate(id, { img: imgUrl }, { new: true })
+    const result = await Member.findByIdAndUpdate(id, { memberImage: imgUrl }, { new: true })
 
     console.log(result);
+    revalidatePath("/dashboard/members");
     return {}
   } catch (error) {
     console.log(error);

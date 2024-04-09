@@ -57,9 +57,11 @@ export const EditMemberForm = ({ member }) => {
   const onSubmit = async (values) => {
     setIsSubmitting(true);
     const result = await updateMember(values, member.id);
+
     if (file) {
       handlePicture();
     }
+
     if (result.error) {
       toast({
         variant: "destructive",
@@ -71,7 +73,6 @@ export const EditMemberForm = ({ member }) => {
     } else {
       toast({
         title: "Update Successful !",
-        // description: `- User name updated to: "${fullName}"`,
       });
       setIsSubmitting(false);
     }
@@ -79,7 +80,6 @@ export const EditMemberForm = ({ member }) => {
 
   const handlePicture = async () => {
     if (file) {
-      setIsSubmitting(true);
       const res = await edgestore.publicFiles.upload({
         file,
         onProgressChange: (progress) => {
@@ -89,7 +89,7 @@ export const EditMemberForm = ({ member }) => {
       });
       // you can run some server action or api here
       // to add the necessary data to your database
-      console.log(res.url);
+      console.log("handlePicture-res.url: ", res.url);
       // setImgUrl(res.url);
       handleUpdatePicture(res.url);
     }
@@ -97,21 +97,17 @@ export const EditMemberForm = ({ member }) => {
 
   const handleUpdatePicture = async (imgUrl) => {
     const result = await updateMemberImage(imgUrl, member.id);
-    console.log("handlePicture: ", file);
-    console.log("handlePicture: ", imgUrl);
+
+    // console.log("handlePicture: ", file);
+    // console.log("handlePicture: ", imgUrl);
+
     if (result.error) {
       toast({
         variant: "destructive",
         title: "Error !",
         description: `- ${result.error}`,
       });
-      setIsSubmitting(false);
     } else {
-      toast({
-        title: "Update Successful !",
-        description: `- Member name updated to: "${member.memberName}"`,
-      });
-      setIsSubmitting(false);
     }
   };
 
@@ -133,7 +129,8 @@ export const EditMemberForm = ({ member }) => {
     window.addEventListener("resize", updateDropzoneWidth);
     return () => window.removeEventListener("resize", updateDropzoneWidth);
   }, []);
-  console.log(file);
+
+  //   console.log(file);
   return (
     <div className="flex flex-col gap-4 w-full">
       <h2 className="text-3xl font-semibold">Edit Member Info</h2>
