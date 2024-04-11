@@ -26,7 +26,7 @@ export function HeroWavy({ header, span }) {
 
   return (
     <WavyBackground
-      className="max-w-4xl mx-auto pb-40"
+      className="max-w-4xl mx-auto "
       backgroundFill={darkMode ? "#0c0a09" : "#f6f7fe"}
     >
       <h1 className="permanent-marker-bold text-4xl sm:text-6xl md:text-7xl lg:text-9xl dark:text-orange-500 text-center">

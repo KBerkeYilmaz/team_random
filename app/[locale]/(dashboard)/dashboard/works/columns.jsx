@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-
+import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 
 export const columns = [
   {
@@ -39,7 +40,7 @@ export const columns = [
     enableHiding: false,
   },
   {
-    accessorKey: "title",
+    accessorKey: "workTitle",
     header: ({ column }) => {
       return (
         <Button
@@ -55,19 +56,23 @@ export const columns = [
     header: "Title",
   },
   {
-    accessorKey: "githubUrl",
+    accessorKey: "workGithubURL",
     header: "Github URL",
   },
   {
-    accessorKey: "appUrl",
+    accessorKey: "id",
+    header: "ID",
+  },
+  {
+    accessorKey: "workAppURL",
     header: "App URL",
   },
   {
-    accessorKey: "readme",
+    accessorKey: "workReadme",
     header: "Readme",
   },
   {
-    accessorKey: "stack",
+    accessorKey: "workTechStack",
     header: "Stack",
   },
   {
@@ -88,14 +93,14 @@ export const columns = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
+            <DropdownMenuItem>
+              <Link href={`/dashboard/works/${row.getValue("id")}`}>
+                View Work
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+            {/* <DropdownMenuItem>View customer</DropdownMenuItem>
+            <DropdownMenuItem>View payment details</DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       );

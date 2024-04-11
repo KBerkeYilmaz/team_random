@@ -21,10 +21,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const NewWorkForm = () => {
   const { edgestore } = useEdgeStore();
   const [pending, setPending] = useState(false);
+  const [open, setOpen] = useState(false);
   const [fileStates, setFileStates] = useState([]);
   const { toast } = useToast();
 
@@ -64,7 +71,9 @@ const NewWorkForm = () => {
     try {
       // First, handle the image uploads.
       const uploadPromises = fileStates.map((addedFileState) =>
-        edgestore.publicFiles.upload({ file: addedFileState.file }).then(res => res.url)
+        edgestore.publicFiles
+          .upload({ file: addedFileState.file })
+          .then((res) => res.url)
       );
 
       // Wait for all uploads to finish.
@@ -90,7 +99,6 @@ const NewWorkForm = () => {
       // Reset form and state as needed.
       form.reset();
       setFileStates([]);
-
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
@@ -99,145 +107,169 @@ const NewWorkForm = () => {
     } finally {
       setPending(false);
     }
-}
+  }
 
   return (
-    <div className="flex gap-4 flex-col-reverse sm:flex-row">
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(newWork)}
-          className="space-y-8 lg:w-1/2"
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+    >
+      <DialogTrigger asChild>
+        <Button
+          className=""
+          variant="outline"
         >
-          <FormField
-            control={form.control}
-            name="workTitle"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Title"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Separator />
-          <div className="flex flex-col sm:flex-row w-full gap-4">
-            <FormField
-              control={form.control}
-              name="workGithubURL"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Github URL(opt)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Github URL"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="workAppURL"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>App URL(opt)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="App URL"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="flex flex-col sm:flex-row w-full gap-4">
-            <FormField
-              control={form.control}
-              name="workReadme"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Readme</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Readme"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="workTechStack"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Tech Stack</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Tech Stack"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <FormField
-            control={form.control}
-            name="workContributors"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Contributors (Opt)</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Contributors"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button
-            type="submit"
-            disabled={pending}
-            className={`w-full`}
-          >
-            {pending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              "Add new work"
-            )}
-          </Button>
-        </form>
-      </Form>
+          Create New Work
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="md:min-w-[800px] p-8">
+        <DialogHeader className=" text-2xl md:text-4xl font-semibold">
+          Create New Work
+        </DialogHeader>
+        <Separator />
 
-      <div>
-        <MultiImageDropzone
-          value={fileStates}
-          dropzoneOptions={{
-            maxFiles: 6,
-          }}
-          onChange={(files) => {
-            setFileStates(files);
-          }}
-          onFilesAdded={(addedFiles) => {
-            setFileStates([...fileStates, ...addedFiles]);
-          }}
-        />
-      </div>
-    </div>
+        <div className="flex gap-4 flex-col-reverse sm:flex-row w-full">
+          <div>
+            <Form
+              {...form}
+              className="w-1/2"
+            >
+              <form
+                onSubmit={form.handleSubmit(newWork)}
+                className="space-y-8"
+              >
+                <FormField
+                  control={form.control}
+                  name="workTitle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Title"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Separator />
+                <div className="flex flex-col sm:flex-row w-full gap-4">
+                  <FormField
+                    control={form.control}
+                    name="workGithubURL"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel>Github URL(opt)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Github URL"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="workAppURL"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel>App URL(opt)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="App URL"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="flex flex-col sm:flex-row w-full gap-4">
+                  <FormField
+                    control={form.control}
+                    name="workReadme"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel>Readme</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Readme"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="workTechStack"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel>Tech Stack</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Tech Stack"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="workContributors"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contributors (Opt)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Contributors"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  disabled={pending}
+                  className={`w-full`}
+                >
+                  {pending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    "Add new work"
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </div>
+          <div className="max-w-1/2">
+            <MultiImageDropzone
+              value={fileStates}
+              dropzoneOptions={{
+                maxFiles: 6,
+              }}
+              onChange={(files) => {
+                setFileStates(files);
+              }}
+              onFilesAdded={(addedFiles) => {
+                setFileStates([...fileStates, ...addedFiles]);
+              }}
+            />
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -31,12 +31,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import NewMemberForm from "../forms/NewMemberForm";
+import NewWorkForm from "../forms/NewWorkForm";
 
-export default function DataTable({ columns, data, isMembersTable }) {
+export default function DataTable({ columns, data, filterAnchor,tag }) {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
+
+  const columnName = tag+filterAnchor;
 
   const table = useReactTable({
     data,
@@ -62,36 +65,20 @@ export default function DataTable({ columns, data, isMembersTable }) {
       },
     },
   });
-
   return (
     <>
       <div className="flex items-center py-4">
-        {isMembersTable ? (
           <div className="w-full justify-between flex pr-2">
             <Input
-              placeholder="Filter Name..."
-              value={table.getColumn("memberName")?.getFilterValue() ?? ""}
+              placeholder={`Filter ${filterAnchor}...`}
+              value={table.getColumn(columnName)?.getFilterValue() ?? ""}
               onChange={(event) =>
-                table
-                  .getColumn("memberName")
-                  ?.setFilterValue(event.target.value)
+                table.getColumn(columnName)?.setFilterValue(event.target.value)
               }
               className="max-w-sm"
             />
-            <NewMemberForm />
+            {filterAnchor === "Title" ? <NewWorkForm /> : <NewMemberForm />}
           </div>
-        ) : (
-          <div className="w-full justify-between flex pr-2">
-            <Input
-              placeholder="Filter title..."
-              value={table.getColumn("title")?.getFilterValue() ?? ""}
-              onChange={(event) =>
-                table.getColumn("title")?.setFilterValue(event.target.value)
-              }
-              className="max-w-sm"
-            />
-          </div>
-        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">

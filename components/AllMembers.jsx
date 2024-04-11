@@ -36,6 +36,8 @@ export default async function AllMembers() {
         isMembersTable={true}
         columns={columns}
         data={refactoredData}
+        filterAnchor={"Name"}
+        tag="member"
       />
     </div>
   );

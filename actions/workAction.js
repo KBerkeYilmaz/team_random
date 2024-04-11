@@ -39,7 +39,7 @@ export async function createWork(formData) {
   try {
     await connectDB();
     const member = await Work.create(validatedFields.data);
-    revalidatePath("/");
+    revalidatePath("/dashboard/works");
     return {
       message: `Whoa! ${validatedFields.data.workTitle}, amazing project!`,
     }; // Return the created member object
@@ -49,5 +49,40 @@ export async function createWork(formData) {
     return {
       error: `Failed to create the member due to ${error.message}`,
     };
+  }
+}
+
+export async function getWorks() {
+  try {
+    await connectDB();
+    const result = await Work.find();
+    return result;
+  } catch (error) {
+    console.log(error);
+    return { error: "Something went wrong" };
+  }
+}
+
+export async function getWork(id) {
+  try {
+    await connectDB();
+    const result = await Work.findById(id);
+    return result;
+  } catch (error) {
+    console.log(error);
+    return { error: "Something went wrong" };
+  }
+}
+
+export async function deleteWork(id) {
+  try {
+    await connectDB();
+    const result = await Work.findByIdAndDelete(id)
+    console.log(result);
+    revalidatePath("/dashboard/works");
+    return { message: "Work deleted Successfully" }
+  } catch (error) {
+    console.log(error);
+    return { error: "Something went wrong" }
   }
 }
