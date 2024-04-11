@@ -81,7 +81,7 @@ export default function DataTable({ columns, data, filterAnchor,tag }) {
           </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="outline" className="ml-auto hidden sm:block">
               Columns
             </Button>
           </DropdownMenuTrigger>

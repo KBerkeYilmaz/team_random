@@ -129,7 +129,7 @@ const MultiImageDropzone = React.forwardRef(
 
     return (
       <div>
-        <div className="grid grid-cols-[repeat(1,1fr)] gap-2 sm:grid-cols-[repeat(2,1fr)] lg:grid-cols-[repeat(3,1fr)] xl:grid-cols-[repeat(4,1fr)]">
+        <div className="grid grid-cols-[repeat(1,1fr)] gap-2 p-4 sm:p-1">
           {/* Images */}
           {value?.map(({ file, progress }, index) => (
             <div

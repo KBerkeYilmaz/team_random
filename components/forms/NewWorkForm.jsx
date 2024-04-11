@@ -122,17 +122,16 @@ const NewWorkForm = () => {
           Create New Work
         </Button>
       </DialogTrigger>
-      <DialogContent className="md:min-w-[800px] p-8">
+      <DialogContent className="md:min-w-[800px] p-8  overflow-y-auto max-h-[90%]">
         <DialogHeader className=" text-2xl md:text-4xl font-semibold">
           Create New Work
         </DialogHeader>
         <Separator />
 
         <div className="flex gap-4 flex-col-reverse sm:flex-row w-full">
-          <div>
+          <div className="min-w-[50%]">
             <Form
               {...form}
-              className="w-1/2"
             >
               <form
                 onSubmit={form.handleSubmit(newWork)}
@@ -155,7 +154,7 @@ const NewWorkForm = () => {
                   )}
                 />
                 <Separator />
-                <div className="flex flex-col sm:flex-row w-full gap-4">
+                <div className="flex flex-col w-full gap-4">
                   <FormField
                     control={form.control}
                     name="workGithubURL"
@@ -189,7 +188,7 @@ const NewWorkForm = () => {
                     )}
                   />
                 </div>
-                <div className="flex flex-col sm:flex-row w-full gap-4">
+                <div className="flex flex-col w-full gap-4">
                   <FormField
                     control={form.control}
                     name="workReadme"
@@ -253,7 +252,7 @@ const NewWorkForm = () => {
               </form>
             </Form>
           </div>
-          <div className="max-w-1/2">
+          <div className="overflow-y-auto max-h-full">
             <MultiImageDropzone
               value={fileStates}
               dropzoneOptions={{
@@ -266,7 +265,7 @@ const NewWorkForm = () => {
                 setFileStates([...fileStates, ...addedFiles]);
               }}
             />
-          </div>
+            </div>
         </div>
       </DialogContent>
     </Dialog>
