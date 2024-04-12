@@ -45,13 +45,6 @@ const NewMemberForm = () => {
   const [pending, setPending] = useState(false);
   const [file, setFile] = useState();
   const { toast } = useToast();
-  const nameInputRef = useRef(null);
-  const lastNameInputRef = useRef(null);
-  const bioInputRef = useRef(null);
-  const titleInputRef = useRef(null);
-  const personalInputRef = useRef(null);
-  const githubInputRef = useRef(null);
-  const linkedinInputRef = useRef(null);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -154,7 +147,7 @@ const NewMemberForm = () => {
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="shadcn" {...field} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -167,7 +160,7 @@ const NewMemberForm = () => {
                     <FormItem>
                       <FormLabel>Last Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="shadcn" {...field} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -180,7 +173,7 @@ const NewMemberForm = () => {
                     <FormItem>
                       <FormLabel>Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="shadcn" {...field} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -193,7 +186,7 @@ const NewMemberForm = () => {
                     <FormItem>
                       <FormLabel>Bio</FormLabel>
                       <FormControl>
-                        <Input placeholder="shadcn" {...field} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -206,7 +199,7 @@ const NewMemberForm = () => {
                     <FormItem>
                       <FormLabel>Personal URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="shadcn" {...field} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -219,7 +212,7 @@ const NewMemberForm = () => {
                     <FormItem>
                       <FormLabel>Github URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="shadcn" {...field} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -232,7 +225,7 @@ const NewMemberForm = () => {
                     <FormItem>
                       <FormLabel>LinkedIn URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="shadcn" {...field} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

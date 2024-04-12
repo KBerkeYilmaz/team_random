@@ -39,10 +39,10 @@ export default function MemberDetails({ member }) {
   };
 
   return (
-    <div className="h-full w-full flex flex-col gap-4 justify-start items-start p-10 animate-fadeIn">
+    <div className="h-screen w-full flex flex-col gap-4 justify-start items-start pb-28 p-10 animate-fadeIn overflow-y-scroll no-scrollbar">
       <h2 className="text-4xl font-semibold">Member Details</h2>
       <Separator />
-      <div className="flex gap-4 w-full  max-w-5xl">
+      <div className="flex gap-4 w-full max-w-5xl">
         <div className="flex flex-col sm:flex-row gap-6 w-full">
           {member.memberImage === undefined || member.memberImage === "" ? (
             <div className=" w-60 aspect-square bg-gray-800 text-white flex justify-center items-center rounded">

@@ -134,9 +134,9 @@ export const EditMemberForm = ({ member }) => {
     <div className="flex flex-col gap-4 w-full">
       <h2 className="text-3xl font-semibold">Edit Member Info</h2>
       <Separator />
-      <div className="flex flex-col w-full gap-2  max-w-5xl">
+      <div className="flex flex-col w-full gap-2 max-w-5xl">
         <div className="flex-col flex gap-3 w-full">
-          <Label className="" htmlFor="fullName">
+          <Label className="text-lg" htmlFor="fullName">
             Member Image
           </Label>
           <div className="flex items-center justify-center gap-4">
@@ -176,7 +176,7 @@ export const EditMemberForm = ({ member }) => {
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="shadcn" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -189,7 +189,7 @@ export const EditMemberForm = ({ member }) => {
                   <FormItem>
                     <FormLabel>Last Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="shadcn" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -202,7 +202,7 @@ export const EditMemberForm = ({ member }) => {
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="shadcn" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -215,7 +215,7 @@ export const EditMemberForm = ({ member }) => {
                   <FormItem>
                     <FormLabel>Bio</FormLabel>
                     <FormControl>
-                      <Input placeholder="shadcn" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -228,7 +228,7 @@ export const EditMemberForm = ({ member }) => {
                   <FormItem>
                     <FormLabel>Personal URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="shadcn" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -241,7 +241,7 @@ export const EditMemberForm = ({ member }) => {
                   <FormItem>
                     <FormLabel>Github URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="shadcn" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -254,7 +254,7 @@ export const EditMemberForm = ({ member }) => {
                   <FormItem>
                     <FormLabel>LinkedIn URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="shadcn" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

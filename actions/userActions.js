@@ -1,14 +1,29 @@
 "use server"
 import connectDB from "@/lib/database"
 import User from "@/models/user"
+import { z } from "zod";
 
-export const updateUserName = async (formdata, id) => {
+export const updateUser = async (formData, id) => {
+    const userSchema = z.object({
+        fullName: z.string().min(3, "User name must be at least 3 characters."),
+        userMail: z.string().email("Please enter a valid email."),
+    });
 
-    //Todo - Validations
+    const validatedFields = userSchema.safeParse({
+        fullName: formData.name,
+        userMail: formData.email,
+    });
 
+    // Return early if the form data is invalid
+    if (!validatedFields.success) {
+        console.log(validatedFields.error);
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+        };
+    }
     try {
         await connectDB();
-        const result = await User.findByIdAndUpdate(id, { fullName: formdata }, { new: true })
+        const result = await User.findByIdAndUpdate(id, { fullName: formData.name, userMail: formData.email }, { new: true })
 
         console.log(result);
         return {}
