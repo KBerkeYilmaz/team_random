@@ -2,7 +2,14 @@
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEdgeStore } from "@/lib/edgestore";
@@ -11,15 +18,29 @@ import { Separator } from "@/components/ui/separator";
 import { createMember } from "@/actions/memberAction";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const formSchema = z.object({
+  memberName: z.string().min(3, "Member name must be at least 3 characters."),
+  memberLastName: z.string().min(3, "Last name must be at least 3 characters."),
+  memberTitle: z.string().min(3, "Title must be at least 3 characters."),
+  memberBio: z.string().optional(),
+  memberPersonal: z.string().url().optional().or(z.literal("")),
+  memberGithub: z.string().url().optional().or(z.literal("")),
+  memberLinkedin: z.string().url().optional().or(z.literal("")),
+});
+
 const NewMemberForm = () => {
   const [open, setOpen] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { edgestore } = useEdgeStore();
   const [pending, setPending] = useState(false);
   const [file, setFile] = useState();
@@ -32,60 +53,66 @@ const NewMemberForm = () => {
   const githubInputRef = useRef(null);
   const linkedinInputRef = useRef(null);
 
-  async function newMember(e) {
-    e.preventDefault();
-    setPending(true);
-    const name = nameInputRef.current.value;
-    const lastName = lastNameInputRef.current.value;
-    const bio = bioInputRef.current.value;
-    const title = titleInputRef.current.value;
-    const personal = personalInputRef.current.value;
-    const github = githubInputRef.current.value;
-    const linkedin = linkedinInputRef.current.value;
-    try {
-      if (!file) {
-        throw new Error("Please select a picture to be uploaded.");
-      }
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      memberName: "",
+      memberLastName: "",
+      memberTitle: "",
+      memberBio: "",
+      memberPersonal: "",
+      memberGithub: "",
+      memberLinkedin: "",
+      memberImage: "",
+    },
+  });
+  const onSubmit = async (values) => {
+    setIsSubmitting(true);
+    if (file) {
       const res = await edgestore.publicFiles.upload({
         file,
+        onProgressChange: (progress) => {
+          // you can use this to show a progress bar
+          console.log(progress);
+        },
       });
-      // you can run some server action or api here
-      // to add the necessary data to your database
-      const img = res.url;
-      const formData = {
-        memberName: name,
-        memberLastName: lastName,
-        memberBio: bio,
-        memberTitle: title,
-        memberPersonal: personal,
-        memberGithub: github,
-        memberLinkedin: linkedin,
-        memberImage: img,
-      };
-      const response = await createMember(formData); // Assuming createMember can handle the object directly
-      if (response.error) {
-        throw new Error(response.error);
+      console.log("handlePicture-res.url: ", res.url);
+
+      const userInfo = { ...values, memberImage: res.url };
+      const result = await createMember(userInfo);
+      if (result.error) {
+        toast({
+          variant: "destructive",
+          title: "Error !",
+          description: `- ${result.error}`,
+        });
+        setIsSubmitting(false);
+      } else {
+        toast({
+          title: "New member created !",
+        });
+        setOpen(false);
+        setIsSubmitting(false);
       }
-      nameInputRef.current.value = "";
-      lastNameInputRef.current.value = "";
-      bioInputRef.current.value = "";
-      titleInputRef.current.value = "";
-      personalInputRef.current.value = "";
-      githubInputRef.current.value = "";
-      linkedinInputRef.current.value = "";
-      setFile(null);
-      toast({
-        description: "Member Created !",
-      });
-    } catch (error) {
-      toast({
-        description: `Error creating member: ${error.message || error}`,
-      });
-      // Handle error, e.g., show error message
-    } finally {
-      setPending(false); // Reset pending status
+    } else {
+      const userInfo = { ...values, memberImage: "" };
+      const result = await createMember(userInfo);
+      if (result.error) {
+        toast({
+          variant: "destructive",
+          title: "Error !",
+          description: `- ${result.error}`,
+        });
+        setIsSubmitting(false);
+      } else {
+        toast({
+          title: "New member created !",
+        });
+        setOpen(false);
+        setIsSubmitting(false);
+      }
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -117,97 +144,115 @@ const NewMemberForm = () => {
               }}
             />
           </div>
-          <form onSubmit={newMember} className="space-y-8">
-            <div className="flex flex-wrap gap-4">
-              <div className="flex flex-col w-full md:w-fit gap-2">
-                <Label htmlFor="memberName">First Name</Label>
-                <Input
-                  placeholder="First Name"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
+              <div className="grid md:grid-cols-2 gap-2">
+                <FormField
+                  control={form.control}
                   name="memberName"
-                  type="text"
-                  className="block"
-                  ref={nameInputRef}
-                  required
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="shadcn" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="flex flex-col w-full md:w-fit gap-2">
-                <Label htmlFor="memberLastName">Last Name</Label>
-                <Input
-                  placeholder="Last Name"
+                <FormField
+                  control={form.control}
                   name="memberLastName"
-                  type="text"
-                  ref={lastNameInputRef}
-                  required
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="shadcn" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="flex flex-col w-full md:w-fit gap-2">
-                <Label htmlFor="memberTitle">Title</Label>
-                <Input
-                  placeholder="Title"
+                <FormField
+                  control={form.control}
                   name="memberTitle"
-                  type="text"
-                  ref={titleInputRef}
-                  required
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="shadcn" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
+                <FormField
+                  control={form.control}
+                  name="memberBio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bio</FormLabel>
+                      <FormControl>
+                        <Input placeholder="shadcn" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="memberPersonal"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Personal URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="shadcn" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="memberGithub"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Github URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="shadcn" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="memberLinkedin"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>LinkedIn URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="shadcn" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div></div>
               </div>
-            </div>
-            <div className="flex flex-col flex-wrap gap-2 ">
-              <Label htmlFor="memberBio">Bio (Optional)</Label>
-              <Textarea
-                name="memberBio"
-                type="text"
-                className="p-2"
-                ref={bioInputRef}
-              />
-            </div>
-            <Separator />
 
-            <div className="flex flex-col">
-              <h2 className="text-2xl mb-4">Links (Optional)</h2>
-              <div className="flex gap-2 flex-wrap flex-col">
-                <div className="flex flex-col w-full gap-2">
-                  <Label htmlFor="memberPersonal">Personal App</Label>
-                  <Input
-                    placeholder="Personal Link"
-                    name="memberPersonal"
-                    type="text"
-                    ref={personalInputRef}
-                  />
-                </div>
-                <div className="flex flex-col w-full gap-2">
-                  <Label htmlFor="memberGithub">Github</Label>
-                  <Input
-                    placeholder="Github Link"
-                    name="memberGithub"
-                    type="text"
-                    ref={githubInputRef}
-                  />
-                </div>
-                <div className="flex flex-col w-full gap-2">
-                  <Label htmlFor="memberLinkedin">LinkedIn</Label>
-                  <Input
-                    placeholder="Linkedin Link"
-                    name="memberLinkedin"
-                    type="text"
-                    ref={linkedinInputRef}
-                  />
-                </div>
-              </div>
-            </div>
-            <Button type="submit" disabled={pending} className={`w-full`}>
-              {pending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {!isSubmitting ? (
+                <Button className="w-full mt-2" type="submit">
+                  Submit
+                </Button>
               ) : (
-                "Add Member"
+                <Button className="w-full mt-2" disabled>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait
+                </Button>
               )}
-            </Button>
-          </form>
-          {/* <p
-        aria-live="polite"
-        className="sr-only"
-      >
-        {state?.message}
-      </p> */}
+            </form>
+          </Form>
         </div>
       </DialogContent>
     </Dialog>

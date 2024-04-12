@@ -29,7 +29,7 @@ export default function MemberDetails({ member }) {
       console.log(member.id);
       deleteMember(member.id);
       toast({
-        title: `Member "${member.name}" deleted successfully !`,
+        title: `Member "${member.memberName}" deleted successfully !`,
       });
       router.push("/dashboard/members");
       console.log("Delete Successful");
@@ -44,7 +44,7 @@ export default function MemberDetails({ member }) {
       <Separator />
       <div className="flex gap-4 w-full  max-w-5xl">
         <div className="flex flex-col sm:flex-row gap-6 w-full">
-          {member.memberImage === undefined ? (
+          {member.memberImage === undefined || member.memberImage === "" ? (
             <div className=" w-60 aspect-square bg-gray-800 text-white flex justify-center items-center rounded">
               Image
             </div>

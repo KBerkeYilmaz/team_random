@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -27,11 +26,11 @@ const formSchema = z.object({
   memberName: z.string().min(3, "Member name must be at least 3 characters."),
   memberLastName: z.string().min(3, "Last name must be at least 3 characters."),
   memberTitle: z.string().min(3, "Title must be at least 3 characters."),
-  memberBio: z.string().optional(), // Optional field
-  memberPersonal: z.string().url().optional().or(z.literal("")), // Optional URL
-  memberGithub: z.string().url().optional().or(z.literal("")), // Optional URL
-  memberLinkedin: z.string().url().optional().or(z.literal("")), // Optional URL
-  //   memberImage: z.string().url().optional().or(z.literal("")), // Optional URL
+  memberBio: z.string().optional(),
+  memberPersonal: z.string().url().optional().or(z.literal("")),
+  memberGithub: z.string().url().optional().or(z.literal("")),
+  memberLinkedin: z.string().url().optional().or(z.literal("")),
+  //   memberImage: z.string().url().optional().or(z.literal("")),
 });
 
 export const EditMemberForm = ({ member }) => {
