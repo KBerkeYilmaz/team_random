@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation"; 
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import {
   SheetTrigger,
   SheetContent,
@@ -47,9 +48,10 @@ export const Navbar = () => {
           isScrolled && "backdrop-blur-sm opacity-90 mt-6 mx-6 rounded-[50px]"
         }`}
       >
-        <div className="flex items-center grow gap-2 transition-all">
+        <div className="flex items-center grow gap-2 transition-all relative">
           <Link href="/">
-            <span className="text-lg font-semibold">LOGO</span>
+            <Image  src={"/images/logos/logodef.png"} width={100} height={50} className="absolute -bottom-14 -left-6 lg:left-0"/>
+            <span className="font-bold text-base tracking-wider absolute hidden lg:block left-20 -bottom-4">TEAM RANDOM</span>
           </Link>
         </div>
         <div className="hidden md:flex grow gap-2 justify-center animate-fadeIn">

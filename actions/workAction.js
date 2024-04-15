@@ -78,7 +78,6 @@ export async function deleteWork(id) {
   try {
     await connectDB();
     const result = await Work.findByIdAndDelete(id)
-    console.log(result);
     revalidatePath("/dashboard/works");
     return { message: "Work deleted Successfully" }
   } catch (error) {
