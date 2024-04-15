@@ -17,9 +17,9 @@ export default function Home() {
       {/* <TracingBeam> */}
         <section
           id="about"
-          className="w-full flex flex-col h-screen  items-center justify-center"
+          className="w-full flex flex-col min-h-screen justify-start items-start"
         >
-          <div className="w-fit h-fit flex flex-wrapjustify-start items-center p-4">
+          <div className="w-fit h-fit">
             {/* <h2 className="permanent-marker-bold text-3xl sm:text-4xl md:text-6xl dark:text-orange-500">
               This is about section(kinda){" "}
               <span className="pixelify-header-bold">pixel by pixel</span>
