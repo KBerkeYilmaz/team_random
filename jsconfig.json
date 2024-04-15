@@ -26,7 +26,8 @@
     "**/*.js",
     "**/*.jsx",
     ".next/types/**/*.js",
-    "components/members-table/dataTable.tsx"
+    "components/members-table/dataTable.tsx",
+    "components/ui/table.tsx"
   ],
   "exclude": ["node_modules"]
 }
