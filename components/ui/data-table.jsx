@@ -33,6 +33,7 @@ import {
 import NewMemberForm from "../forms/NewMemberForm";
 import NewWorkForm from "../forms/NewWorkForm";
 import { useEffect } from "react";
+import { useRouter } from "@/navigation";
 
 export default function DataTable({ columns, data, filterAnchor, tag }) {
   const [sorting, setSorting] = React.useState([]);
@@ -40,7 +41,7 @@ export default function DataTable({ columns, data, filterAnchor, tag }) {
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [screenWidth, setScreenWidth] = React.useState("");
-
+  const router = useRouter();
   const columnName = tag + filterAnchor;
   const table = useReactTable({
     data,
@@ -81,13 +82,16 @@ export default function DataTable({ columns, data, filterAnchor, tag }) {
 
   useEffect(() => {
     window.addEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
 
     if (window.innerWidth < 900) {
       const allowed = columIds.slice(4, columIds.length).reduce((acc, curr) => {
         acc[curr] = false;
         return acc;
       }, {});
-      console.log(allowed);
       setColumnVisibility({ select: false, ...allowed });
     } else {
       setColumnVisibility({ id: false });
@@ -148,16 +152,18 @@ export default function DataTable({ columns, data, filterAnchor, tag }) {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
+                  if (header.id !== "id") {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  }
                 })}
               </TableRow>
             ))}
@@ -168,15 +174,25 @@ export default function DataTable({ columns, data, filterAnchor, tag }) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  onClick={() =>
+                    router.push(`/dashboard/${tag}s/${row.getValue("id")}`)
+                  }
+                  className="cursor-pointer"
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    if (
+                      cell.id.slice(cell.id.length - 2, cell.id.length) !== "id"
+                    ) {
+                      return (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      );
+                    }
+                  })}
                 </TableRow>
               ))
             ) : (
