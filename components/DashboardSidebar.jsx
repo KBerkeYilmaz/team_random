@@ -23,6 +23,7 @@ import {
 import AccountMenu from "./AccountMenu";
 import { Link } from "@/navigation";
 import DashboardSidebarNav from "./DashboardSidebarNav";
+import DashboardSidebarNavMobile from "./DashboardSidebarNavMobile";
 
 const DashboardSidebar = async ({ children }) => {
   return (
@@ -57,7 +58,7 @@ const DashboardSidebar = async ({ children }) => {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col pt-10">
-              <DashboardSidebarNav />
+              <DashboardSidebarNavMobile />
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1">
