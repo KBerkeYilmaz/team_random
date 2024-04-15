@@ -68,7 +68,7 @@ const LoginForm = () => {
   });
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-xl">
+    <div className="flex flex-col gap-4 w-full max-w-xl p-4">
       <h2 className="text-5xl font-semibold">Login</h2>
       <Separator />
       <div className="flex flex-col gap-2">
@@ -82,7 +82,7 @@ const LoginForm = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} type="email" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -95,7 +95,7 @@ const LoginForm = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} type="password" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -103,11 +103,11 @@ const LoginForm = () => {
               />
             </div>
             {!isSubmitting ? (
-              <Button className="w-full mt-2" type="submit">
+              <Button className="w-full mt-4" type="submit">
                 Submit
               </Button>
             ) : (
-              <Button className="w-full mt-2" disabled>
+              <Button className="w-full mt-4" disabled>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Please wait
               </Button>
