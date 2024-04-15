@@ -16,7 +16,6 @@ const Works = async () => {
     );
   }
 
-  console.log("Response from server!!!:" , res);
   const data = res.map(item => ({
     id: item._id.toString(),
     workTitle: item.workTitle,
@@ -29,8 +28,6 @@ const Works = async () => {
     // workImages: item.workImages,
   }));
   
-  console.log("Here is ", data);
-
   return (
     <div className="h-full w-full p-10 animate-fadeIn">
       <h1 className="text-4xl font-semibold">Works</h1>
@@ -40,7 +37,6 @@ const Works = async () => {
           columns={columns}
           data={data}
           filterAnchor={"Title"}
-          isMembersTable={false}
           tag={"work"}
         />
         {/* <NewWorkForm /> */}

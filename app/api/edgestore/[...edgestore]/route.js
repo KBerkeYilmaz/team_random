@@ -12,7 +12,6 @@ const edgeStoreRouter = es.router({
 
 const handler = createEdgeStoreNextHandler({
   router: edgeStoreRouter,
-  logLevel: 'debug',
 });
 
 export { handler as GET, handler as POST };
