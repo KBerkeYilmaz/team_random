@@ -32,15 +32,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import NewMemberForm from "../forms/NewMemberForm";
 import NewWorkForm from "../forms/NewWorkForm";
+import { useEffect } from "react";
 
 export default function DataTable({ columns, data, filterAnchor, tag }) {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [screenWidth, setScreenWidth] = React.useState("");
 
   const columnName = tag + filterAnchor;
-
   const table = useReactTable({
     data,
     columns,
@@ -59,15 +60,47 @@ export default function DataTable({ columns, data, filterAnchor, tag }) {
       rowSelection,
     },
     initialState: {
+      columnVisibility: { id: false },
       pagination: {
         pageSize: 5,
         pageIndex: 0,
       },
     },
   });
+
+  const columIds = columns.map((column) => {
+    if (column.accessorKey) {
+      return column.accessorKey;
+    }
+    return column.id;
+  });
+
+  const handleResize = () => {
+    setScreenWidth(window.innerWidth);
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+
+    if (window.innerWidth < 900) {
+      const allowed = columIds.slice(4, columIds.length).reduce((acc, curr) => {
+        acc[curr] = false;
+        return acc;
+      }, {});
+      console.log(allowed);
+      setColumnVisibility({ select: false, ...allowed });
+    } else {
+      setColumnVisibility({ id: false });
+    }
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [screenWidth]);
+
   return (
     <>
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 w-full">
         <div className="w-full justify-between flex pr-2">
           <Input
             placeholder={`Filter ${filterAnchor}...`}
@@ -91,18 +124,20 @@ export default function DataTable({ columns, data, filterAnchor, tag }) {
               .getAllColumns()
               .filter((column) => column.getCanHide())
               .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
+                if (column.id !== "id") {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                }
               })}
           </DropdownMenuContent>
         </DropdownMenu>

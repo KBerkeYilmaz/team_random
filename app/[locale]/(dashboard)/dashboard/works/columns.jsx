@@ -15,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-
 export const columns = [
   {
     id: "select",
@@ -59,10 +58,7 @@ export const columns = [
     accessorKey: "workGithubURL",
     header: "Github URL",
   },
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
+
   {
     accessorKey: "workAppURL",
     header: "App URL",
@@ -76,6 +72,10 @@ export const columns = [
     header: "Stack",
   },
   {
+    accessorKey: "id",
+    header: "ID",
+  },
+  {
     id: "actions",
     cell: ({ row }) => {
       const payment = row.original;
@@ -83,10 +83,7 @@ export const columns = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="h-8 w-8 p-0"
-            >
+            <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Open menu</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
