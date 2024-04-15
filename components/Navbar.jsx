@@ -50,7 +50,7 @@ export const Navbar = () => {
       >
         <div className="flex items-center grow gap-2 transition-all relative">
           <Link href="/">
-            <Image  src={"/images/logos/logodef.png"} width={100} height={50} className="absolute -bottom-14 -left-6 lg:left-0"/>
+            <Image  src={"/images/logos/logodef.png"} width={100} height={50} alt="logo" className="absolute -bottom-14 -left-6 lg:left-0"/>
             <span className="font-bold text-base tracking-wider absolute hidden lg:block left-20 -bottom-4">TEAM RANDOM</span>
           </Link>
         </div>
