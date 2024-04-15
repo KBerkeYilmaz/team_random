@@ -17,46 +17,53 @@ export default function DashboardSidebarNavMobile() {
         <span className="sr-only">Acme Inc</span>
       </Link>
       <Separator />
-      <Link
-        href="/dashboard"
-        className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
-          pathname === "/dashboard" && "bg-muted"
-        } `}
-      >
-        <Home className="h-5 w-5" />
-        <SheetClose>Dashboard</SheetClose>
-      </Link>
-      <Link
-        href="/dashboard/messages"
-        className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
-          pathname.includes("/dashboard/messages") && "bg-muted"
-        } `}
-      >
-        <ShoppingCart className="h-5 w-5" />
-        <SheetClose>Messages</SheetClose>
-
-        <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-          6
-        </Badge>
-      </Link>
-      <Link
-        href="/dashboard/members"
-        className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
-          pathname.includes("/dashboard/members") && "bg-muted"
-        } `}
-      >
-        <Package className="h-5 w-5" />
-        <SheetClose>Members</SheetClose>
-      </Link>
-      <Link
-        href="/dashboard/works"
-        className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
-          pathname.includes("/dashboard/works") && "bg-muted"
-        } `}
-      >
-        <Users className="h-5 w-5" />
-        <SheetClose>Works</SheetClose>
-      </Link>
+      <SheetClose asChild>
+        <Link
+          href="/dashboard"
+          className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
+            pathname === "/dashboard" && "bg-muted"
+          } `}
+        >
+          <Home className="h-5 w-5" />
+          Dashboard
+        </Link>
+      </SheetClose>
+      <SheetClose asChild>
+        <Link
+          href="/dashboard/messages"
+          className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
+            pathname.includes("/dashboard/messages") && "bg-muted"
+          } `}
+        >
+          <ShoppingCart className="h-5 w-5" />
+          Messages
+          <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
+            6
+          </Badge>
+        </Link>
+      </SheetClose>
+      <SheetClose asChild>
+        <Link
+          href="/dashboard/members"
+          className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
+            pathname.includes("/dashboard/members") && "bg-muted"
+          } `}
+        >
+          <Package className="h-5 w-5" />
+          Members
+        </Link>
+      </SheetClose>
+      <SheetClose asChild>
+        <Link
+          href="/dashboard/works"
+          className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
+            pathname.includes("/dashboard/works") && "bg-muted"
+          } `}
+        >
+          <Users className="h-5 w-5" />
+          Works
+        </Link>
+      </SheetClose>
       <SignOutButton />
     </nav>
   );
