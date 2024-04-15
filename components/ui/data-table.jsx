@@ -33,13 +33,13 @@ import {
 import NewMemberForm from "../forms/NewMemberForm";
 import NewWorkForm from "../forms/NewWorkForm";
 
-export default function DataTable({ columns, data, filterAnchor,tag }) {
+export default function DataTable({ columns, data, filterAnchor, tag }) {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
 
-  const columnName = tag+filterAnchor;
+  const columnName = tag + filterAnchor;
 
   const table = useReactTable({
     data,
@@ -68,17 +68,17 @@ export default function DataTable({ columns, data, filterAnchor,tag }) {
   return (
     <>
       <div className="flex items-center py-4">
-          <div className="w-full justify-between flex pr-2">
-            <Input
-              placeholder={`Filter ${filterAnchor}...`}
-              value={table.getColumn(columnName)?.getFilterValue() ?? ""}
-              onChange={(event) =>
-                table.getColumn(columnName)?.setFilterValue(event.target.value)
-              }
-              className="max-w-sm"
-            />
-            {filterAnchor === "Title" ? <NewWorkForm /> : <NewMemberForm />}
-          </div>
+        <div className="w-full justify-between flex pr-2">
+          <Input
+            placeholder={`Filter ${filterAnchor}...`}
+            value={table.getColumn(columnName)?.getFilterValue() ?? ""}
+            onChange={(event) =>
+              table.getColumn(columnName)?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+          {filterAnchor === "Title" ? <NewWorkForm /> : <NewMemberForm />}
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto hidden sm:block">

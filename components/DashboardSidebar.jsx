@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import AccountMenu from "./AccountMenu";
 import { Link } from "@/navigation";
+import DashboardSidebarNav from "./DashboardSidebarNav";
 
 const DashboardSidebar = async ({ children }) => {
   return (
@@ -38,42 +39,7 @@ const DashboardSidebar = async ({ children }) => {
               <span className="sr-only">Toggle notifications</span>
             </Button>
           </div>
-          <div className="flex-1">
-            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              <Link
-                href="/dashboard"
-                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-              >
-                <Home className="h-5 w-5" />
-                Dashboard
-              </Link>
-              <Link
-                href="/dashboard/messages"
-                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl bg-muted px-3 py-2 text-foreground hover:text-foreground"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                Messages
-                <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                  6
-                </Badge>
-              </Link>
-              <Link
-                href="/dashboard/members"
-                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-              >
-                <Package className="h-5 w-5" />
-                Members
-              </Link>
-              <Link
-                href="/dashboard/works"
-                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-              >
-                <Users className="h-5 w-5" />
-                Works
-              </Link>
-              <SignOutButton />
-            </nav>
-          </div>
+          <DashboardSidebarNav />
         </div>
       </div>
 
@@ -90,48 +56,8 @@ const DashboardSidebar = async ({ children }) => {
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col">
-              <nav className="grid gap-2 text-lg font-medium">
-                <Link
-                  href="/"
-                  className="flex items-center gap-2 text-lg font-semibold"
-                >
-                  <Package2 className="h-6 w-6" />
-                  <span className="sr-only">Acme Inc</span>
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <Home className="h-5 w-5" />
-                  <SheetClose>Dashboard</SheetClose>
-                </Link>
-                <Link
-                  href="#"
-                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl bg-muted px-3 py-2 text-foreground hover:text-foreground"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  <SheetClose>Messages</SheetClose>
-                  <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                    6
-                  </Badge>
-                </Link>
-                <Link
-                  href="/dashboard/members"
-                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <Package className="h-5 w-5" />
-                  <SheetClose>Members</SheetClose>
-                </Link>
-                <Link
-                  href="/dashboard/works"
-                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <Users className="h-5 w-5" />
-                  <SheetClose>Works</SheetClose>
-                </Link>
-                <SignOutButton />
-              </nav>
+            <SheetContent side="left" className="flex flex-col pt-10">
+              <DashboardSidebarNav />
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1">

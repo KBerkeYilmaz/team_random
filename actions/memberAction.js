@@ -34,6 +34,7 @@ export async function createMember(formData) {
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
+
   try {
     await connectDB();
     const member = await Member.create(validatedFields.data);

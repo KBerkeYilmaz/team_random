@@ -46,7 +46,8 @@ export const columns = [
     ),
     cell: ({ row }) => (
       <div className="capitalize">
-        {row.getValue("memberImage") === undefined ? (
+        {row.getValue("memberImage") === undefined ||
+        row.getValue("memberImage") === "" ? (
           <div className="w-12 h-12 bg-slate-900"></div>
         ) : (
           <img
