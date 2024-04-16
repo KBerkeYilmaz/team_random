@@ -124,7 +124,23 @@ export const updateMemberImage = async (imgUrl, id) => {
 export async function getMembers() {
   try {
     await connectDB();
-    const result = await Member.find()
+    const rawResult = await Member.find()
+    const result = rawResult.map((member) => {
+      return {
+        memberName: member.memberName,
+        memberLastName: member.memberLastName,
+        memberTitle: member.memberTitle,
+        memberBio: member.memberBio,
+        memberGithub: member.memberGithub,
+        memberPersonal: member.memberPersonal,
+        memberLinkedin: member.memberLinkedin,
+        memberImage: member.memberImage,
+        createdAt: member.createdAt,
+        updatedAt: member.updatedAt,
+        id: member._id.toString(),
+      };
+    });
+
     return result
   } catch (error) {
     console.log(error);
@@ -135,8 +151,20 @@ export async function getMembers() {
 export async function getMember(id) {
   try {
     await connectDB();
-    const result = await Member.findById(id)
-
+    const rawResult = await Member.findById(id)
+    const result = {
+      memberName: rawResult.memberName,
+      memberLastName: rawResult.memberLastName,
+      memberTitle: rawResult.memberTitle,
+      memberBio: rawResult.memberBio,
+      memberGithub: rawResult.memberGithub,
+      memberPersonal: rawResult.memberPersonal,
+      memberLinkedin: rawResult.memberLinkedin,
+      memberImage: rawResult.memberImage,
+      createdAt: rawResult.createdAt,
+      updatedAt: rawResult.updatedAt,
+      id: rawResult._id.toString(),
+    };
     return result
 
   } catch (error) {
