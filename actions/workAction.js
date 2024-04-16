@@ -55,7 +55,18 @@ export async function createWork(formData) {
 export async function getWorks() {
   try {
     await connectDB();
-    const result = await Work.find();
+    const rawResult = await Work.find();
+    const result = rawResult.map(item => ({
+      id: item._id.toString(),
+      workTitle: item.workTitle,
+      workGithubURL: item.workGithubURL,
+      workAppURL: item.workAppURL,
+      workReadme: item.workReadme,
+      workTechStack: item.workTechStack,
+      // Uncomment other fields as necessary
+      // workContributors: item.workContributors,
+      // workImages: item.workImages,
+    }));
     return result;
   } catch (error) {
     console.log(error);

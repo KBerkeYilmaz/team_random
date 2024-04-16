@@ -6,8 +6,8 @@ import { getWorks } from "@/actions/workAction";
 import { Loader2 } from "lucide-react";
 
 const Works = async () => {
-  const res = (await getWorks());
-  
+  const res = await getWorks();
+
   if (!res) {
     return (
       <div className="flex w-full justify-center mt-10">
@@ -16,18 +16,6 @@ const Works = async () => {
     );
   }
 
-  const data = res.map(item => ({
-    id: item._id.toString(),
-    workTitle: item.workTitle,
-    workGithubURL: item.workGithubURL,
-    workAppURL: item.workAppURL,
-    workReadme: item.workReadme,
-    workTechStack: item.workTechStack,
-    // Uncomment other fields as necessary
-    // workContributors: item.workContributors,
-    // workImages: item.workImages,
-  }));
-  
   return (
     <div className="h-full w-full p-10 animate-fadeIn">
       <h1 className="text-4xl font-semibold">Works</h1>
@@ -35,7 +23,7 @@ const Works = async () => {
       <div className="flex flex-col gap-4 py-4 w-full">
         <DataTable
           columns={columns}
-          data={data}
+          data={res}
           filterAnchor={"Title"}
           tag={"work"}
         />
