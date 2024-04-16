@@ -42,7 +42,7 @@ export const Navbar = () => {
   }
 
   return (
-    <div className={`flex items-center justify-center w-full fixed z-50`}>
+    <nav className={`flex items-center justify-center w-full fixed z-50 will-change-auto`}>
       <div
         className={`grid grid-cols-2 md:grid-cols-3 dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-lg items-center w-full justify-between px-8 py-4 transition-all duration-500 ${
           isScrolled && "backdrop-blur-sm opacity-90 mt-6 mx-6 rounded-[50px]"
@@ -178,6 +178,6 @@ export const Navbar = () => {
           </Sheet>
         </div>
       </div>
-    </div>
+    </nav>
   );
 };
