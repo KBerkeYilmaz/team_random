@@ -1,5 +1,5 @@
 "use client";
-import { usePathname } from "next/navigation"; 
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import {
@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const { data: session } = useSession();
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   const changeBackground = () => {
     if (window.scrollY >= 80) {
@@ -37,7 +37,7 @@ export const Navbar = () => {
     };
   }, []);
 
-  if (pathname.includes('/dashboard')) {
+  if (pathname.includes("/dashboard")) {
     return null;
   }
 
@@ -50,8 +50,16 @@ export const Navbar = () => {
       >
         <div className="flex items-center grow gap-2 transition-all relative">
           <Link href="/">
-            <Image  src={"/images/logos/logodef.png"} width={100} height={50} alt="logo" className="absolute -bottom-14 -left-6 lg:left-0"/>
-            <span className="font-bold text-base tracking-wider absolute hidden lg:block left-20 -bottom-4">TEAM RANDOM</span>
+            <Image
+              src={"/images/logos/logodef.png"}
+              width={100}
+              height={50}
+              alt="logo"
+              className="absolute -bottom-14 -left-6 lg:left-0"
+            />
+            <span className="font-bold text-base tracking-wider absolute hidden lg:block left-20 -bottom-4">
+              TEAM RANDOM
+            </span>
           </Link>
         </div>
         <div className="hidden md:flex grow gap-2 justify-center animate-fadeIn">
@@ -75,7 +83,7 @@ export const Navbar = () => {
           </Link>
           <Link
             className="text-lg hover:text-foreground/40 transition-all duration-200"
-            href="/contactus"
+            href="/contac"
           >
             Contact
           </Link>
@@ -143,9 +151,9 @@ export const Navbar = () => {
                 <Separator />
                 <Link
                   className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                  href="/contactus"
+                  href="/contact"
                 >
-                  <SheetClose>Contact Us</SheetClose>
+                  <SheetClose>Contact</SheetClose>
                 </Link>
                 <Separator />
 
