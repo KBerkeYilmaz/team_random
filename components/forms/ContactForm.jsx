@@ -57,12 +57,13 @@ export default function ContactForm() {
       setIsSubmitting(false);
     }
   };
-
   return (
-    <div className="p-6 h-full w-full flex justify-center items-center">
-      <div className="grid grid-cols-3 border p-4 bg-muted/80 shadow-lg rounded-lg w-[840px] h-fit md:p-10">
-        <div className="col-span-1">
-          <h1 className="text-3xl font-semibold pb-6">Send Us an Email!</h1>
+    <div className="sm:p-6 h-full w-full flex justify-center items-center">
+      <div className="flex flex-col md:flex-row border bg-muted/80 shadow-xl rounded-b-lg md:rounded-l-lg max-w-md md:max-w-none">
+        <div className="md:max-w-sm p-6 md:p-10 md:order-1 order-2 ">
+          <h1 className=" text-2xl md:text-4xl font-semibold pb-10">
+            Send us an email!
+          </h1>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="gap-2">
@@ -126,7 +127,16 @@ export default function ContactForm() {
             acknowledge reading Privacy Policy.
           </p>
         </div>
-        <div className="col-span-2"> </div>
+        <div className="bg-[url('/_next/static/media/contact.47c19320.svg')] dark:bg-[url('/_next/static/media/contact-dark-2.bae3e917.svg')] md:max-w-lg py-4 sm:px-14 flex flex-col justify-center items-center text-center text-white gap-6 rounded-t-lg md:rounded-tl-none md:rounded-r-lg md:order-2 order-1 bg-cover bg-center">
+          <h2 className="md:text-4xl text-2xl font-bold drop-shadow-xl px-6 sm:p-6 md:p-0">
+            Lorem ipsum dolor sit amet consectetur.
+          </h2>
+          <p className="text-justify md:flex hidden">
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+            Voluptatum, harum nam dolor numquam laborum eligendi magnam sit
+            suscipit.
+          </p>
+        </div>
       </div>
     </div>
   );
