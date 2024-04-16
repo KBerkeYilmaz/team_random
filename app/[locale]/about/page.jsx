@@ -26,7 +26,7 @@ function Page() {
       </div>
       <div className="flex flex-col w-full pb-20 gap-6 md:gap-12">
         <div className="w-full md:grid md:grid-cols-5 pl-4 md:pl-0 md:pr-2 lg:pr-28 md:gap-4 ">
-          <div className="h-fit md:col-span-2 pl-38 md:pl-72 bg-gradient-to-r from-background to-primary flex justify-end">
+          <div className="h-fit md:col-span-2 pl-38 md:pl-72 bg-gradient-to-r from-background to-primary/80 flex justify-end">
             <img
               src="/images/berke.png"
               alt="Profile Picture"
@@ -82,7 +82,7 @@ function Page() {
           </div>
         </div>
         <div className="w-full grid md:grid-cols-5 pr-4 md:pl-28 md:gap-4 ">
-          <div className="  md:col-span-3 justify-between">
+          <div className="md:col-span-3 justify-between">
             <div className="flex h-fit gap-4 justify-end">
               <div className="flex flex-col justify-end">
                 <p
@@ -128,7 +128,7 @@ function Page() {
               </a>
             </div>
           </div>
-          <div className="h-fit order-first md:order-last md:col-span-2 pr-38 md:pr-72 bg-gradient-to-l from-background to-primary flex justify-start">
+          <div className="h-fit order-first md:order-last md:col-span-2 pr-38 md:pr-72 bg-gradient-to-l from-background to-primary/80 flex justify-start ">
             <img
               src="/images/baris.png"
               alt="Profile Picture"
