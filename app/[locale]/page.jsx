@@ -1,13 +1,14 @@
 import { HeroWavy } from "@/components/HeroWavy";
 import { TracingBeam } from "@/components/ui/tracing-beam";
 import { LampDemo } from "@/components/ui/lamp";
+import { permanentMarker, pixelify } from "@/app/fonts";
 
 export default function Home() {
   return (
     <main className="flex flex-col w-full animate-fadeIn">
       <section
         id="hero"
-        className="w-full flex h-screen  items-center justify-center"
+        className="w-full flex h-screen items-center justify-center"
       >
         <HeroWavy
           header={"Coding your digital future"}
@@ -20,9 +21,9 @@ export default function Home() {
         className="w-full flex flex-col min-h-screen justify-start items-start"
       >
         <div className="w-fit h-fit">
-          {/* <h2 className="permanent-marker-bold text-3xl sm:text-4xl md:text-6xl dark:text-orange-500">
+          {/* <h2 className={`${permanentMarker.className} text-3xl sm:text-4xl md:text-6xl dark:text-orange-500 font-bold`}>
               This is about section(kinda){" "}
-              <span className="pixelify-header-bold">pixel by pixel</span>
+              <span className={`${pixelify.className}`}>pixel by pixel</span>
             </h2> */}
           <LampDemo />
         </div>
@@ -36,9 +37,9 @@ export default function Home() {
           {/* Radial gradient for the container to give a faded look */}
           <div className="absolute pointer-events-none inset-0 flex items-center justify-center bg-background [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
           <div className="text-3xl sm:text-4xl md:text-6xl font-bold relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500 py-8">
-            <h2 className="permanent-marker-bold text-center dark:text-orange-500">
-              This is services section{" "} <br />
-              <span className="pixelify-header-bold">pixel by pixel</span>
+            <h2 className="${permanentMarker.className} text-center dark:text-orange-500">
+              This is services section <br />
+              <span className={`${pixelify.className}`}>pixel by pixel</span>
             </h2>
           </div>
         </div>
@@ -48,9 +49,11 @@ export default function Home() {
         className="w-full flex h-screen items-center justify-center"
       >
         <div className="w-fit h-fit flex flex-wrap flex-col justify-start items-center p-4">
-          <h2 className="permanent-marker-bold text-3xl sm:text-4xl md:text-6xl dark:text-orange-500">
+          <h2
+            className={`${permanentMarker.className} text-3xl sm:text-4xl md:text-6xl dark:text-orange-500 font-bold`}
+          >
             This is cta{" "}
-            <span className="pixelify-header-bold">pixel by pixel</span>
+            <span className={`${pixelify.className}`}>pixel by pixel</span>
           </h2>
         </div>
       </section>
