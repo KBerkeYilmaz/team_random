@@ -94,7 +94,7 @@ export const LampContainer = ({ children, className }) => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{
-            delay: 0.6,
+            delay: 0.8,
             duration: 1,
             ease: "easeInOut",
           }}
