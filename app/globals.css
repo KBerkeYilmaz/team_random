@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("../public/fonts/fonts.css");
 
 @layer utilities {
   /* Hide scrollbar for Chrome, Safari and Opera */
@@ -110,7 +109,7 @@ html::-webkit-scrollbar {
 
 /* Hide scrollbar for IE, Edge, and Firefox */
 body {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
   overflow-y: scroll;
 }
