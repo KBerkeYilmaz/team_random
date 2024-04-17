@@ -1,15 +1,6 @@
 import { ModeToggle } from "@/components/ModeToggle";
-import { SignOutButton } from "@/components/SignOutButton";
-import {
-  Bell,
-  Menu,
-  Package2,
-  Search,
-} from "lucide-react";
-
 import { Bell, Menu, Package2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AccountMenu from "./AccountMenu";
 import { Link } from "@/navigation";
