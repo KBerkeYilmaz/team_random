@@ -82,7 +82,7 @@ function Page() {
           </div>
         </div>
         <div className="w-full grid md:grid-cols-5 pr-4 md:pl-28 md:gap-4 ">
-          <div className="md:col-span-3 justify-between">
+          <div className="md:col-span-3 flex flex-col justify-between">
             <div className="flex h-fit gap-4 justify-end">
               <div className="flex flex-col justify-end">
                 <p
