@@ -13,33 +13,32 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEdgeStore } from "@/lib/edgestore";
-import { SingleImageDropzone } from "@/components/SingleImageDropzone";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 import { useToast } from "../ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { updateMember, updateMemberImage } from "@/actions/memberAction";
+import { MultiImageDropzone } from "../MultiImageDropzone";
+import { UpdateWork } from "@/actions/workAction";
 
 const formSchema = z.object({
-  workTitle: z.string().min(3, "Title must be at least 3 characters."),
+  workTitle: z.string().min(2, "Title must be at least 2 characters."),
   workGithubURL: z.string().url().optional().or(z.literal("")),
   workAppURL: z.string().url().optional().or(z.literal("")),
-  workReadme: z.string().optional(),
+  workReadme: z.string().min(2, "Readme must be at least 2 characters."),
+  workTechStack: z.string().min(2, "Tech Stack must be at least 2 characters."),
+  workContributors: z.string().optional(), // Assuming contributors is an array of strings
+  // workImages: z.array().url().optional().or(z.literal("")),
   workImages: z.array(z.string().url()).optional(),
-  workTechStack: z.string().optional(),
-  workContributors: z.string().optional(),
 });
 
 export const EditWorkForm = ({ work }) => {
-  console.log(work);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pending, setPending] = useState(false);
   const [dropzoneWidth, setDropzoneWidth] = useState(400); // Default width
-  const [file, setFile] = useState();
+  const [fileStates, setFileStates] = useState([]);
   const { edgestore } = useEdgeStore();
   const { toast } = useToast();
-
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,59 +53,43 @@ export const EditWorkForm = ({ work }) => {
   });
 
   const onSubmit = async (values) => {
-    setIsSubmitting(true);
-    const result = await updateMember(values, member.id);
+    setPending(true);
+    try {
+      // First, handle the image uploads.
+      const uploadPromises = fileStates.map((addedFileState) =>
+        edgestore.publicFiles
+          .upload({ file: addedFileState.file })
+          .then((res) => res.url)
+      );
+      // Wait for all uploads to finish.
+      const imageURLs = await Promise.all(uploadPromises);
+      // Add the imageURLs to the values.
+      const dataWithImages = {
+        ...values,
+        workImages: [...work.workImages, ...imageURLs],
+      };
 
-    if (file) {
-      handlePicture();
-    }
+      // Then, pass this updated data object to your API call function.
+      const response = await UpdateWork(dataWithImages, work.id);
+      if (response.error) {
+        throw new Error(response.error);
+      }
 
-    if (result.error) {
+      // Handle success.
       toast({
-        variant: "destructive",
-        title: "Error !",
-        description: `- ${result.error}`,
+        description: `${response.message}`,
       });
 
-      setIsSubmitting(false);
-    } else {
+      // Reset form and state as needed.
+      form.reset();
+      setFileStates([]);
+    } catch (error) {
+      console.error("Error submitting form:", error);
       toast({
-        title: "Update Successful !",
+        description: `Error creating work: ${error.message || error}`,
       });
-      setIsSubmitting(false);
-    }
-  };
-
-  const handlePicture = async () => {
-    if (file) {
-      const res = await edgestore.publicFiles.upload({
-        file,
-        onProgressChange: (progress) => {
-          // you can use this to show a progress bar
-          console.log(progress);
-        },
-      });
-      // you can run some server action or api here
-      // to add the necessary data to your database
-      console.log("handlePicture-res.url: ", res.url);
-      // setImgUrl(res.url);
-      handleUpdatePicture(res.url);
-    }
-  };
-
-  const handleUpdatePicture = async (imgUrl) => {
-    const result = await updateMemberImage(imgUrl, member.id);
-
-    // console.log("handlePicture: ", file);
-    // console.log("handlePicture: ", imgUrl);
-
-    if (result.error) {
-      toast({
-        variant: "destructive",
-        title: "Error !",
-        description: `- ${result.error}`,
-      });
-    } else {
+    } finally {
+      setPending(false);
     }
   };
 
@@ -139,23 +122,24 @@ export const EditWorkForm = ({ work }) => {
           <Label className="text-lg" htmlFor="fullName">
             Member Image
           </Label>
+
           <div className="flex items-center justify-center gap-4">
             <div className="flex flex-col justify-between w-full gap-2">
               <div className="flex w-full ">
-                <SingleImageDropzone
-                  width={dropzoneWidth}
-                  height={100}
-                  value={file}
+                <MultiImageDropzone
+                  value={fileStates}
                   dropzoneOptions={{
-                    maxSize: 1024 * 1024 * 2, // 2MB
-                    maxFiles: 1,
+                    maxFiles: 6,
                   }}
-                  onChange={(file) => {
-                    setFile(file);
+                  onChange={(files) => {
+                    setFileStates(files);
+                  }}
+                  onFilesAdded={(addedFiles) => {
+                    setFileStates([...fileStates, ...addedFiles]);
                   }}
                 />
               </div>
-              {/* {!isSubmitting ? (
+              {/* {!pending ? (
                 <Button onClick={handlePicture}>Update Image</Button>
               ) : (
                 <Button disabled>
@@ -249,7 +233,7 @@ export const EditWorkForm = ({ work }) => {
               />
             </div>
 
-            {!isSubmitting ? (
+            {!pending ? (
               <Button className="w-full mt-2" type="submit">
                 Submit
               </Button>

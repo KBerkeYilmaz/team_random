@@ -8,9 +8,15 @@ import { useToast } from "./ui/use-toast";
 import { useRouter } from "@/navigation";
 import { useState } from "react";
 import { DeleteAlert } from "./DeleteAlert";
-import Image from "next/image";
-import { EditMemberForm } from "./forms/EditMemberForm";
 import { EditWorkForm } from "./forms/EditWorkForm";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export default function MemberDetails({ work }) {
   const [open, setOpen] = useState(false);
@@ -40,44 +46,65 @@ export default function MemberDetails({ work }) {
   };
 
   return (
-    <div className="h-full w-full flex flex-col gap-4 justify-start items-start p-10 animate-fadeIn">
+    <div className="h-screen w-full flex flex-col gap-4 justify-start items-start pb-28 p-10 animate-fadeIn overflow-y-scroll no-scrollbar">
       <h2 className="text-4xl font-semibold">Work Details</h2>
       <Separator />
       <div className="flex flex-col sm:flex-row gap-4 w-full  max-w-5xl">
-        <div className="flex flex-col sm:flex-row gap-6 w-full">
-          {work.workImage === undefined ? (
+        <div className="flex flex-col sm:flex-row gap-16 w-full">
+          {work.workImages.length === 0 ? (
             <div className=" w-60 aspect-square bg-gray-800 text-white flex justify-center items-center rounded">
-              Image
+              No Image
             </div>
           ) : (
-            <Image
-              src={work.workImage}
-              width={80}
-              height={80}
-              priority={false}
-              alt="User Picture"
-            />
+            <div className="ml-4">
+              <Carousel className="w-full max-w-xs">
+                <CarouselContent>
+                  {work.workImages.map((workImage, index) => (
+                    <CarouselItem key={index}>
+                      <div className="px-2">
+                        <Card>
+                          <CardContent className="flex aspect-square items-center justify-center p-6">
+                            <span className="text-4xl font-semibold">
+                              <img
+                                src={workImage}
+                                alt="Work Image"
+                                className="w-full"
+                              />
+                            </span>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+              </Carousel>
+            </div>
           )}
-          <div className="flex flex-col w-full">
+          <div className="flex flex-col w-full ml-">
             <div className="flex items-center gap-1 w-full">
               <Label className="text-md">Title: </Label>
               <p className="break-all">{work.workTitle}</p>
             </div>
-            <div className="flex items-center gap-1 w-full">
-              <Label className="text-md">Readme: </Label>
-              <p className="break-all">{work.workReadme}</p>
-            </div>
-            <div className="flex items-center gap-1 w-full">
-              <Label className="text-md">TechStack: </Label>
-              <p className="break-all">{work.workTechStack}</p>
-            </div>
-            {/* {work.workGithub && (
+            {work.workReadme && (
               <div className="flex items-center gap-1 w-full">
-                <Label className="text-md">Github: </Label>
-                <p className="break-all">{work.workGithub}</p>
+                <Label className="text-md">Readme: </Label>
+                <p className="break-all">{work.workReadme}</p>
               </div>
-            )} */}
-            <div className="flex items-center gap-1 w-full"></div>
+            )}
+            {work.workTechStack && (
+              <div className="flex items-center gap-1 w-full">
+                <Label className="text-md">TechStack: </Label>
+                <p className="break-all">{work.workTechStack}</p>
+              </div>
+            )}
+            {work.workAppURL && (
+              <div className="flex items-center gap-1 w-full">
+                <Label className="text-md">App URL: </Label>
+                <p className="break-all">{work.workAppURL}</p>
+              </div>
+            )}
           </div>
         </div>
         <div>
