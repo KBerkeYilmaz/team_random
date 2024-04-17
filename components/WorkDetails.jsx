@@ -10,6 +10,7 @@ import { useState } from "react";
 import { DeleteAlert } from "./DeleteAlert";
 import Image from "next/image";
 import { EditMemberForm } from "./forms/EditMemberForm";
+import { EditWorkForm } from "./forms/EditWorkForm";
 
 export default function MemberDetails({ work }) {
   const [open, setOpen] = useState(false);
@@ -90,7 +91,7 @@ export default function MemberDetails({ work }) {
           handleDelete={handleDelete}
         />
       </div>
-      {/* <EditMemberForm work={work} /> */}
+      <EditWorkForm work={work} />
     </div>
   );
 }
