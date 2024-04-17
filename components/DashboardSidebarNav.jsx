@@ -1,11 +1,13 @@
 "use client";
-
+import React, { useEffect, useState } from "react";
 import { Link, usePathname } from "@/navigation";
 import { Home, Package, ShoppingCart, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SignOutButton } from "@/components/SignOutButton";
+import { Loader2 } from "lucide-react";
+import { fetchUnseen } from "@/actions/emailAction";
 
-export default function DashboardSidebarNav() {
+export default function DashboardSidebarNav({ unReadMailsCount }) {
   const pathname = usePathname();
 
   return (
@@ -28,7 +30,7 @@ export default function DashboardSidebarNav() {
         <ShoppingCart className="h-5 w-5" />
         Messages
         <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-          6
+          {unReadMailsCount}
         </Badge>
       </Link>
       <Link

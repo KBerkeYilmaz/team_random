@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { ImapFlow } from "imapflow";
 import base64 from "base-64";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request) {
   const { email, name, message } = await request.json();
@@ -69,8 +70,12 @@ export async function GET(req) {
 
       // list subjects for all messages
       // uid value is always included in FETCH response, envelope strings are in unicode.
-      for await (let message of client.fetch("1:*", { envelope: true })) {
+      for await (let message of client.fetch("1:*", {
+        envelope: true,
+        seen: false,
+      })) {
         // console.log(`${message.uid}: ${message.envelope.subject}`);
+
         emailList.push({
           uid: message.uid,
           subject: message.envelope.subject,
@@ -78,17 +83,18 @@ export async function GET(req) {
           from: message.envelope.from.map((f) => f.address).join(", "),
         });
       }
-
-      console.log("Emails: ", emailList);
     } finally {
       // Make sure lock is released, otherwise next `getMailboxLock()` never returns
       lock.release();
     }
-
+    revalidatePath("/dashboard/messages");
     // log out and close connection
     await client.logout();
 
-    return NextResponse.json(emailList, { status: 200 });
+    return NextResponse.json(emailList, {
+      status: 200,
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (err) {
     return NextResponse.json({ error: `${err}` }, { status: 500 });
   }
