@@ -21,7 +21,7 @@ export default function Home() {
         className="w-full flex flex-col min-h-screen justify-start items-start"
       >
         <div className="w-fit h-fit">
-          {/* <h2 className={`${permanentMarker.className} text-3xl sm:text-4xl md:text-6xl dark:text-orange-500 font-bold`}>
+          {/* <h2 className={`${permanentMarker.className} text-3xl sm:text-4xl md:text-6xl dark:text-primary font-bold`}>
               This is about section(kinda){" "}
               <span className={`${pixelify.className}`}>pixel by pixel</span>
             </h2> */}
@@ -38,7 +38,7 @@ export default function Home() {
           <div className="absolute pointer-events-none inset-0 flex items-center justify-center bg-background [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
           <div className="text-3xl sm:text-4xl md:text-6xl font-bold relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500 py-8">
             <h2
-              className={`${permanentMarker.className} text-center dark:text-orange-500`}
+              className={`${permanentMarker.className} text-center dark:text-primary`}
             >
               This is services section <br />
               <span className={`${pixelify.className}`}>pixel by pixel</span>
@@ -52,7 +52,7 @@ export default function Home() {
       >
         <div className="w-fit h-fit flex flex-wrap flex-col justify-start items-center p-4">
           <h2
-            className={`${permanentMarker.className} text-3xl sm:text-4xl md:text-6xl dark:text-orange-500 font-bold`}
+            className={`${permanentMarker.className} text-3xl sm:text-4xl md:text-6xl dark:text-primary font-bold`}
           >
             This is cta{" "}
             <span className={`${pixelify.className}`}>pixel by pixel</span>

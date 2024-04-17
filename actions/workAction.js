@@ -51,7 +51,6 @@ export async function createWork(formData) {
     };
   }
 }
-
 export async function getWorks() {
   try {
     await connectDB();
@@ -73,7 +72,16 @@ export async function getWorks() {
     return { error: "Something went wrong" };
   }
 }
-
+export async function getWorkCount() {
+  try {
+    await connectDB();
+    const result = await Work.countDocuments()
+    return result
+  } catch (error) {
+    console.log(error);
+    return { error: "Something went wrong" }
+  }
+}
 export async function getWork(id) {
   try {
     await connectDB();
@@ -84,7 +92,6 @@ export async function getWork(id) {
     return { error: "Something went wrong" };
   }
 }
-
 export async function deleteWork(id) {
   try {
     await connectDB();

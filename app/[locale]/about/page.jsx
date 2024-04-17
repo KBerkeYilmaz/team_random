@@ -12,7 +12,7 @@ function Page() {
           Meet Our Team
         </h1>
         <p
-          className={`${pixelify.className}  max-w-7xl text-sm md:text-md md:text-lg text-justify md:text-center px-2 md:px-10`}
+          className={`  max-w-7xl text-sm md:text-md md:text-lg text-justify md:text-center px-2 md:px-10`}
         >
           We are a dynamic team of web developers united by our passion for
           crafting innovative digital experiences. With a diverse range of
@@ -36,14 +36,12 @@ function Page() {
           <div className=" md:col-span-3 flex flex-col justify-between">
             <div className="flex h-fit gap-4">
               <h2
-                className={`font-bold text-lg md:text-3xl text-primary ${permanentMarker.className}`}
+                className={`text-lg md:text-3xl text-primary ${permanentMarker.className}`}
               >
                 Kutalmıs Berke Yılmaz
               </h2>
               <div className="flex flex-col justify-end">
-                <p
-                  className={` text-primary/60 font-bold text-sm md:text-lg ${pixelify.className}`}
-                >
+                <p className={` text-primary/60 font-bold text-sm md:text-lg `}>
                   Developer
                 </p>
               </div>
@@ -85,14 +83,12 @@ function Page() {
           <div className="md:col-span-3 flex flex-col justify-between">
             <div className="flex h-fit gap-4 justify-end">
               <div className="flex flex-col justify-end">
-                <p
-                  className={` text-primary/60 font-bold text-sm md:text-lg ${pixelify.className}`}
-                >
+                <p className={` text-primary/60 font-bold text-sm md:text-lg `}>
                   Developer
                 </p>
               </div>
               <h2
-                className={`font-bold text-lg md:text-3xl text-primary  ${permanentMarker.className}`}
+                className={`text-lg md:text-3xl text-primary  ${permanentMarker.className}`}
               >
                 Sadık Barıs Yılmaz
               </h2>

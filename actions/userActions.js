@@ -33,7 +33,6 @@ export const updateUser = async (formData, id) => {
         return { error: "Something went wrong" }
     }
 }
-
 export const updateUserImage = async (imgUrl, id) => {
     //Todo - Validations
 
