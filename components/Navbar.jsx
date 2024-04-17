@@ -66,33 +66,33 @@ export const Navbar = () => {
         </div>
         <div className="hidden md:flex grow gap-2 justify-center animate-fadeIn">
           <Link
-            className="text-lg hover:text-foreground/40 transition-all duration-200"
+            className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200"
             href="/"
           >
             Home
           </Link>
           <Link
-            className="text-lg hover:text-foreground/40 transition-all duration-200"
+            className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200"
             href="/about"
           >
             About
           </Link>
           <Link
-            className="text-lg hover:text-foreground/40 transition-all duration-200"
+            className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200"
             href="/contact"
           >
             Contact
           </Link>
           {session ? (
             <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200 animate-fadeIn"
+              className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 animate-fadeIn"
               href="/dashboard"
             >
               Dashboard
             </Link>
           ) : (
             <Link
-              className="text-lg hover:text-foreground/40 transition-all duration-200 animate-fadeIn"
+              className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 animate-fadeIn"
               href="/login"
             >
               Login
@@ -125,7 +125,7 @@ export const Navbar = () => {
               <div className="grid w-full p-4">
                 <SheetClose asChild>
                   <Link
-                    className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                    className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 py-4 px-4"
                     href="/"
                   >
                     Home
@@ -134,7 +134,7 @@ export const Navbar = () => {
                 <Separator />
                 <SheetClose asChild>
                   <Link
-                    className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                    className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 py-4 px-4"
                     href="/about"
                   >
                     About
@@ -143,7 +143,7 @@ export const Navbar = () => {
                 <Separator />
                 <SheetClose asChild>
                   <Link
-                    className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                    className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 py-4 px-4"
                     href="/contact"
                   >
                     Contact
@@ -152,7 +152,7 @@ export const Navbar = () => {
                 <Separator />
                 {!session && (
                   <Link
-                    className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                    className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 py-4 px-4"
                     href="/login"
                   >
                     <SheetClose>Login</SheetClose>
@@ -160,7 +160,7 @@ export const Navbar = () => {
                 )}
                 {session && (
                   <Link
-                    className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                    className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 py-4 px-4"
                     href="/dashboard"
                   >
                     <SheetClose>Dashboard</SheetClose>
