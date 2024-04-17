@@ -1,9 +1,7 @@
 "use server";
 
 export async function fetchInbox() {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"; // Define the base URL
-
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"; // Define the base URL
   const res = await fetch(`${baseUrl}/api/email`, { cache: "no-store" }); // Use the full URL to fetch
   const data = await res.json(); // Convert the response to JSON
   const emails = data || []; // Ensure emails is always an array
@@ -18,8 +16,7 @@ export async function fetchInbox() {
 }
 
 export async function fetchUnseen() {
-  const baseUrl = "http://localhost:3000"; // Define the base URL
-
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"; // Define the base URL
   const res = await fetch(`${baseUrl}/api/email/count`, { cache: "no-store" }); // Use the full URL to fetch
 
   if (!res.ok) {

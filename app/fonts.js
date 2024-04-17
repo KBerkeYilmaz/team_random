@@ -12,6 +12,5 @@ export const permanentMarker = Permanent_Marker({
 });
 
 export const pixelify = Pixelify_Sans({
-    weight: ["400"],
     subsets: ["latin"],
 });

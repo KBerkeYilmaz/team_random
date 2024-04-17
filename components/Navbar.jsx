@@ -42,7 +42,9 @@ export const Navbar = () => {
   }
 
   return (
-    <nav className={`flex items-center justify-center w-full fixed z-50 will-change-auto`}>
+    <nav
+      className={`flex items-center justify-center w-full fixed z-50 will-change-auto`}
+    >
       <div
         className={`grid grid-cols-2 md:grid-cols-3 dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-lg items-center w-full justify-between px-8 py-4 transition-all duration-500 ${
           isScrolled && "backdrop-blur-sm opacity-90 mt-6 mx-6 rounded-[50px]"
@@ -74,12 +76,6 @@ export const Navbar = () => {
             href="/about"
           >
             About
-          </Link>
-          <Link
-            className="text-lg hover:text-foreground/40 transition-all duration-200"
-            href="/works"
-          >
-            Works
           </Link>
           <Link
             className="text-lg hover:text-foreground/40 transition-all duration-200"
@@ -126,37 +122,34 @@ export const Navbar = () => {
                 </div>
               </div>
               {/* <Separator /> */}
-
               <div className="grid w-full p-4">
-                <Link
-                  className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                  href="/"
-                >
-                  <SheetClose>Home</SheetClose>
-                </Link>
+                <SheetClose asChild>
+                  <Link
+                    className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                    href="/"
+                  >
+                    Home
+                  </Link>
+                </SheetClose>
                 <Separator />
-                <Link
-                  className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                  href="/about"
-                >
-                  <SheetClose>About</SheetClose>
-                </Link>
+                <SheetClose asChild>
+                  <Link
+                    className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                    href="/about"
+                  >
+                    About
+                  </Link>
+                </SheetClose>
                 <Separator />
-                <Link
-                  className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                  href="/works"
-                >
-                  <SheetClose>Works</SheetClose>
-                </Link>
+                <SheetClose asChild>
+                  <Link
+                    className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
+                    href="/contact"
+                  >
+                    Contact
+                  </Link>
+                </SheetClose>
                 <Separator />
-                <Link
-                  className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"
-                  href="/contact"
-                >
-                  <SheetClose>Contact</SheetClose>
-                </Link>
-                <Separator />
-
                 {!session && (
                   <Link
                     className="text-lg hover:text-foreground/40 transition-all duration-200 py-4 px-4"

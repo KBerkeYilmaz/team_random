@@ -34,14 +34,14 @@ export default function AccountMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="w-full flex justify-center"
+          className="w-full flex justify-center cursor-pointer"
           onClick={() => router.push("/dashboard/account")}
         >
           Settings
         </DropdownMenuItem>
-        <DropdownMenuItem className="w-full flex justify-center">
+        {/* <DropdownMenuItem className="w-full flex justify-center">
           Support
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <DropdownMenuSeparator />
         <SignOutButton />
       </DropdownMenuContent>
