@@ -29,14 +29,13 @@ const Dashboard = async () => {
       </div>
       <Separator />
 
-      <div className="grid grid-cols-2 gap-4 py-10 max-w-5xl">
+      <div className="grid sm:grid-cols-2 gap-4 py-10 max-w-5xl">
         <Card className="flex flex-col justify-center items-center shadow-lg">
           <CardHeader className="text-center">
             <CardTitle>Total Works</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
             <h3 className="text-5xl font-bold">
-              {" "}
               <CounterNumber num={workCount} />
             </h3>
           </CardContent>
