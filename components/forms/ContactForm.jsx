@@ -128,7 +128,7 @@ export default function ContactForm() {
           </p>
         </div>
 
-        <div className="bg-[url('/images/contact.svg')] dark:bg-[url('/images/contact-dark-2.svg')] md:max-w-lg py-4 sm:px-14 flex flex-col justify-center items-center text-center text-white gap-6 rounded-t-lg md:rounded-tl-none md:rounded-r-lg md:order-2 order-1 bg-cover bg-center">
+        <div className="bg-[url('/images/contact.svg')] dark:bg-[url('/images/contact-dark.svg')] md:max-w-lg py-4 sm:px-14 flex flex-col justify-center items-center text-center text-white gap-6 rounded-t-lg md:rounded-tl-none md:rounded-r-lg md:order-2 order-1 bg-cover bg-center">
           <h2 className="md:text-4xl text-2xl font-bold drop-shadow-xl px-6 sm:p-6 md:p-0">
             Lorem ipsum dolor sit amet consectetur.
           </h2>

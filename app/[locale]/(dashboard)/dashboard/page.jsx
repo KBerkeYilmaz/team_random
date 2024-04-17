@@ -29,7 +29,7 @@ const Dashboard = async () => {
       </div>
       <Separator />
 
-      <div className="grid grid-cols-2 gap-4 py-10">
+      <div className="grid grid-cols-2 gap-4 py-10 max-w-5xl">
         <Card className="flex flex-col justify-center items-center shadow-lg">
           <CardHeader className="text-center">
             <CardTitle>Total Works</CardTitle>
