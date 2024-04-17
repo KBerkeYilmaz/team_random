@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 
 function MyAccount() {
   const { data } = useSession();
-  console.log(data);
+
   if (!data) {
     return (
       <div className="flex w-full justify-center mt-10">
