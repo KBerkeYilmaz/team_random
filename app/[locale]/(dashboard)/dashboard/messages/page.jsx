@@ -3,6 +3,8 @@ import { Loader2 } from "lucide-react";
 import { fetchInbox } from "@/actions/emailAction";
 import { Separator } from "@/components/ui/separator";
 
+
+
 async function page() {
   const data = await fetchInbox();
   if (!data) {
@@ -12,6 +14,7 @@ async function page() {
       </div>
     );
   }
+
   return (
     <div className="h-full w-full p-10 animate-fadeIn">
       <h1 className="text-4xl font-semibold">Inbox</h1>
@@ -25,6 +28,7 @@ async function page() {
             <h3>{email.subject}</h3>
             <p>{email.date}</p>
             <p>{email.from}</p>
+            <p>{email.body}</p>
           </li>
         ))}
       </ul>

@@ -1,15 +1,16 @@
 import { ModeToggle } from "@/components/ModeToggle";
 import { Bell, Menu, Package2, Search } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AccountMenu from "./AccountMenu";
 import { Link } from "@/navigation";
 import DashboardSidebarNav from "./DashboardSidebarNav";
 import DashboardSidebarNavMobile from "./DashboardSidebarNavMobile";
+import { fetchUnseen } from "@/actions/emailAction";
 
 const DashboardSidebar = async ({ children }) => {
+  const unReadMails = await fetchUnseen();
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
@@ -24,7 +25,7 @@ const DashboardSidebar = async ({ children }) => {
               <span className="sr-only">Toggle notifications</span>
             </Button>
           </div>
-          <DashboardSidebarNav />
+          <DashboardSidebarNav unReadMailsCount={unReadMails} />
         </div>
       </div>
 
@@ -42,7 +43,7 @@ const DashboardSidebar = async ({ children }) => {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col pt-10">
-              <DashboardSidebarNavMobile />
+              <DashboardSidebarNavMobile unReadMailsCount={unReadMails} />
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1"></div>
