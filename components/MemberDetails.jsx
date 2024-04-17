@@ -49,34 +49,54 @@ export default function MemberDetails({ member }) {
               Image
             </div>
           ) : (
-            <Image
+            <img
               src={member.memberImage}
-              width={80}
-              height={80}
               priority={false}
               alt="User Picture"
+              className="w-[180px] h-[180px]"
             />
           )}
-          <div className="flex flex-col w-full">
+          <div className="flex flex-col w-full gap-1">
             <div className="flex items-center gap-1 w-full">
               <Label className="text-md">Name: </Label>
               <p className="break-all">{member.memberName}</p>
             </div>
             <div className="flex items-center gap-1 w-full">
-              <Label className="text-md">Bio: </Label>
-              <p className="break-all">{member.memberBio}</p>
-            </div>
-            <div className="flex items-center gap-1 w-full">
               <Label className="text-md">Title: </Label>
               <p className="break-all">{member.memberTitle}</p>
             </div>
+
+            {member.memberPersonal && (
+              <div className="flex items-center gap-1 w-full">
+                <Label className="text-md">Personal: </Label>
+                <p className="break-all">
+                  {" "}
+                  <a href={member.memberPersonal}> {member.memberPersonal}</a>
+                </p>
+              </div>
+            )}
+            {member.memberLinkedin && (
+              <div className="flex items-center gap-1 w-full">
+                <Label className="text-md">Linkedin: </Label>
+                <p className="break-all">
+                  {" "}
+                  <a href={member.memberLinkedin}> {member.memberLinkedin}</a>
+                </p>
+              </div>
+            )}
             {member.memberGithub && (
               <div className="flex items-center gap-1 w-full">
                 <Label className="text-md">Github: </Label>
-                <p className="break-all">{member.memberGithub}</p>
+                <p className="break-all">
+                  {" "}
+                  <a href={member.memberGithub}> {member.memberGithub}</a>
+                </p>
               </div>
             )}
-            <div className="flex items-center gap-1 w-full"></div>
+            <div className="flex  gap-1 w-full">
+              <Label className="text-md">Bio: </Label>
+              <p className="break-all">{member.memberBio}</p>
+            </div>
           </div>
         </div>
         <div>

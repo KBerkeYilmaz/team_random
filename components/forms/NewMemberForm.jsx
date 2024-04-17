@@ -86,6 +86,7 @@ const NewMemberForm = () => {
         });
         setOpen(false);
         setIsSubmitting(false);
+        form.reset();
       }
     } else {
       const userInfo = { ...values, memberImage: "" };
