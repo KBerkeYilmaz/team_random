@@ -4,8 +4,6 @@ import { Link, usePathname } from "@/navigation";
 import { Home, Package, ShoppingCart, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SignOutButton } from "@/components/SignOutButton";
-import { Loader2 } from "lucide-react";
-import { fetchUnseen } from "@/actions/emailAction";
 
 export default function DashboardSidebarNav({ unReadMailsCount }) {
   const pathname = usePathname();

@@ -2,13 +2,9 @@ import { ModeToggle } from "@/components/ModeToggle";
 import { SignOutButton } from "@/components/SignOutButton";
 import {
   Bell,
-  Home,
   Menu,
-  Package,
   Package2,
   Search,
-  ShoppingCart,
-  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
