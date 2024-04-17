@@ -75,7 +75,6 @@ export async function GET(req) {
         seen: false,
       })) {
         // console.log(`${message.uid}: ${message.envelope.subject}`);
-
         emailList.push({
           uid: message.uid,
           subject: message.envelope.subject,
