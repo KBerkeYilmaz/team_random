@@ -66,31 +66,34 @@ export async function GET(req) {
       let message = await client.fetchOne(client.mailbox.exists, {
         source: true,
       });
-      //   console.log(message.source.toString());
+        console.log(message.source.toString());
 
       // list subjects for all messages
       // uid value is always included in FETCH response, envelope strings are in unicode.
+      // console.log(`${message.uid}: ${message.envelope.subject}`);
       for await (let message of client.fetch("1:*", {
         envelope: true,
         seen: false,
+        bodyParts: true,
+        bodyStructure: true,
       })) {
-        // console.log(`${message.uid}: ${message.envelope.subject}`);
 
         emailList.push({
+          envelope: message.envelope,
           uid: message.uid,
           subject: message.envelope.subject,
           date: message.envelope.date,
           from: message.envelope.from.map((f) => f.address).join(", "),
+          body: message.bodyStructure.part
         });
       }
     } finally {
       // Make sure lock is released, otherwise next `getMailboxLock()` never returns
       lock.release();
     }
-    revalidatePath("/dashboard/messages");
     // log out and close connection
     await client.logout();
-
+    console.log("emailList", emailList);
     return NextResponse.json(emailList, {
       status: 200,
       headers: { "Cache-Control": "no-store" },
