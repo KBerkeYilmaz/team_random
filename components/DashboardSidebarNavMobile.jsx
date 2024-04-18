@@ -6,7 +6,7 @@ import { SignOutButton } from "@/components/SignOutButton";
 import { SheetClose } from "./ui/sheet";
 import { Separator } from "./ui/separator";
 
-export default function DashboardSidebarNavMobile({unReadMailsCount}) {
+export default function DashboardSidebarNavMobile({ unReadMailsCount }) {
   const pathname = usePathname();
 
   return (
@@ -63,7 +63,7 @@ export default function DashboardSidebarNavMobile({unReadMailsCount}) {
           Works
         </Link>
       </SheetClose>
-      <SignOutButton />
+      {/* <SignOutButton /> */}
     </nav>
   );
 }

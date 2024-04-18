@@ -61,8 +61,8 @@ export default function ContactForm() {
     <div className="sm:p-6 h-full w-full flex justify-center items-center">
       <div className="flex flex-col md:flex-row border bg-muted/80 shadow-xl rounded-b-lg md:rounded-l-lg max-w-md md:max-w-none">
         <div className="md:max-w-sm p-6 md:p-10 md:order-1 order-2 ">
-          <h1 className=" text-2xl md:text-4xl font-semibold pb-10">
-            Send us an email!
+          <h1 className=" text-2xl md:text-4xl text-center md:text-start font-semibold pb-4 md:pb-10">
+            Send Us an Email!
           </h1>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -128,7 +128,7 @@ export default function ContactForm() {
           </p>
         </div>
 
-        <div className="bg-[url('/images/contact.svg')] dark:bg-[url('/images/contact-dark.svg')] md:max-w-lg py-4 sm:px-14 flex flex-col justify-center items-center text-center text-white gap-6 rounded-t-lg md:rounded-tl-none md:rounded-r-lg md:order-2 order-1 bg-cover bg-center">
+        <div className="bg-[url('/images/contact.svg')] dark:bg-[url('/images/contact-dark.svg')] md:max-w-lg py-8 sm:px-14 flex flex-col justify-center items-center text-center text-white gap-6 rounded-t-lg md:rounded-tl-none md:rounded-r-lg md:order-2 order-1 bg-cover bg-center">
           <h2 className="md:text-4xl text-2xl font-bold drop-shadow-xl px-6 sm:p-6 md:p-0">
             Lorem ipsum dolor sit amet consectetur.
           </h2>
