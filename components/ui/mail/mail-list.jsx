@@ -7,10 +7,18 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 // import { Separator } from "@/components/ui/separator"
 import { Mail } from "@/app/[locale]/(dashboard)/dashboard/messages/data"
 import { useMail } from "@/app/[locale]/(dashboard)/dashboard/messages/use-mail"
-
+import { Loader2 } from "lucide-react";
 
 export function MailList({ items }) {
   const [mail, setMail] = useMail()
+
+  if (!items.length) {
+    return (
+      <div className="flex flex-col w-full h-full justify-center items-center mt-10">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <ScrollArea className="h-screen">
@@ -53,7 +61,7 @@ export function MailList({ items }) {
               <div className="text-xs font-medium">{item.subject}</div>
             </div>
             <div className="line-clamp-2 text-xs text-muted-foreground">
-              {item.text.substring(0, 300)}
+            {item.text?.substring(0, 300) ?? ''}
             </div>
             {item.labels.length ? (
               <div className="flex items-center gap-2">
