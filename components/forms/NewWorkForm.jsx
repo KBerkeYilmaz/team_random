@@ -140,7 +140,7 @@ const NewWorkForm = () => {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(newWork)} className="w-full">
-              <div className="grid md:grid-cols-2 gap-2 px-2">
+              <div className="grid gap-2 px-2">
                 <FormField
                   control={form.control}
                   name="workTitle"
