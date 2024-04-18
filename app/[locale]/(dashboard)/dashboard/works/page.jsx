@@ -18,7 +18,9 @@ const Works = async () => {
 
   return (
     <div className="h-full w-full p-10 animate-fadeIn">
-      <h1 className="text-4xl font-semibold">Works</h1>
+      <h1 className="text-4xl font-semibold md:text-start text-center  w-full">
+        Works
+      </h1>
       <Separator className="my-4" />
       <div className="flex flex-col gap-4 py-4 w-full">
         <DataTable
