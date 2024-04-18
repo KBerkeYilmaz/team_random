@@ -50,7 +50,6 @@ export async function createMember(formData) {
     };
   }
 }
-
 export async function updateMember(formData, id) {
   const newMemberSchema = z.object({
     memberName: z.string().min(3, "Member name must be at least 3 characters."),
@@ -105,7 +104,6 @@ export async function updateMember(formData, id) {
     };
   }
 }
-
 export const updateMemberImage = async (imgUrl, id) => {
   try {
     await connectDB();
@@ -120,7 +118,6 @@ export const updateMemberImage = async (imgUrl, id) => {
   }
 
 }
-
 export async function getMembers() {
   try {
     await connectDB();
@@ -147,7 +144,16 @@ export async function getMembers() {
     return { error: "Something went wrong" }
   }
 }
-
+export async function getMemberCount() {
+  try {
+    await connectDB();
+    const result = await Member.countDocuments()
+    return result
+  } catch (error) {
+    console.log(error);
+    return { error: "Something went wrong" }
+  }
+}
 export async function getMember(id) {
   try {
     await connectDB();
@@ -172,7 +178,6 @@ export async function getMember(id) {
     return { error: "Something went wrong" }
   }
 }
-
 export async function deleteMember(id) {
   try {
     await connectDB();

@@ -21,7 +21,7 @@ export default function LocaleLayout({ children, params: { locale } }) {
           <SessionProvider>
             <ThemeProvider
               attribute="class"
-              defaultTheme="system"
+              defaultTheme="dark"
               enableSystem
               disableTransitionOnChange
             >

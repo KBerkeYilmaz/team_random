@@ -31,7 +31,7 @@ export function HeroWavy({ header, span }) {
       backgroundFill={darkMode ? "#0c0a09" : "#f6f7fe"}
     >
       <h1
-        className={`${permanentMarker.className} font-bold tracking-wider text-4xl sm:text-6xl md:text-7xl lg:text-9xl dark:text-orange-500 text-center`}
+        className={`${permanentMarker.className} font-bold tracking-wider text-4xl sm:text-6xl md:text-7xl lg:text-9xl dark:text-primary text-center`}
       >
         {header}
       </h1>

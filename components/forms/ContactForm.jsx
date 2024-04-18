@@ -66,13 +66,13 @@ export default function ContactForm() {
           </h1>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-              <div className="gap-2">
+              <div className="flex  flex-col gap-2">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel className>Full Name</FormLabel>
                       <FormControl>
                         <Input placeholder="Your Name" {...field} />
                       </FormControl>
@@ -85,7 +85,7 @@ export default function ContactForm() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel className>Email</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="yourmail@teamrandom.com"
@@ -101,7 +101,7 @@ export default function ContactForm() {
                   name="message"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Your message</FormLabel>
+                      <FormLabel className>Your message</FormLabel>
                       <FormControl>
                         <Textarea placeholder="Your message.." {...field} />
                       </FormControl>
@@ -111,11 +111,11 @@ export default function ContactForm() {
                 />
               </div>
               {!isSubmitting ? (
-                <Button className="w-full mt-2" type="submit">
+                <Button className="w-full mt-3" type="submit">
                   Submit
                 </Button>
               ) : (
-                <Button className="w-full mt-2" disabled>
+                <Button className="w-full mt-3" disabled>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Please wait
                 </Button>
@@ -128,7 +128,7 @@ export default function ContactForm() {
           </p>
         </div>
 
-        <div className="bg-[url('/images/contact.svg')] dark:bg-[url('/images/contact-dark-2.svg')] md:max-w-lg py-4 sm:px-14 flex flex-col justify-center items-center text-center text-white gap-6 rounded-t-lg md:rounded-tl-none md:rounded-r-lg md:order-2 order-1 bg-cover bg-center">
+        <div className="bg-[url('/images/contact.svg')] dark:bg-[url('/images/contact-dark.svg')] md:max-w-lg py-4 sm:px-14 flex flex-col justify-center items-center text-center text-white gap-6 rounded-t-lg md:rounded-tl-none md:rounded-r-lg md:order-2 order-1 bg-cover bg-center">
           <h2 className="md:text-4xl text-2xl font-bold drop-shadow-xl px-6 sm:p-6 md:p-0">
             Lorem ipsum dolor sit amet consectetur.
           </h2>
