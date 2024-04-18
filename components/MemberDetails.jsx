@@ -39,68 +39,94 @@ export default function MemberDetails({ member }) {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col gap-4 justify-start items-start pb-28 p-10 animate-fadeIn overflow-y-scroll no-scrollbar">
-      <h2 className="text-4xl font-semibold">Member Details</h2>
+    <div className="h-screen w-full flex flex-col gap-4 justify-start items-center md:items-start pb-28 p-10 animate-fadeIn overflow-y-scroll no-scrollbar">
+      <h2 className="text-4xl font-semibold sm:text-start text-center">
+        Member Details
+      </h2>
       <Separator />
-      <div className="flex gap-4 w-full max-w-5xl">
+      <div className="flex gap-4 w-full max-w-5xl flex-col lg:flex-row">
         <div className="flex flex-col sm:flex-row gap-6 w-full">
-          {member.memberImage === undefined || member.memberImage === "" ? (
-            <div className=" w-60 aspect-square bg-gray-800 text-white flex justify-center items-center rounded">
-              Image
-            </div>
-          ) : (
-            <img
-              src={member.memberImage}
-              priority={false}
-              alt="User Picture"
-              className="w-[180px] h-[180px]"
-            />
-          )}
-          <div className="flex flex-col w-full gap-1">
-            <div className="flex items-center gap-1 w-full">
-              <Label className="text-md">Name: </Label>
-              <p className="break-all">{member.memberName}</p>
-            </div>
-            <div className="flex items-center gap-1 w-full">
-              <Label className="text-md">Title: </Label>
-              <p className="break-all">{member.memberTitle}</p>
-            </div>
-
-            {member.memberPersonal && (
-              <div className="flex items-center gap-1 w-full">
-                <Label className="text-md">Personal: </Label>
-                <p className="break-all">
-                  {" "}
-                  <a href={member.memberPersonal}> {member.memberPersonal}</a>
+          <div className="flex sm:flex-row justify-center md:justify-start min-w-fit">
+            {member.memberImage === undefined || member.memberImage === "" ? (
+              <div className=" w-[180px] aspect-square bg-gray-800 text-white flex justify-center items-center rounded">
+                Image
+              </div>
+            ) : (
+              <img
+                src={member.memberImage}
+                priority={false}
+                alt="User Picture"
+                className="md:w-[180px] w-[220px] sm:w-[250px] md:h-[180px] h-[220px] sm:h-[250px]"
+              />
+            )}
+          </div>
+          <div className="flex flex-col w-full gap-2">
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-1">
+              <div className="flex gap-1 w-full flex-col md:flex-row">
+                <Label className="text-md font-bold dark:text-primary ">
+                  Name:{" "}
+                </Label>
+                <p className="break-all sm:text-start text-justify">
+                  {member.memberName}
                 </p>
               </div>
-            )}
-            {member.memberLinkedin && (
-              <div className="flex items-center gap-1 w-full">
-                <Label className="text-md">Linkedin: </Label>
-                <p className="break-all">
-                  {" "}
-                  <a href={member.memberLinkedin}> {member.memberLinkedin}</a>
+              <div className="flex gap-1 w-full flex-col md:flex-row">
+                <Label className="text-md font-bold dark:text-primary ">
+                  Title:{" "}
+                </Label>
+                <p className="break-all sm:text-start text-justify">
+                  {member.memberTitle}
                 </p>
               </div>
-            )}
-            {member.memberGithub && (
-              <div className="flex items-center gap-1 w-full">
-                <Label className="text-md">Github: </Label>
-                <p className="break-all">
-                  {" "}
-                  <a href={member.memberGithub}> {member.memberGithub}</a>
-                </p>
-              </div>
-            )}
-            <div className="flex  gap-1 w-full">
-              <Label className="text-md">Bio: </Label>
-              <p className="break-all">{member.memberBio}</p>
+              {member.memberPersonal && (
+                <div className="flex gap-1 w-full flex-col md:flex-row">
+                  <Label className="text-md font-bold dark:text-primary ">
+                    Personal:{" "}
+                  </Label>
+                  <p className="break-all sm:text-start text-justify">
+                    {" "}
+                    <a href={member.memberPersonal}> {member.memberPersonal}</a>
+                  </p>
+                </div>
+              )}
+              {member.memberLinkedin && (
+                <div className="flex gap-1 w-full flex-col md:flex-row">
+                  <Label className="text-md font-bold dark:text-primary ">
+                    Linkedin:{" "}
+                  </Label>
+                  <p className="break-all sm:text-start text-justify">
+                    {" "}
+                    <a href={member.memberLinkedin}> {member.memberLinkedin}</a>
+                  </p>
+                </div>
+              )}
+              {member.memberGithub && (
+                <div className="flex gap-1 w-full flex-col md:flex-row">
+                  <Label className="text-md font-bold dark:text-primary ">
+                    Github:{" "}
+                  </Label>
+                  <p className="break-all sm:text-start text-justify">
+                    <a href={member.memberGithub}> {member.memberGithub}</a>
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-1 w-full flex-col md:flex-row">
+              <Label className="text-md font-bold dark:text-primary ">
+                Bio:{" "}
+              </Label>
+              <p className="break-all sm:text-start text-justify">
+                {member.memberBio}
+              </p>
             </div>
           </div>
         </div>
-        <div>
-          <Button onClick={() => setOpen(true)} variant="destructive">
+        <div className="w-full sm:w-fit">
+          <Button
+            className="w-full sm:w-fit"
+            onClick={() => setOpen(true)}
+            variant="destructive"
+          >
             Delete Member
           </Button>
         </div>

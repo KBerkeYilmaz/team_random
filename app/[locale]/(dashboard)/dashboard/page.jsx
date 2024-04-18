@@ -22,7 +22,9 @@ const Dashboard = async () => {
 
   return (
     <div className="flex flex-col justify-center w-full p-10 animate-fadeIn">
-      <h1 className="text-4xl mb-4 font-semibold">Dashboard</h1>
+      <h1 className="text-4xl mb-4 font-semibold md:text-start text-center">
+        Dashboard
+      </h1>
       <Separator />
       <div className="py-10 text-xl w-full px-2">
         <h2>Welcome, {session.user.name}</h2>

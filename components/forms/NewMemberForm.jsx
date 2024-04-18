@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Textarea } from "../ui/textarea";
 
 const formSchema = z.object({
   memberName: z.string().min(3, "Member name must be at least 3 characters."),
@@ -140,7 +141,7 @@ const NewMemberForm = () => {
           </div>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
-              <div className="grid md:grid-cols-2 gap-2">
+              <div className="grid md:grid-cols-2 gap-2 px-2">
                 <FormField
                   control={form.control}
                   name="memberName"
@@ -180,19 +181,7 @@ const NewMemberForm = () => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="memberBio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bio</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
                 <FormField
                   control={form.control}
                   name="memberPersonal"
@@ -232,15 +221,27 @@ const NewMemberForm = () => {
                     </FormItem>
                   )}
                 />
-                <div></div>
+                <FormField
+                  control={form.control}
+                  name="memberBio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bio</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {!isSubmitting ? (
-                <Button className="w-full mt-2" type="submit">
+                <Button className="w-full mt-4" type="submit">
                   Submit
                 </Button>
               ) : (
-                <Button className="w-full mt-2" disabled>
+                <Button className="w-full mt-4" disabled>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Please wait
                 </Button>

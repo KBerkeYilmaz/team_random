@@ -49,7 +49,7 @@ export default function DashboardSidebarNav({ unReadMailsCount }) {
         <Users className="h-5 w-5" />
         Works
       </Link>
-      <SignOutButton />
+      {/* <SignOutButton /> */}
     </nav>
   );
 }

@@ -49,7 +49,7 @@ export const EditUserForm = ({ user }) => {
     const maxWidth = 400;
 
     if (viewportWidth < 500) {
-      const responsiveWidth = Math.max(minWidth, viewportWidth * 0.8); // Calculate 80% of viewport width or minWidth
+      const responsiveWidth = Math.max(minWidth, viewportWidth * 0.7); // Calculate 80% of viewport width or minWidth
       setDropzoneWidth(Math.min(responsiveWidth, maxWidth)); // Ensure width does not exceed maxWidth
     } else {
       setDropzoneWidth(maxWidth); // For larger screens, use maxWidth
@@ -120,7 +120,9 @@ export const EditUserForm = ({ user }) => {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <h2 className="text-3xl font-semibold">Edit User Info</h2>
+      <h2 className="text-3xl font-semibold md:text-start text-center">
+        Edit User Info
+      </h2>
       <Separator />
       <div className="flex flex-col gap-2 max-w-2xl">
         <div className="flex-col flex gap-3">
@@ -129,7 +131,7 @@ export const EditUserForm = ({ user }) => {
           </Label>
           <div className="flex items-center justify-center gap-4 ">
             <div className="flex flex-col justify-between w-full gap-2">
-              <div className="flex w-full ">
+              <div className="flex w-full justify-center md:justify-start">
                 <SingleImageDropzone
                   width={dropzoneWidth}
                   height={100}
@@ -162,7 +164,7 @@ export const EditUserForm = ({ user }) => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel className="font-bold">Full Name</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -175,7 +177,7 @@ export const EditUserForm = ({ user }) => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="font-bold">Email</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>

@@ -99,7 +99,7 @@ export const EditWorkForm = ({ work }) => {
     const maxWidth = 400;
 
     if (viewportWidth < 500) {
-      const responsiveWidth = Math.max(minWidth, viewportWidth * 0.8); // Calculate 80% of viewport width or minWidth
+      const responsiveWidth = Math.max(minWidth, viewportWidth * 0.7); // Calculate 80% of viewport width or minWidth
       setDropzoneWidth(Math.min(responsiveWidth, maxWidth)); // Ensure width does not exceed maxWidth
     } else {
       setDropzoneWidth(maxWidth); // For larger screens, use maxWidth
@@ -115,17 +115,18 @@ export const EditWorkForm = ({ work }) => {
   //   console.log(file);
   return (
     <div className="flex flex-col gap-4 w-full">
-      <h2 className="text-3xl font-semibold">Edit Member Info</h2>
+      <h2 className="text-3xl font-semibold md:text-start text-center">
+        Edit Member Info
+      </h2>
       <Separator />
       <div className="flex flex-col w-full gap-2 max-w-5xl">
         <div className="flex-col flex gap-3 w-full">
           <Label className="text-lg" htmlFor="fullName">
             Member Image
           </Label>
-
           <div className="flex items-center justify-center gap-4">
             <div className="flex flex-col justify-between w-full gap-2">
-              <div className="flex w-full ">
+              <div className="flex w-full justify-center md:justify-start">
                 <MultiImageDropzone
                   value={fileStates}
                   dropzoneOptions={{
@@ -158,7 +159,7 @@ export const EditWorkForm = ({ work }) => {
                 name="workTitle"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel className="font-bold">Title</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -171,7 +172,7 @@ export const EditWorkForm = ({ work }) => {
                 name="workGithubURL"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Github URL</FormLabel>
+                    <FormLabel className="font-bold">Github URL</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -184,7 +185,7 @@ export const EditWorkForm = ({ work }) => {
                 name="workAppURL"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>App URL</FormLabel>
+                    <FormLabel className="font-bold">App URL</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -197,7 +198,7 @@ export const EditWorkForm = ({ work }) => {
                 name="workReadme"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Readme</FormLabel>
+                    <FormLabel className="font-bold">Readme</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -210,7 +211,7 @@ export const EditWorkForm = ({ work }) => {
                 name="workTechStack"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tech Stack</FormLabel>
+                    <FormLabel className="font-bold">Tech Stack</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -223,7 +224,7 @@ export const EditWorkForm = ({ work }) => {
                 name="workContributors"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contributors</FormLabel>
+                    <FormLabel className="font-bold">Contributors</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
