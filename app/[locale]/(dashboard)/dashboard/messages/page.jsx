@@ -10,7 +10,7 @@ import {
 
 async function page() {
   // const data = await fetchInbox();
-  if (!mails.length) {
+  if (!mails) {
     return (
       <div className="flex w-full justify-center mt-10">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
