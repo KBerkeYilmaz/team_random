@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -110,149 +110,20 @@ const NewWorkForm = () => {
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-    >
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          className=""
-          variant="outline"
-        >
+        <Button className="" variant="outline">
           Create New Work
         </Button>
       </DialogTrigger>
-      <DialogContent className="md:min-w-[800px] p-8  overflow-y-auto max-h-[90%]">
+      <DialogContent className="md:min-w-[800px] p-8">
         <DialogHeader className=" text-2xl md:text-4xl font-semibold">
           Create New Work
         </DialogHeader>
         <Separator />
 
-        <div className="flex gap-4 flex-col-reverse sm:flex-row w-full">
-          <div className="min-w-[50%]">
-            <Form
-              {...form}
-            >
-              <form
-                onSubmit={form.handleSubmit(newWork)}
-                className="space-y-8"
-              >
-                <FormField
-                  control={form.control}
-                  name="workTitle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Title"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Separator />
-                <div className="flex flex-col w-full gap-4">
-                  <FormField
-                    control={form.control}
-                    name="workGithubURL"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel>Github URL(opt)</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Github URL"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="workAppURL"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel>App URL(opt)</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="App URL"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="flex flex-col w-full gap-4">
-                  <FormField
-                    control={form.control}
-                    name="workReadme"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel>Readme</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Readme"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="workTechStack"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel>Tech Stack</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Tech Stack"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="workContributors"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Contributors (Opt)</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Contributors"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="submit"
-                  disabled={pending}
-                  className={`w-full`}
-                >
-                  {pending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    "Add new work"
-                  )}
-                </Button>
-              </form>
-            </Form>
-          </div>
-          <div className="overflow-y-auto max-h-full">
+        <div className="flex mt-2 gap-4  md:flex-row flex-col max-h-[430px] md:max-h-[540px]  overflow-y-scroll no-scrollbar">
+          <div className="flex flex-col items-center md:items-start w-full md:w-fit gap-2">
             <MultiImageDropzone
               value={fileStates}
               dropzoneOptions={{
@@ -265,7 +136,105 @@ const NewWorkForm = () => {
                 setFileStates([...fileStates, ...addedFiles]);
               }}
             />
-            </div>
+          </div>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(newWork)} className="w-full">
+              <div className="grid md:grid-cols-2 gap-2 px-2">
+                <FormField
+                  control={form.control}
+                  name="workTitle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Title" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="workGithubURL"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Github URL(opt)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Github URL" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="workAppURL"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>App URL(opt)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="App URL" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="workTechStack"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tech Stack</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Tech Stack" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="workContributors"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contributors (Opt)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Contributors" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="workReadme"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Readme</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Readme" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {!pending ? (
+                <Button className="w-full mt-4" type="submit">
+                  Submit
+                </Button>
+              ) : (
+                <Button className="w-full mt-4" disabled>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait
+                </Button>
+              )}
+            </form>
+          </Form>
         </div>
       </DialogContent>
     </Dialog>
