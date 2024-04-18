@@ -23,7 +23,7 @@ export function MailList({ items }) {
   return (
     <ScrollArea className="h-screen">
       <div className="flex flex-col gap-2 p-4 pt-0">
-        {items.map((item) => (
+      {[...items].reverse().map((item) => (
           <button
             key={item.id}
             className={cn(
