@@ -78,7 +78,7 @@ export const EditWorkForm = ({ work, user }) => {
       };
 
       // Then, pass this updated data object to your API call function.
-      const response = await UpdateWork(dataWithImages, work.id);
+      const response = await UpdateWork(dataWithImages, work.id, user.role);
       if (response.error) {
         throw new Error(response.error);
       }
@@ -124,13 +124,13 @@ export const EditWorkForm = ({ work, user }) => {
   return (
     <div className="flex flex-col gap-4 w-full">
       <h2 className="text-3xl font-semibold md:text-start text-center">
-        Edit Member Info
+        Edit Work Info
       </h2>
       <Separator />
       <div className="flex flex-col w-full gap-2 max-w-5xl">
         <div className="flex-col flex gap-3 w-full">
           <Label className="text-lg" htmlFor="fullName">
-            Member Image
+            Work Image
           </Label>
           <div className="flex items-center justify-center gap-4">
             <div className="flex flex-col justify-between w-full gap-2">

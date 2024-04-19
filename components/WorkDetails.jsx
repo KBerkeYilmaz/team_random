@@ -43,7 +43,7 @@ export default function MemberDetails({ work }) {
     }
     try {
       console.log(work.id);
-      deleteWork(work.id);
+      deleteWork(work.id, data.user.role);
       toast({
         title: `Member "${work.Title}" deleted successfully !`,
       });
