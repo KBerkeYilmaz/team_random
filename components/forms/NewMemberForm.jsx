@@ -28,6 +28,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "../ui/textarea";
+import { useSession } from "next-auth/react";
 
 const formSchema = z.object({
   memberName: z.string().min(3, "Member name must be at least 3 characters."),
@@ -46,6 +47,7 @@ const NewMemberForm = () => {
   const [pending, setPending] = useState(false);
   const [file, setFile] = useState();
   const { toast } = useToast();
+  const { data } = useSession();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -61,6 +63,14 @@ const NewMemberForm = () => {
     },
   });
   const onSubmit = async (values) => {
+    if (data.user.role !== "admin") {
+      toast({
+        variant: "destructive",
+        title: "Error !",
+        description: `- Unauthorised !`,
+      });
+      return;
+    }
     setIsSubmitting(true);
     if (file) {
       const res = await edgestore.publicFiles.upload({
@@ -73,7 +83,7 @@ const NewMemberForm = () => {
       console.log("handlePicture-res.url: ", res.url);
 
       const userInfo = { ...values, memberImage: res.url };
-      const result = await createMember(userInfo);
+      const result = await createMember(userInfo, data.user.role);
       if (result.error) {
         toast({
           variant: "destructive",

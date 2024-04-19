@@ -16,7 +16,6 @@ function MyAccount() {
       </div>
     );
   }
-
   return (
     <div className="h-full w-full flex flex-col gap-4 justify-start items-center md:items-start p-10 animate-fadeIn overflow-y-scroll no-scrollbar">
       <h2 className="text-4xl font-semibold text-center sm:text-start ">
@@ -26,14 +25,13 @@ function MyAccount() {
       <div className="flex flex-col gap-4 w-full">
         <div className="flex flex-col sm:flex-row gap-6 w-full">
           <div className="flex sm:flex-row justify-center md:justify-start min-w-fit">
-            {data?.user.image === undefined ? (
-              <div className=" w-60 aspect-square bg-gray-800 text-white flex justify-center items-center rounded">
-                Image
+            {data?.user.image === "" ? (
+              <div className=" w-40 aspect-square bg-gray-800 text-white flex justify-center items-center rounded">
+                User Image
               </div>
             ) : (
               <img
                 src={data?.user.image}
-                priority={false}
                 alt="User Picture"
                 className="md:w-[180px] w-[220px] sm:w-[250px] md:h-[180px] h-[220px] sm:h-[250px]"
               />
