@@ -9,7 +9,7 @@ export default function DashboardSidebarNav({ unReadMailsCount }) {
   const pathname = usePathname();
 
   return (
-    <nav className="grid items-start px-2 text-sm font-medium  gap-2">
+    <nav className="grid items-start px-2 text-sm font-medium gap-2">
       <Link
         href="/dashboard"
         className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
@@ -49,7 +49,7 @@ export default function DashboardSidebarNav({ unReadMailsCount }) {
         <Package className="h-5 w-5" />
         Works
       </Link>
-      {/* <SignOutButton /> */}
+      <SignOutButton/>
     </nav>
   );
 }

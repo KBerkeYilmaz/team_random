@@ -63,7 +63,7 @@ export default function DashboardSidebarNavMobile({ unReadMailsCount }) {
           Works
         </Link>
       </SheetClose>
-      {/* <SignOutButton /> */}
+      <SignOutButton />
     </nav>
   );
 }
