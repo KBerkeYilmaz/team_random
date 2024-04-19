@@ -97,7 +97,7 @@ const NewWorkForm = () => {
       };
 
       // Then, pass this updated data object to your API call function.
-      const response = await createWork(dataWithImages);
+      const response = await createWork(dataWithImages, data.user.role);
       if (response.error) {
         throw new Error(response.error);
       }
