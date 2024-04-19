@@ -77,7 +77,6 @@ export const Navbar = () => {
           >
             About Us
           </Link>
-
           {session ? (
             <Link
               className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 animate-fadeIn"
