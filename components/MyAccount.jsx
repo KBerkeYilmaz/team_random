@@ -5,6 +5,7 @@ import { EditUserForm } from "@/components/forms/EditUserForm";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
+import { EditUserPasswordForm } from "./forms/EditUserPasswordForm";
 
 function MyAccount() {
   const { data } = useSession();
@@ -17,7 +18,7 @@ function MyAccount() {
     );
   }
   return (
-    <div className="h-full w-full flex flex-col gap-4 justify-start items-center md:items-start p-10 animate-fadeIn overflow-y-scroll no-scrollbar">
+    <div className="h-screen w-full flex flex-col gap-4 justify-start items-center md:items-start pb-28 p-10 animate-fadeIn overflow-y-scroll no-scrollbar">
       <h2 className="text-4xl font-semibold text-center sm:text-start ">
         My Account
       </h2>
@@ -52,8 +53,9 @@ function MyAccount() {
             </div>
           </div>
         </div>
-        <div className="flex w-full">
+        <div className="flex w-full  flex-wrap">
           <EditUserForm user={data?.user} />
+          <EditUserPasswordForm user={data?.user} />
         </div>
       </div>
     </div>
