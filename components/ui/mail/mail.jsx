@@ -30,7 +30,7 @@ import { MailDisplay } from "./mail-display";
 import { MailList } from "./mail-list";
 import { Nav } from "@/components/ui/mail/nav";
 // import useMailStore from "@/stores/mailStore"
-import { useMail } from "@/app/[locale]/(dashboard)/dashboard/messages/use-mail";
+import { useMail } from "@/app/[locale]/(dashboard)/dashboard/inbox/use-mail";
 import { fetchInbox } from "@/actions/emailAction";
 
 
@@ -51,7 +51,7 @@ export function Mail({
             name: email.from, // Assumed 'from' is a string; might need parsing
             email: email.from, // Same as above, adjust if structure is different
             subject: email.subject,
-            text: email.body, // Assuming body is plain text
+            text: email.text, // Assuming body is plain text
             date: email.date, // Make sure date is in a compatible format
             read: !email.unseen, // Convert unseen to read; adjust logic as needed
             labels: ["work"], // Default to ["work"] or derive from email data

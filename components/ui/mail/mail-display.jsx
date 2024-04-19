@@ -36,7 +36,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Mail } from "@/app/[locale]/(dashboard)/dashboard/messages/data";
+import { Mail } from "@/app/[locale]/(dashboard)/dashboard/inbox/data";
 
 export function MailDisplay({ mail }) {
   const today = new Date();
