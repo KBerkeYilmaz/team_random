@@ -1,6 +1,6 @@
 "use client";
 import { Link, usePathname } from "@/navigation";
-import { Home, Package, Package2, ShoppingCart, Users } from "lucide-react";
+import { Home, Package, Package2, Inbox, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SignOutButton } from "@/components/SignOutButton";
 import { SheetClose } from "./ui/sheet";
@@ -29,13 +29,13 @@ export default function DashboardSidebarNavMobile({ unReadMailsCount }) {
       </SheetClose>
       <SheetClose asChild>
         <Link
-          href="/dashboard/messages"
+          href="/dashboard/inbox"
           className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
-            pathname.includes("/dashboard/messages") && "bg-muted"
+            pathname.includes("/dashboard/inbox") && "bg-muted"
           } `}
         >
-          <ShoppingCart className="h-5 w-5" />
-          Messages
+          <Inbox className="h-5 w-5" />
+          Inbox
           <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
             {unReadMailsCount}
           </Badge>
@@ -48,7 +48,7 @@ export default function DashboardSidebarNavMobile({ unReadMailsCount }) {
             pathname.includes("/dashboard/members") && "bg-muted"
           } `}
         >
-          <Package className="h-5 w-5" />
+          <Users className="h-5 w-5" />
           Members
         </Link>
       </SheetClose>
@@ -59,7 +59,7 @@ export default function DashboardSidebarNavMobile({ unReadMailsCount }) {
             pathname.includes("/dashboard/works") && "bg-muted"
           } `}
         >
-          <Users className="h-5 w-5" />
+          <Package className="h-5 w-5" />
           Works
         </Link>
       </SheetClose>

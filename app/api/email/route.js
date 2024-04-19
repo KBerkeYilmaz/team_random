@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { ImapFlow } from "imapflow";
 import base64 from "base-64";
 import { revalidatePath } from "next/cache";
+import { simpleParser } from "mailparser";
 
 export async function POST(request) {
   const { email, name, message } = await request.json();
@@ -63,10 +64,20 @@ export async function GET(req) {
       // fetch latest message source
       // client.mailbox includes information about currently selected mailbox
       // "exists" value is also the largest sequence number available in the mailbox
-      let message = await client.fetchOne(client.mailbox.exists, {
-        source: true,
-      });
-        console.log(message.source.toString());
+      // let message = await client.fetchOne(client.mailbox.exists, {
+      //   source: true,
+      // });
+      //   console.log("latest message", message.source.toString());
+      // let rawEmail = await client.fetchOne(client.mailbox.exists, {
+      //   source: true,
+      // });
+
+      // // If rawEmail.source is a buffer, convert it to a string
+      // const source = rawEmail.source.toString();
+
+      // // Parse the email source to extract content
+      // const parsedEmail = await simpleParser(source);
+      // console.log("parsedEmail", parsedEmail.text);
 
       // list subjects for all messages
       // uid value is always included in FETCH response, envelope strings are in unicode.
@@ -76,16 +87,24 @@ export async function GET(req) {
         seen: false,
         bodyParts: true,
         bodyStructure: true,
+        source: true
       })) {
+        {
+          const source = message.source.toString();
 
-        emailList.push({
-          envelope: message.envelope,
-          uid: message.uid,
-          subject: message.envelope.subject,
-          date: message.envelope.date,
-          from: message.envelope.from.map((f) => f.address).join(", "),
-          body: message.bodyStructure.part
-        });
+          // Parse the email source to extract content
+          const parsedEmail = await simpleParser(source);
+    
+          // Fetch the full raw message source
+          emailList.push({
+            // envelope: message.envelope,
+            uid: message.uid,
+            subject: message.envelope.subject,
+            date: message.envelope.date,
+            from: message.envelope.from.map((f) => f.address).join(", "),
+            text: parsedEmail.text,
+          });
+        }
       }
     } finally {
       // Make sure lock is released, otherwise next `getMailboxLock()` never returns
@@ -93,7 +112,6 @@ export async function GET(req) {
     }
     // log out and close connection
     await client.logout();
-    console.log("emailList", emailList);
     return NextResponse.json(emailList, {
       status: 200,
       headers: { "Cache-Control": "no-store" },

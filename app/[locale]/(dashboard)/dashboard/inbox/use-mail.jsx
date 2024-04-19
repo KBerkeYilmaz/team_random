@@ -1,6 +1,6 @@
 
 import { atom, useAtom } from "jotai"
-import { Mail, mails } from "@/app/[locale]/(dashboard)/dashboard/messages/data"
+import { Mail, mails } from "@/app/[locale]/(dashboard)/dashboard/inbox/data"
 
 
 
