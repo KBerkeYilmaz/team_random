@@ -50,44 +50,41 @@ export default function Home() {
                   <h3 className="text-lg md:text-xl lg:text-3xl  font-semibold ">
                     An overview of what we do.
                   </h3>
-                  <p className="sm:text-sm md:text-md text-opacity-40 text-white font-normal">
+                  <p className="sm:text-sm md:text-md dark:text-[#ffffff31] font-normal">
                     Lorem, ipsum dolor sit amet consectetur adipisicing elit.
                     Commodi consequuntur modi est maxime? Optio, maiores.
                   </p>
                 </div>
               </div>
-              <div className="flex flex-col md:flex-row justify-center gap-10 md:gap-20 p-6 md:p-10 bg-black rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-50 w-fit  text-center md:text-start">
+              <div className="flex flex-col md:flex-row justify-center gap-10 md:gap-20 p-6 md:p-10 dark:bg-black bg-white rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm dark:bg-opacity-50 bg-opacity-10 w-fit  text-center md:text-start">
                 <div className="flex flex-col gap-2 max-w-[400px] md:max-w-[200px] items-center md:items-start w-full">
                   <Palette className="md:w-8 md:h-8 w-8 h-8" />
-                  <h4 className="font-bold text-white sm:text-sm md:text-lg">
+                  <h4 className="font-bold dark:text-white sm:text-sm md:text-lg">
                     Web Design
                   </h4>
-                  <p className="text-opacity-40 px-0 sm:px-12 md:px-0 z-20 text-white font-normal text-xs md:text-sm">
+                  <p className=" px-4 sm:px-12 md:px-0 z-20 dark:text-[#ffffff75] font-normal text-xs md:text-sm">
                     Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                    Consectetur illo recusandae reprehenderit debitis libero
-                    reiciendis!
+                    Consectetur illo recusandae!
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 max-w-[400px] md:max-w-[200px] items-center md:items-start w-full">
                   <PanelsTopLeft className="md:w-8 md:h-8 w-8 h-8" />
-                  <h4 className="font-bold text-white sm:text-sm md:text-lg">
+                  <h4 className="font-bold dark:text-white sm:text-sm md:text-lg">
                     Web Development
                   </h4>
-                  <p className="text-opacity-40 px-0 sm:px-12 md:px-0 z-20 text-white font-normal text-xs md:text-sm">
+                  <p className=" px-4 sm:px-12 md:px-0 z-20 dark:text-[#ffffff75] font-normal text-xs md:text-sm">
                     Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                    Consectetur illo recusandae reprehenderit debitis libero
-                    reiciendis!
+                    Consectetur illo recusandae!
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 max-w-[400px] md:max-w-[200px] items-center md:items-start w-full">
                   <Users className="md:w-8 md:h-8 w-8 h-8" />
-                  <h4 className="font-bold text-white sm:text-sm md:text-lg">
+                  <h4 className="font-bold dark:text-white sm:text-sm md:text-lg">
                     CRM Platforms
                   </h4>
-                  <p className="text-opacity-40 px-0 sm:px-12 md:px-0 z-20 text-white font-normal text-xs md:text-sm">
+                  <p className=" px-4 sm:px-12 md:px-0 z-20 dark:text-[#ffffff75] font-normal text-xs md:text-sm">
                     Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                    Consectetur illo recusandae reprehenderit debitis libero
-                    reiciendis!
+                    Consectetur illo recusandae!
                   </p>
                 </div>
               </div>
