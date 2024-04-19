@@ -25,10 +25,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AccountSwitcher } from "@/components/ui/mail/account-switcher";
 import { MailDisplay } from "./mail-display";
 import { MailList } from "./mail-list";
-import { Nav } from "@/components/ui/mail/nav";
 // import useMailStore from "@/stores/mailStore"
 import { useMail } from "@/app/[locale]/(dashboard)/dashboard/inbox/use-mail";
 import { fetchInbox } from "@/actions/emailAction";
@@ -82,111 +80,6 @@ export function Mail({
         }}
         className="h-full max-h-fit items-stretch"
       >
-        {/* <ResizablePanel
-          defaultSize={defaultLayout[0]}
-          collapsedSize={navCollapsedSize}
-          collapsible={true}
-          minSize={15}
-          maxSize={20}
-          onCollapse={(collapsed) => {
-            setIsCollapsed(collapsed)
-            document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-              collapsed
-            )}`
-          }}
-          className={cn(
-            isCollapsed &&
-              "min-w-[50px] transition-all duration-300 ease-in-out"
-          )}
-        >
-          <div
-            className={cn(
-              "flex h-[52px] items-center justify-center",
-              isCollapsed ? "h-[52px]" : "px-2"
-            )}
-          >
-            <AccountSwitcher isCollapsed={isCollapsed} accounts={accounts} />
-          </div>
-          <Separator />
-          <Nav
-            isCollapsed={isCollapsed}
-            links={[
-              {
-                title: "Inbox",
-                label: "128",
-                icon: Inbox,
-                variant: "default",
-              },
-              {
-                title: "Drafts",
-                label: "9",
-                icon: File,
-                variant: "ghost",
-              },
-              {
-                title: "Sent",
-                label: "",
-                icon: Send,
-                variant: "ghost",
-              },
-              {
-                title: "Junk",
-                label: "23",
-                icon: ArchiveX,
-                variant: "ghost",
-              },
-              {
-                title: "Trash",
-                label: "",
-                icon: Trash2,
-                variant: "ghost",
-              },
-              {
-                title: "Archive",
-                label: "",
-                icon: Archive,
-                variant: "ghost",
-              },
-            ]}
-          />
-          <Separator />
-          <Nav
-            isCollapsed={isCollapsed}
-            links={[
-              {
-                title: "Social",
-                label: "972",
-                icon: Users2,
-                variant: "ghost",
-              },
-              {
-                title: "Updates",
-                label: "342",
-                icon: AlertCircle,
-                variant: "ghost",
-              },
-              {
-                title: "Forums",
-                label: "128",
-                icon: MessagesSquare,
-                variant: "ghost",
-              },
-              {
-                title: "Shopping",
-                label: "8",
-                icon: ShoppingCart,
-                variant: "ghost",
-              },
-              {
-                title: "Promotions",
-                label: "21",
-                icon: Archive,
-                variant: "ghost",
-              },
-            ]}
-          />
-        </ResizablePanel>
-        <ResizableHandle withHandle /> */}
         <ResizablePanel
           defaultSize={defaultLayout[1]}
           minSize={30}
