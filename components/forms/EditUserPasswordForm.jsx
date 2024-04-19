@@ -17,18 +17,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const formSchema = z.object({
-  currentPassword: z.string().min(3),
-  newPassword: z.string().min(3),
-  passwordConfirmation: z.string().min(3),
-});
+const formSchema = z
+  .object({
+    currentPassword: z.string().min(3),
+    newPassword: z.string().min(3),
+    passwordConfirmation: z.string().min(3),
+  })
+  .refine((data) => data.newPassword === data.passwordConfirmation, {
+    message: "Passwords don't match",
+    path: ["passwordConfirmation"], // path of error
+  });
 
 import { useToast } from "../ui/use-toast";
 
 export const EditUserPasswordForm = ({ user }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  console.log(user);
+  // console.log(user);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
