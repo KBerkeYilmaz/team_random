@@ -80,18 +80,14 @@ export default function MemberDetails({ member }) {
                 </p>
               </div>
               <div className="flex gap-1 w-full flex-col md:flex-row">
-                <Label className="text-md font-bold dark:text-primary ">
-                  Title:{" "}
-                </Label>
+                <Label className="text-md font-bold">Title: </Label>
                 <p className="break-all sm:text-start text-justify">
                   {member.memberTitle}
                 </p>
               </div>
               {member.memberPersonal && (
                 <div className="flex gap-1 w-full flex-col md:flex-row">
-                  <Label className="text-md font-bold dark:text-primary ">
-                    Personal:{" "}
-                  </Label>
+                  <Label className="text-md font-bold">Personal: </Label>
                   <p className="break-all sm:text-start text-justify">
                     {" "}
                     <a href={member.memberPersonal}> {member.memberPersonal}</a>
@@ -100,9 +96,7 @@ export default function MemberDetails({ member }) {
               )}
               {member.memberLinkedin && (
                 <div className="flex gap-1 w-full flex-col md:flex-row">
-                  <Label className="text-md font-bold dark:text-primary ">
-                    Linkedin:{" "}
-                  </Label>
+                  <Label className="text-md font-bold">Linkedin: </Label>
                   <p className="break-all sm:text-start text-justify">
                     {" "}
                     <a href={member.memberLinkedin}> {member.memberLinkedin}</a>
@@ -111,9 +105,7 @@ export default function MemberDetails({ member }) {
               )}
               {member.memberGithub && (
                 <div className="flex gap-1 w-full flex-col md:flex-row">
-                  <Label className="text-md font-bold dark:text-primary ">
-                    Github:{" "}
-                  </Label>
+                  <Label className="text-md font-bold">Github: </Label>
                   <p className="break-all sm:text-start text-justify">
                     <a href={member.memberGithub}> {member.memberGithub}</a>
                   </p>
@@ -121,9 +113,7 @@ export default function MemberDetails({ member }) {
               )}
             </div>
             <div className="flex gap-1 w-full flex-col md:flex-row">
-              <Label className="text-md font-bold dark:text-primary ">
-                Bio:{" "}
-              </Label>
+              <Label className="text-md font-bold">Bio: </Label>
               <p className="break-all sm:text-start text-justify">
                 {member.memberBio}
               </p>
