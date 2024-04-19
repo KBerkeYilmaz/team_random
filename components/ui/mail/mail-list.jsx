@@ -21,7 +21,7 @@ export function MailList({ items }) {
   }
 
   return (
-    <ScrollArea className="h-screen">
+    <ScrollArea className="h-[70vh]">
       <div className="flex flex-col gap-2 p-4 pt-0">
       {[...items].reverse().map((item) => (
           <button

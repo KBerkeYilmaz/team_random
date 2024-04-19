@@ -25,6 +25,7 @@ async function auth(req, res) {
           // Your existing login logic here, adapted from the original function
           await connectDB();
           const user = await User.findOne({ userMail: email }).exec(); // Assuming your user schema has an 'email' field
+          console.log(user);
           if (!user) {
             throw new Error("No user found with the given email");
           }
@@ -48,18 +49,19 @@ async function auth(req, res) {
       secret: secret,
       maxAge: 60 * 60, // 1 hour
       updateAge: 60 * 60, // 1 hour
-  
+
     },
     callbacks: {
       async jwt({ token, user }) {
         // if (trigger === "update" && session?.name) {
-          if (user) {
-            token.id = user._id.toString(); // Correctly access the nested 'id'
-            token.email = user.userMail; // Example of adding more user details to the token
-            token.name = user.fullName; // Example of adding more user details to the token
-            token.image = user.img; // Example of adding more user details to the token
-          }
-          return token;
+        if (user) {
+          token.id = user._id.toString(); // Correctly access the nested 'id'
+          token.email = user.userMail; // Example of adding more user details to the token
+          token.name = user.fullName; // Example of adding more user details to the token
+          token.image = user.img; // Example of adding more user details to the token
+          token.role = user.role; // Example of adding more user details to the token
+        }
+        return token;
         // }
 
         if (user) {
@@ -76,6 +78,7 @@ async function auth(req, res) {
         session.user.email = token.email; // Add email to session
         session.user.name = token.name; // Add name to session
         session.user.image = token.image; // Add image to session
+        session.user.role = token.role; // Add image to session
         return session;
       },
     },

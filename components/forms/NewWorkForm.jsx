@@ -27,6 +27,7 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useSession } from "next-auth/react";
 
 const NewWorkForm = () => {
   const { edgestore } = useEdgeStore();
@@ -34,6 +35,7 @@ const NewWorkForm = () => {
   const [open, setOpen] = useState(false);
   const [fileStates, setFileStates] = useState([]);
   const { toast } = useToast();
+  const { data } = useSession();
 
   const newWorkSchema = z.object({
     workTitle: z.string().min(2, {
@@ -66,6 +68,15 @@ const NewWorkForm = () => {
   });
 
   async function newWork(formData) {
+    if (data.user.role !== "admin") {
+      toast({
+        variant: "destructive",
+        title: "Error !",
+        description: `- Unauthorised !`,
+      });
+      return;
+    }
+
     setPending(true);
 
     try {

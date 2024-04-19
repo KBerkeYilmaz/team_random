@@ -10,12 +10,13 @@ import { useState } from "react";
 import { DeleteAlert } from "./DeleteAlert";
 import Image from "next/image";
 import { EditMemberForm } from "./forms/EditMemberForm";
+import { useSession } from "next-auth/react";
 
 export default function MemberDetails({ member }) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-
+  const { data } = useSession();
   if (!member) {
     return (
       <div className="flex w-full justify-center mt-10">
@@ -25,9 +26,18 @@ export default function MemberDetails({ member }) {
   }
 
   const handleDelete = () => {
+    if (data.user.role !== "admin") {
+      toast({
+        variant: "destructive",
+        title: "Error !",
+        description: `- Unauthorised !`,
+      });
+      return;
+    }
+
     try {
       console.log(member.id);
-      deleteMember(member.id);
+      deleteMember(member.id, data.user.role);
       toast({
         title: `Member "${member.memberName}" deleted successfully !`,
       });
@@ -54,7 +64,6 @@ export default function MemberDetails({ member }) {
             ) : (
               <img
                 src={member.memberImage}
-                priority={false}
                 alt="User Picture"
                 className="md:w-[180px] w-[220px] sm:w-[250px] md:h-[180px] h-[220px] sm:h-[250px]"
               />
@@ -63,9 +72,11 @@ export default function MemberDetails({ member }) {
           <div className="flex flex-col w-full gap-2">
             <div className="grid grid-cols-2 gap-2 md:grid-cols-1">
               <div className="flex gap-1 w-full flex-col md:flex-row">
-                <Label className="text-md font-bold">Name: </Label>
+                <Label className="text-md font-bold dark:text-primary ">
+                  Full Name:{" "}
+                </Label>
                 <p className="break-all sm:text-start text-justify">
-                  {member.memberName}
+                  {member.memberName} {member.memberLastName}
                 </p>
               </div>
               <div className="flex gap-1 w-full flex-col md:flex-row">
@@ -124,7 +135,7 @@ export default function MemberDetails({ member }) {
           handleDelete={handleDelete}
         />
       </div>
-      <EditMemberForm member={member} />
+      <EditMemberForm user={data.user} member={member} />
     </div>
   );
 }

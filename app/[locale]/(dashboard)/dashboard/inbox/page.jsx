@@ -10,7 +10,7 @@ import {
 
 async function page() {
   const data = await fetchInbox();
-  console.log(data);
+  console.log("here is data:", data);
   if (!mails) {
     return (
       <div className="flex w-full justify-center mt-10">
@@ -31,18 +31,7 @@ async function page() {
 
   return (
     <div className="h-full w-full p-10 animate-fadeIn">
-      {/* <ul className="flex flex-col gap-4 py-4 w-full">
-        {data.map((email, index) => (
-          <li key={index}>
-            <span>{email.uid}</span>
-            <h3>{email.subject}</h3>
-            <p>{email.date}</p>
-            <p>{email.from}</p>
-            <p>{email.body}</p>
-          </li>
-        ))}
-      </ul> */}
-      <div className="hidden flex-col md:flex">
+      <div className="flex-col md:flex">
         <Mail
           accounts={accounts}
           // mails={mails}

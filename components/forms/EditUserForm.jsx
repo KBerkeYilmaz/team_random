@@ -63,9 +63,16 @@ export const EditUserForm = ({ user }) => {
   }, []);
 
   const onSubmit = async (values) => {
-    console.log(values);
+    if (user.role !== "admin") {
+      toast({
+        variant: "destructive",
+        title: "Error !",
+        description: `- Unauthorised !`,
+      });
+      return;
+    }
     setIsSubmitting(true);
-    const result = await updateUser(values, user.id);
+    const result = await updateUser(values, user.id, user.role);
     if (file) {
       handlePicture();
     }
@@ -103,7 +110,7 @@ export const EditUserForm = ({ user }) => {
   };
 
   const handleUpdatePicture = async (imgUrl) => {
-    const result = await updateUserImage(imgUrl, user.id);
+    const result = await updateUserImage(imgUrl, user.id, user.role);
 
     // console.log("handlePicture: ", file);
     // console.log("handlePicture: ", imgUrl);

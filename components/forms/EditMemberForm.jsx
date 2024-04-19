@@ -33,7 +33,7 @@ const formSchema = z.object({
   //   memberImage: z.string().url().optional().or(z.literal("")),
 });
 
-export const EditMemberForm = ({ member }) => {
+export const EditMemberForm = ({ member, user }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dropzoneWidth, setDropzoneWidth] = useState(400); // Default width
   const [file, setFile] = useState();
@@ -54,8 +54,16 @@ export const EditMemberForm = ({ member }) => {
   });
 
   const onSubmit = async (values) => {
+    if (user.role !== "admin") {
+      toast({
+        variant: "destructive",
+        title: "Error !",
+        description: `- Unauthorised !`,
+      });
+      return;
+    }
     setIsSubmitting(true);
-    const result = await updateMember(values, member.id);
+    const result = await updateMember(values, member.id, user.role);
 
     if (file) {
       handlePicture();
