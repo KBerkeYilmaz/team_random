@@ -72,17 +72,12 @@ export const Navbar = () => {
             Home
           </Link>
           <Link
-            className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200"
+            className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 w-fit"
             href="/about"
           >
-            About
+            About Us
           </Link>
-          <Link
-            className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200"
-            href="/contact"
-          >
-            Contact
-          </Link>
+
           {session ? (
             <Link
               className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 animate-fadeIn"
@@ -141,15 +136,7 @@ export const Navbar = () => {
                   </Link>
                 </SheetClose>
                 <Separator />
-                <SheetClose asChild>
-                  <Link
-                    className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 py-4 px-4"
-                    href="/contact"
-                  >
-                    Contact
-                  </Link>
-                </SheetClose>
-                <Separator />
+
                 {!session && (
                   <Link
                     className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 py-4 px-4"
