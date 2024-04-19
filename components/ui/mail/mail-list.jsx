@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 // import { Separator } from "@/components/ui/separator"
-import { Mail } from "@/app/[locale]/(dashboard)/dashboard/messages/data"
-import { useMail } from "@/app/[locale]/(dashboard)/dashboard/messages/use-mail"
+import { Mail } from "@/app/[locale]/(dashboard)/dashboard/inbox/data"
+import { useMail } from "@/app/[locale]/(dashboard)/dashboard/inbox/use-mail"
 import { Loader2 } from "lucide-react";
 
 export function MailList({ items }) {

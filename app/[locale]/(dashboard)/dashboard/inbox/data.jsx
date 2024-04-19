@@ -1,21 +1,21 @@
 // import { fetchInbox } from "@/actions/emailAction";
 
-// // const data = await fetchInbox();
+// const data = await fetchInbox();
 
-// // console.log("from mail data:" , data);
+// console.log("from mail data:" , data);
 
-// // export const mails = data.map((email, index) => ({
-// //     id: email.uid,
-// //     name: email.from,
-// //     email: email.from,
-// //     subject: email.subject,
-// //     text: email.body,
-// //     date: email.date,
-// //     read: true,
-// //     labels: ["work"],
-// //     }));
+// // // export const mails = data.map((email, index) => ({
+// // //     id: email.uid,
+// // //     name: email.from,
+// // //     email: email.from,
+// // //     subject: email.subject,
+// // //     text: email.body,
+// // //     date: email.date,
+// // //     read: true,
+// // //     labels: ["work"],
+// // //     }));
 
-// // console.log("from mail data:" , mails);
+// // // console.log("from mail data:" , mails);
 
 
 export const mails = [

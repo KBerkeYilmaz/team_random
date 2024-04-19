@@ -6,10 +6,11 @@ import { Mail } from "@/components/ui/mail/mail";
 import {
   accounts,
   mails,
-} from "@/app/[locale]/(dashboard)/dashboard/messages/data";
+} from "@/app/[locale]/(dashboard)/dashboard/inbox/data";
 
 async function page() {
-  // const data = await fetchInbox();
+  const data = await fetchInbox();
+  console.log(data);
   if (!mails) {
     return (
       <div className="flex w-full justify-center mt-10">
