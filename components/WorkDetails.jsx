@@ -17,12 +17,13 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useSession } from "next-auth/react";
 
 export default function MemberDetails({ work }) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-
+  const { data } = useSession();
   if (!work) {
     return (
       <div className="flex w-full justify-center mt-10">
@@ -32,6 +33,14 @@ export default function MemberDetails({ work }) {
   }
 
   const handleDelete = () => {
+    if (data.user.role !== "admin") {
+      toast({
+        variant: "destructive",
+        title: "Error !",
+        description: `- Unauthorised !`,
+      });
+      return;
+    }
     try {
       console.log(work.id);
       deleteWork(work.id);
@@ -126,7 +135,7 @@ export default function MemberDetails({ work }) {
           handleDelete={handleDelete}
         />
       </div>
-      <EditWorkForm work={work} />
+      <EditWorkForm user={data.user} work={work} />
     </div>
   );
 }
