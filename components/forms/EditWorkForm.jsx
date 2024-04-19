@@ -33,7 +33,7 @@ const formSchema = z.object({
   workImages: z.array(z.string().url()).optional(),
 });
 
-export const EditWorkForm = ({ work }) => {
+export const EditWorkForm = ({ work, user }) => {
   const [pending, setPending] = useState(false);
   const [dropzoneWidth, setDropzoneWidth] = useState(400); // Default width
   const [fileStates, setFileStates] = useState([]);
@@ -53,6 +53,14 @@ export const EditWorkForm = ({ work }) => {
   });
 
   const onSubmit = async (values) => {
+    if (user.role !== "admin") {
+      toast({
+        variant: "destructive",
+        title: "Error !",
+        description: `- Unauthorised !`,
+      });
+      return;
+    }
     setPending(true);
     try {
       // First, handle the image uploads.

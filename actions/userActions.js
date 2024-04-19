@@ -3,7 +3,9 @@ import connectDB from "@/lib/database"
 import User from "@/models/user"
 import { z } from "zod";
 
-export const updateUser = async (formData, id) => {
+export const updateUser = async (formData, id, role) => {
+
+
     const userSchema = z.object({
         fullName: z.string().min(3, "User name must be at least 3 characters."),
         userMail: z.string().email("Please enter a valid email."),
@@ -22,6 +24,10 @@ export const updateUser = async (formData, id) => {
         };
     }
     try {
+        if (role !== "admin") {
+            throw new Error
+        }
+
         await connectDB();
         const result = await User.findByIdAndUpdate(id, { fullName: formData.name, userMail: formData.email }, { new: true })
 
@@ -29,14 +35,17 @@ export const updateUser = async (formData, id) => {
         return {}
 
     } catch (error) {
-        console.log(error);
+        console.log(error.message);
         return { error: "Something went wrong" }
     }
 }
-export const updateUserImage = async (imgUrl, id) => {
-    //Todo - Validations
+export const updateUserImage = async (imgUrl, id, role) => {
 
     try {
+        if (role !== "admin") {
+            throw new Error
+        }
+
         await connectDB();
         const result = await User.findByIdAndUpdate(id, { img: imgUrl }, { new: true })
 
