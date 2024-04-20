@@ -58,6 +58,7 @@ export const Navbar = () => {
               height={50}
               alt="logo"
               className="absolute -bottom-14 -left-6 lg:left-0"
+              priority="true"
             />
             <span className="font-bold text-base tracking-wider absolute hidden lg:block left-20 -bottom-4">
               TEAM RANDOM
