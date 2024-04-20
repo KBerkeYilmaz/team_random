@@ -20,7 +20,7 @@ export const SignOutButton = () => {
   return (
     <>
       {!isSigningOut ? (
-        <Button className="w-full" style={{ gridRow: '85' }} onClick={handleSignOut}>
+        <Button className="w-full hover:bg-destructive" style={{ gridRow: '85' }} onClick={handleSignOut}>
           Sign Out
         </Button>
       ) : (
