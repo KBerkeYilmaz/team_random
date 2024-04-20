@@ -68,7 +68,7 @@ export const Navbar = () => {
           </Link>
         </div>
         <div
-          className={`hidden grow animate-fadeIn justify-center gap-4 md:flex ${permanentMarker.className} text-lg lg:text-3xl`}
+          className={`hidden grow animate-fadeIn justify-center gap-4 md:flex ${permanentMarker.className} text-lg lg:text-2xl xl:text-3xl`}
         >
           <Link
             className="transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90"
