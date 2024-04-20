@@ -49,7 +49,7 @@ export const Navbar = () => {
       <div
         className={`grid w-full grid-cols-2 items-center justify-between bg-background px-8 py-4 shadow-lg transition-all duration-500 dark:bg-background dark:shadow-sm dark:shadow-foreground/20 md:grid-cols-3 ${
           isScrolled &&
-          "mx-6 mt-6 rounded-[50px] opacity-90 backdrop-blur-sm lg:bg-transparent lg:shadow-none lg:backdrop-blur-none"
+          "mx-6 mt-6 rounded-[50px] opacity-90 backdrop-blur-sm lg:bg-transparent lg:shadow-none lg:backdrop-blur-none dark:lg:bg-transparent dark:lg:shadow-none dark:lg:backdrop-blur-none"
         }`}
       >
         <div className="relative flex grow items-center gap-2 transition-all">
@@ -68,16 +68,16 @@ export const Navbar = () => {
           </Link>
         </div>
         <div
-          className={`hidden grow animate-fadeIn justify-center gap-4 md:flex ${permanentMarker.className} text-lg lg:text-2xl xl:text-3xl`}
+          className={`hidden grow animate-fadeIn justify-center gap-4 md:flex ${permanentMarker.className} text-lg lg:text-2xl 2xl:text-3xl relative`}
         >
           <Link
-            className="transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90"
+            className={`transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90 `}
             href="/"
           >
             Home
           </Link>
           <Link
-            className="w-fit transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90"
+            className={`w-fit transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90`}
             href="/about"
           >
             About Us
