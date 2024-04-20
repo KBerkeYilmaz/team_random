@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { permanentMarker } from "@/app/fonts";
 import Image from "next/image";
 import {
   SheetTrigger,
@@ -43,14 +44,15 @@ export const Navbar = () => {
 
   return (
     <nav
-      className={`flex items-center justify-center w-full fixed z-50 will-change-auto`}
+      className={`fixed z-50 flex w-full items-center justify-center will-change-auto`}
     >
       <div
-        className={`grid grid-cols-2 md:grid-cols-3 dark:bg-background bg-background dark:shadow-foreground/20 dark:shadow-sm shadow-lg items-center w-full justify-between px-8 py-4 transition-all duration-500 ${
-          isScrolled && "backdrop-blur-sm opacity-90 mt-6 mx-6 rounded-[50px]"
+        className={`grid w-full grid-cols-2 items-center justify-between bg-background px-8 py-4 shadow-lg transition-all duration-500 dark:bg-background dark:shadow-sm dark:shadow-foreground/20 md:grid-cols-3 ${
+          isScrolled &&
+          "mx-6 mt-6 rounded-[50px] opacity-90 backdrop-blur-sm lg:bg-transparent lg:shadow-none lg:backdrop-blur-none dark:lg:bg-transparent dark:lg:shadow-none dark:lg:backdrop-blur-none"
         }`}
       >
-        <div className="flex items-center grow gap-2 transition-all relative">
+        <div className="relative flex grow items-center gap-2 transition-all">
           <Link href="/">
             <Image
               src={"/images/logos/logodef.png"}
@@ -58,46 +60,49 @@ export const Navbar = () => {
               height={50}
               alt="logo"
               className="absolute -bottom-14 -left-6 lg:left-0"
+              priority="true"
             />
-            <span className="font-bold text-base tracking-wider absolute hidden lg:block left-20 -bottom-4">
+            <span className="absolute -bottom-4 left-20 hidden text-base font-bold tracking-wider lg:block">
               TEAM RANDOM
             </span>
           </Link>
         </div>
-        <div className="hidden md:flex grow gap-2 justify-center animate-fadeIn">
+        <div
+          className={`hidden grow animate-fadeIn justify-center gap-4 md:flex ${permanentMarker.className} text-lg lg:text-2xl 2xl:text-3xl relative`}
+        >
           <Link
-            className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200"
+            className={`transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90 `}
             href="/"
           >
             Home
           </Link>
           <Link
-            className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 w-fit"
+            className={`w-fit transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90`}
             href="/about"
           >
             About Us
           </Link>
           {session ? (
             <Link
-              className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 animate-fadeIn"
+              className="animate-fadeIn transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90"
               href="/dashboard"
             >
               Dashboard
             </Link>
           ) : (
             <Link
-              className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 animate-fadeIn"
+              className="animate-fadeIn transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90"
               href="/login"
             >
               Login
             </Link>
           )}
         </div>
-        <div className="hidden lg:flex grow gap-2 justify-end">
+        <div className="hidden justify-end gap-2 md:flex">
           <LangSwitch />
           <ModeToggle />
         </div>
-        <div className="lg:hidden flex grow gap-2 justify-end">
+        <div className="flex grow justify-end gap-2 md:hidden">
           <Sheet>
             <SheetTrigger asChild>
               <Button className="lg:hidden" size="icon" variant="outline">
@@ -106,7 +111,7 @@ export const Navbar = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
-              <div className="flex justify-between mt-6 mb-4 px-2">
+              <div className="mb-4 mt-6 flex justify-between px-2">
                 <Link className="flex items-center gap-2" href="/">
                   <span className="text-lg font-semibold">LOGO</span>
                 </Link>
@@ -116,10 +121,10 @@ export const Navbar = () => {
                 </div>
               </div>
               {/* <Separator /> */}
-              <div className="grid w-full p-4">
+              <div className={`grid w-full p-4  ${permanentMarker.className} text-3xl `}>
                 <SheetClose asChild>
                   <Link
-                    className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 py-4 px-4"
+                    className="px-4 py-4  transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90"
                     href="/"
                   >
                     Home
@@ -128,7 +133,7 @@ export const Navbar = () => {
                 <Separator />
                 <SheetClose asChild>
                   <Link
-                    className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 py-4 px-4"
+                    className="px-4 py-4  transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90"
                     href="/about"
                   >
                     About
@@ -138,7 +143,7 @@ export const Navbar = () => {
 
                 {!session && (
                   <Link
-                    className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 py-4 px-4"
+                    className="px-4 py-4  transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90"
                     href="/login"
                   >
                     <SheetClose>Login</SheetClose>
@@ -146,7 +151,7 @@ export const Navbar = () => {
                 )}
                 {session && (
                   <Link
-                    className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200 py-4 px-4"
+                    className="px-4 py-4  transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90"
                     href="/dashboard"
                   >
                     <SheetClose>Dashboard</SheetClose>
