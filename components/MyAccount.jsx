@@ -23,7 +23,7 @@ function MyAccount() {
         My Account
       </h2>
       <Separator />
-      <div className="flex flex-col gap-4 w-full">
+      <div className="flex flex-col gap-4 w-full max-w-5xl">
         <div className="flex flex-col sm:flex-row gap-6 w-full">
           <div className="flex sm:flex-row justify-center md:justify-start min-w-fit">
             {data?.user.image === "" ? (
@@ -53,7 +53,7 @@ function MyAccount() {
             </div>
           </div>
         </div>
-        <div className="flex w-full  flex-wrap">
+        <div className="flex w-full gap-6 flex-wrap">
           <EditUserForm user={data?.user} />
           <EditUserPasswordForm user={data?.user} />
         </div>

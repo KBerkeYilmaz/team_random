@@ -29,6 +29,7 @@ const formSchema = z
   });
 
 import { useToast } from "../ui/use-toast";
+import { updateUserPassword } from "@/actions/userActions";
 
 export const EditUserPasswordForm = ({ user }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,7 +44,6 @@ export const EditUserPasswordForm = ({ user }) => {
       passwordConfirmation: "",
     },
   });
-
   const onSubmit = async (values) => {
     console.log(values);
     if (user.role !== "admin") {
@@ -55,28 +55,28 @@ export const EditUserPasswordForm = ({ user }) => {
       return;
     }
     setIsSubmitting(true);
-    // const result = await updateUser(values, user.id, user.role);
+    const result = await updateUserPassword(values, user.id, user.role);
 
-    // if (result.error) {
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Error !",
-    //     description: `- ${result.error}`,
-    //   });
+    if (result.error) {
+      toast({
+        variant: "destructive",
+        title: "Error !",
+        description: `- ${result.error}`,
+      });
 
-    //   setIsSubmitting(false);
-    // } else {
-    //   toast({
-    //     title: "Update Successful !",
-    //   });
-    //   setIsSubmitting(false);
-    // }
+      setIsSubmitting(false);
+    } else {
+      toast({
+        title: "Update Password Successful !",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="flex flex-col gap-4 w-fit">
+    <div className="flex flex-col gap-4 w-full">
       <h2 className="text-3xl font-semibold md:text-start text-center">
-        Edit Password
+        Change Password
       </h2>
       <Separator />
       <div className="flex flex-col gap-2 max-w-2xl">
