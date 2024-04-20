@@ -92,7 +92,7 @@ export const EditUserPasswordForm = ({ user }) => {
                       Current Password
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -105,7 +105,7 @@ export const EditUserPasswordForm = ({ user }) => {
                   <FormItem>
                     <FormLabel className="font-bold">New Password</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -120,7 +120,7 @@ export const EditUserPasswordForm = ({ user }) => {
                       Confirm Password
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
