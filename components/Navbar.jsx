@@ -64,7 +64,7 @@ export const Navbar = () => {
             </span>
           </Link>
         </div>
-        <div className="hidden md:flex grow gap-2 justify-center animate-fadeIn">
+        <div className={`hidden md:flex grow gap-2 justify-center animate-fadeIn`}>
           <Link
             className="text-lg hover:text-primary/90 dark:hover:text-primary/90 transition-all duration-200"
             href="/"
@@ -93,11 +93,11 @@ export const Navbar = () => {
             </Link>
           )}
         </div>
-        <div className="hidden lg:flex grow gap-2 justify-end">
+        <div className="hidden md:flex grow gap-2 justify-end">
           <LangSwitch />
           <ModeToggle />
         </div>
-        <div className="lg:hidden flex grow gap-2 justify-end">
+        <div className="md:hidden flex grow gap-2 justify-end">
           <Sheet>
             <SheetTrigger asChild>
               <Button className="lg:hidden" size="icon" variant="outline">
