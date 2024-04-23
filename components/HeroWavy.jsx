@@ -2,9 +2,12 @@
 import React, { useEffect, useState } from "react";
 import { WavyBackground } from "@/components/ui/wavy-background";
 import { permanentMarker, pixelify } from "@/app/fonts";
+import { motion } from "framer-motion";
+import { TypewriterEffect } from "./ui/typewriter-effect";
 
 export function HeroWavy({ header, span }) {
   const [darkMode, setDarkMode] = useState(false);
+  const wordsData = span.split(" ").map((word) => ({ text: word }));
 
   useEffect(() => {
     const updateDarkMode = () => {
@@ -27,19 +30,31 @@ export function HeroWavy({ header, span }) {
 
   return (
     <WavyBackground
-      className="max-w-4xl mx-auto "
+      className="mx-auto max-w-4xl "
       backgroundFill={darkMode ? "#000" : "#8dde7d"}
     >
-      <h1
-        className={`${permanentMarker.className} font-bold tracking-wider text-4xl sm:text-6xl md:text-7xl lg:text-9xl dark:text-primary text-center`}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.4,
+          ease: "easeInOut",
+        }}
       >
-        {header}
-      </h1>
-      <p
-        className={`${pixelify.className} text-3xl sm:text-4xl md:text-5xl lg:text-6xl mt-4 text-foreground  text-center`}
-      >
-        {span}
-      </p>
+        <h1
+          className={`${permanentMarker.className} text-center text-4xl font-bold tracking-wider dark:text-primary sm:text-6xl md:text-7xl lg:text-9xl`}
+        >
+          {header}
+        </h1>
+        <TypewriterEffect
+          words={wordsData}
+          className={`${pixelify.className} mt-4 text-center text-3xl text-foreground sm:text-4xl md:text-5xl lg:text-6xl`}
+        />
+        {/* <p
+        >
+          {span}
+        </p> */}
+      </motion.div>
     </WavyBackground>
   );
 }
