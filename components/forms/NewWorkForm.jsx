@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { createWork } from "@/actions/workAction";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { MultiImageDropzone } from "@/components/MultiImageDropzone";
+import { MultiImageDropzoneColumn } from "@/components/MultiImageDropzoneColumn";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -135,7 +135,7 @@ const NewWorkForm = () => {
 
         <div className="flex mt-2 gap-4  md:flex-row flex-col max-h-[430px] md:max-h-[540px]  overflow-y-scroll no-scrollbar">
           <div className="flex flex-col items-center md:items-start w-full md:w-fit gap-2">
-            <MultiImageDropzone
+            <MultiImageDropzoneColumn
               value={fileStates}
               dropzoneOptions={{
                 maxFiles: 6,

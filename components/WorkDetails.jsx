@@ -1,4 +1,5 @@
 "use client";
+
 import { Loader2 } from "lucide-react";
 import { Label } from "./ui/label";
 import { deleteWork } from "@/actions/workAction";
@@ -80,7 +81,7 @@ export default function MemberDetails({ work }) {
                                 <img
                                   src={workImage}
                                   alt="Work Image"
-                                  className="w-full"
+                                  className="w-40 h-40 object-fill max-h-40"
                                 />
                               </span>
                             </CardContent>

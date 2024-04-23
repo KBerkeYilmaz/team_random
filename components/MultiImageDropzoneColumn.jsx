@@ -33,7 +33,7 @@ const ERROR_MESSAGES = {
   },
 };
 
-const MultiImageDropzone = React.forwardRef(
+const MultiImageDropzoneColumn = React.forwardRef(
   (
     { dropzoneOptions, value, className, disabled, onChange, onFilesAdded },
     ref, gridCols
@@ -129,7 +129,7 @@ const MultiImageDropzone = React.forwardRef(
 
     return (
       <div>
-        <div className={`grid grid-cols-[repeat(1,1fr)] md:grid-cols-[repeat(6,1fr)] gap-2 p-4 sm:p-1 `}>
+        <div className={`grid grid-cols-[repeat(1,1fr)] gap-2 p-4 sm:p-1 `}>
           {/* Images */}
           {value?.map(({ file, progress }, index) => (
             <div
@@ -195,7 +195,7 @@ const MultiImageDropzone = React.forwardRef(
     );
   },
 );
-MultiImageDropzone.displayName = 'MultiImageDropzone';
+MultiImageDropzoneColumn.displayName = 'MultiImageDropzoneColumn';
 
 const Button = React.forwardRef(({ className, ...props }, ref) => {
   return (
@@ -216,7 +216,7 @@ const Button = React.forwardRef(({ className, ...props }, ref) => {
 });
 Button.displayName = 'Button';
 
-export { MultiImageDropzone };
+export { MultiImageDropzoneColumn };
 
 function CircleProgress({ progress }) {
   const strokeWidth = 10;
