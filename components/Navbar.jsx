@@ -68,7 +68,7 @@ export const Navbar = () => {
             {/* <span className="absolute -bottom-4 left-20 hidden text-base font-bold tracking-wider lg:block">
               TEAM RANDOM
             </span> */}
-            <span>TEAM RANDOM</span>
+            <span className="font-bold">TEAM RANDOM</span>
           </Link>
         </div>
         <div

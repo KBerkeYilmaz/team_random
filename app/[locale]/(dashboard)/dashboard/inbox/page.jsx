@@ -31,7 +31,7 @@ async function page() {
 
   return (
     <div className="h-full w-full p-10 animate-fadeIn">
-      <div className="flex-col md:flex">
+      <div className="flex-col md:flex max-w-screen-xl">
         <Mail
           accounts={accounts}
           // mails={mails}

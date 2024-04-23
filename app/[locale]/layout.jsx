@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 import { EdgeStoreProvider } from "@/lib/edgestore";
 import { inter } from "../fonts";
+import Footer from "@/components/Footer";
 
 export const metadata = {
   title: "Team Random",
@@ -29,6 +30,7 @@ export default function LocaleLayout({ children, params: { locale } }) {
                 <div className="grid h-screen">
                   <Navbar />
                   <div className="flex h-full w-full">{children}</div>
+                  <Footer />
                 </div>
               </NextIntlClientProvider>
             </ThemeProvider>
