@@ -54,24 +54,42 @@ export const Navbar = () => {
       >
         <div className="relative flex grow items-center gap-2 transition-all">
           <Link href="/">
-            <Image
+            {/* <Image
               src={"/images/logos/logodef.png"}
               width={100}
               height={50}
               alt="logo"
               className="absolute -bottom-14 -left-6 lg:left-0"
               priority="true"
-            />
-            <span className="absolute -bottom-4 left-20 hidden text-base font-bold tracking-wider lg:block">
+            /> */}
+            <h2 className="text-3xl text-center dark:bg-white rounded-lg dark:text-black text-white bg-blue-500">
+              {"<?/>"}
+            </h2>
+            {/* <span className="absolute -bottom-4 left-20 hidden text-base font-bold tracking-wider lg:block">
               TEAM RANDOM
-            </span>
+            </span> */}
+            <span>TEAM RANDOM</span>
           </Link>
         </div>
         <div
-          className={`hidden grow animate-fadeIn justify-center gap-4 md:flex ${permanentMarker.className} text-lg lg:text-2xl 2xl:text-3xl relative`}
+          className={`hidden 
+          grow 
+          animate-fadeIn 
+          justify-center 
+          gap-4 
+          md:flex 
+          ${permanentMarker.className} 
+          relative 
+          text-lg 
+          lg:text-2xl 
+          2xl:text-3xl
+          transition-all
+          duration-300
+          delay-75
+          `}
         >
           <Link
-            className={`transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90 `}
+            className={`transition-all duration-200 hover:text-blue-500 dark:hover:text-primary/90 `}
             href="/"
           >
             Home
@@ -121,7 +139,9 @@ export const Navbar = () => {
                 </div>
               </div>
               {/* <Separator /> */}
-              <div className={`grid w-full p-4  ${permanentMarker.className} text-3xl `}>
+              <div
+                className={`grid w-full p-4  ${permanentMarker.className} text-3xl `}
+              >
                 <SheetClose asChild>
                   <Link
                     className="px-4 py-4  transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90"
