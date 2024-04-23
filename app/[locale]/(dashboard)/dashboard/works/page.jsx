@@ -29,7 +29,6 @@ const Works = async () => {
           filterAnchor={"Title"}
           tag={"work"}
         />
-        {/* <NewWorkForm /> */}
       </div>
     </div>
   );

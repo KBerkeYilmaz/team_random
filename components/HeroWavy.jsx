@@ -50,10 +50,6 @@ export function HeroWavy({ header, span }) {
           words={wordsData}
           className={`${pixelify.className} mt-4 text-center text-3xl text-foreground sm:text-4xl md:text-5xl lg:text-6xl`}
         />
-        {/* <p
-        >
-          {span}
-        </p> */}
       </motion.div>
     </WavyBackground>
   );
