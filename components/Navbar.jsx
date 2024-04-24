@@ -68,7 +68,7 @@ export const Navbar = () => {
             {/* <span className="absolute -bottom-4 left-20 hidden text-base font-bold tracking-wider lg:block">
               TEAM RANDOM
             </span> */}
-            <span className="font-bold">TEAM RANDOM</span>
+            <span className="font-bold hidden md:block">TEAM RANDOM</span>
           </Link>
         </div>
         <div
@@ -89,7 +89,7 @@ export const Navbar = () => {
           `}
         >
           <Link
-            className={`transition-all duration-200 hover:text-blue-500 dark:hover:text-primary/90 `}
+            className={`transition-all duration-200 hover:text-orange-500/90 dark:hover:text-primary/90 `}
             href="/"
           >
             Home
