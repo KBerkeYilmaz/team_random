@@ -42,7 +42,7 @@ export function MailDisplay({ mail }) {
   const today = new Date();
 
   return (
-    <div className="flex max-w-screen-md h-[80vh] flex-col">
+    <div className="flex h-[80vh] flex-col truncate">
       <div className="flex items-center p-2">
         <div className="flex items-center gap-2">
           <Tooltip>
@@ -246,7 +246,7 @@ export function MailDisplay({ mail }) {
               )}
             </div>
             <Separator />
-            <div className="flex-1 whitespace-pre-wrap p-4 text-sm max-w-screen-md">
+            <div className="flex-1 whitespace-pre-wrap p-4 text-sm max-w-52">
               {mail.text}
             </div>
             <Separator className="mt-auto" />
