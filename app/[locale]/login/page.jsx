@@ -9,7 +9,7 @@ const Login = async () => {
   }
 
   return (
-    <main className="flex flex-col justify-center items-center w-full pt-[72px] animate-fadeIn">
+    <main className="flex flex-col justify-center items-center w-full pt-[72px] min-h-screen animate-fadeIn">
       <LoginForm />
     </main>
   );
