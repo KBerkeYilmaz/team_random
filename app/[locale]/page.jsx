@@ -8,7 +8,7 @@ import ContactForm from "@/components/forms/ContactForm";
 
 export default function Home() {
   return (
-    <main className="flex w-full animate-fadeIn  flex-col">
+    <main className="flex w-full animate-fadeIn flex-col">
       <section
         id="hero"
         className="flex h-screen w-full items-center justify-center"
