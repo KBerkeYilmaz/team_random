@@ -21,7 +21,7 @@ const Parallax = ({ children, offset = 50 }) => {
   const final = elementTop + offset;
 
   const yRange = useTransform(scrollY, [initial, final], [offset, -offset]);
-  const y = useSpring(yRange, { stiffness: 400, damping: 90 });
+  const y = useSpring(yRange, { stiffness: 500, damping: 70 });
 
   useLayoutEffect(() => {
     const element = ref.current;
