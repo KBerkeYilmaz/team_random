@@ -47,7 +47,7 @@ export const Navbar = () => {
       className={`fixed z-50 flex w-full items-center justify-center will-change-auto`}
     >
       <div
-        className={`grid w-full grid-cols-2 items-center justify-between bg-background px-8 py-4 shadow-lg transition-all duration-500 dark:bg-background dark:shadow-sm dark:shadow-foreground/20 md:grid-cols-3 ${
+        className={`flex w-full  items-center justify-between bg-background px-8 py-4 shadow-lg transition-all duration-500 dark:bg-background dark:shadow-sm dark:shadow-foreground/20 md:grid-cols-3 ${
           isScrolled &&
           "mx-6 mt-6 rounded-[50px] opacity-90 backdrop-blur-sm lg:bg-transparent lg:shadow-none lg:backdrop-blur-none dark:lg:bg-transparent dark:lg:shadow-none dark:lg:backdrop-blur-none"
         }`}
@@ -116,7 +116,7 @@ export const Navbar = () => {
             </Link>
           )}
         </div>
-        <div className="hidden justify-end gap-2 md:flex">
+        <div className="hidden grow justify-end gap-2 md:flex">
           <LangSwitch />
           <ModeToggle />
         </div>
