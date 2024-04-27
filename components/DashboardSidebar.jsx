@@ -16,16 +16,24 @@ const DashboardSidebar = async ({ children }) => {
       <div className="hidden border-r bg-muted/40 dark:bg-background md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-              <h2 className="rounded-lg bg-blue-500 text-center text-3xl text-white dark:bg-white dark:text-black">
-                {"<?/>"}
-              </h2>
+            <Link href="/">
+              {/* <Image
+              src={"/images/logos/logodef.png"}
+              width={100}
+              height={50}
+              alt="logo"
+              className="absolute -bottom-14 -left-6 lg:left-0"
+              priority="true"
+            /> */}
+              {/* <h2 className="text-3xl text-center dark:bg-white rounded-lg dark:text-black text-white bg-blue-500">
+              {"<?/>"}
+            </h2> */}
               {/* <span className="absolute -bottom-4 left-20 hidden text-base font-bold tracking-wider lg:block">
               TEAM RANDOM
             </span> */}
-              {/* <span className="hidden font-bold md:block text-sm">Team Random</span> */}
-
-              <span className="sr-only">Home</span>
+              <span className="font-bold text-sm hidden md:block">
+                TEAM RANDOM
+              </span>
             </Link>
             {/* <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
               <Bell className="h-4 w-4" />

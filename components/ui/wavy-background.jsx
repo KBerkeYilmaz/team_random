@@ -16,13 +16,7 @@ export const WavyBackground = ({
   ...props
 }) => {
   const noise = createNoise3D();
-  let w,
-    h,
-    nt,
-    i,
-    x,
-    ctx,
-    canvas;
+  let w, h, nt, i, x, ctx, canvas;
   const canvasRef = useRef(null);
   const getSpeed = () => {
     switch (speed) {
@@ -88,10 +82,10 @@ export const WavyBackground = ({
       h = ctx.canvas.height = window.innerHeight;
       ctx.filter = `blur(${blur}px)`;
     };
-  
+
     return () => {
       cancelAnimationFrame(animationId);
-      window.onresize = null; // Correctly nullify the onresize event listener      
+      window.onresize = null; // Correctly nullify the onresize event listener
     };
   }, [backgroundFill]);
 

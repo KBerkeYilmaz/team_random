@@ -128,7 +128,7 @@ export default function ContactForm() {
           </p>
         </div>
 
-        <div className="order-1 flex flex-col items-center justify-center gap-6 rounded-t-lg bg-[url('/images/bg/team-hands-linked-together.webp')] bg-cover bg-center py-8 text-center text-white dark:bg-[url('/images/bg/team-hands-linked-together.webp')] sm:px-14 md:order-2 md:max-w-lg md:rounded-r-lg md:rounded-tl-none lg:min-w-[35rem] h-[20rem] md:h-auto md:w-[30rem]">
+        <div className="order-1 flex flex-col items-center justify-center gap-6 rounded-t-lg bg-[url('/images/bg/team-hands-linked-together.jpg')] bg-cover bg-center py-8 text-center text-white  sm:px-14 md:order-2 md:max-w-lg md:rounded-r-lg md:rounded-tl-none lg:min-w-[35rem] h-[20rem] md:h-auto md:w-[30rem]">
           {/* <h2 className="md:text-4xl text-2xl font-bold drop-shadow-xl px-6 sm:p-6 md:p-0">
             Lorem ipsum dolor sit amet consectetur.
           </h2>

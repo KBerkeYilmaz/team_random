@@ -10,7 +10,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Link } from "@/navigation";
-import { Menu } from "lucide-react";
+import { Home, Menu } from "lucide-react";
 import LangSwitch from "./LangSwitch";
 import { ModeToggle } from "./ModeToggle";
 import { Separator } from "./ui/separator";
@@ -68,7 +68,7 @@ export const Navbar = () => {
             {/* <span className="absolute -bottom-4 left-20 hidden text-base font-bold tracking-wider lg:block">
               TEAM RANDOM
             </span> */}
-            <span className="font-bold hidden md:block">TEAM RANDOM</span>
+            <span className="font-bold text-sm sm:text-md">TEAM RANDOM</span>
           </Link>
         </div>
         <div
@@ -130,9 +130,11 @@ export const Navbar = () => {
             </SheetTrigger>
             <SheetContent side="right">
               <div className="mb-4 mt-6 flex justify-between px-2">
-                <Link className="flex items-center gap-2" href="/">
-                  <span className="text-lg font-semibold">LOGO</span>
-                </Link>
+                <SheetClose asChild>
+                  <Link className="flex items-center gap-2" href="/">
+                    <Home />
+                  </Link>
+                </SheetClose>
                 <div className="flex gap-4">
                   <LangSwitch />
                   <ModeToggle />
