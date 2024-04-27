@@ -43,36 +43,27 @@
   } */
   :root {
     /* CSS: .bg-gradient { background: var(--gradient) } */
-    --gradient: #0f2027;
+    /* --gradient: #0f2027; */
     --background: 110, 59%, 68%;
-    --foreground: 110, 4.4%, 0.44%;
-
+    /* --foreground: 110, 4.4%, 0.44%; */
+    --foreground: #0331BA;
     --muted: 110, 4.4%, 91.1%;
     --muted-foreground: 110, 2.2%, 41.1%;
-
     --popover: 110, 54.8%, 91.1%;
     --popover-foreground: 110, 4.4%, 0.55%;
-
     --card: 110, 54.8%, 91.1%;
     --card-foreground: 110, 4.4%, 0.55%;
-
     --border: 110, 9.4%, 89.44%;
     --input: 110, 9.4%, 89.44%;
-
     --primary: 110, 44%, 11%;
     --primary-foreground: 110, 0.88%, 91.1%;
-
     --secondary: 110, 2.2%, 95.55%;
     --secondary-foreground: 110, 3.64%, 11.1%;
-
     --accent: 110, 2.2%, 95.55%;
     --accent-foreground: 110, 3.64%, 11.1%;
-
     --destructive: 350, 72%, 57%;
     --destructive-foreground: 110, 0%, 98%;
-
     --ring: 110, 44%, 11%;
-
     --radius: 0.5rem;
   }
   .dark {

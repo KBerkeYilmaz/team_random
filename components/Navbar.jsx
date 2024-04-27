@@ -62,9 +62,9 @@ export const Navbar = () => {
               className="absolute -bottom-14 -left-6 lg:left-0"
               priority="true"
             /> */}
-            <h2 className="text-3xl text-center dark:bg-white rounded-lg dark:text-black text-white bg-blue-500">
+            {/* <h2 className="text-3xl text-center dark:bg-white rounded-lg dark:text-black text-white bg-blue-500">
               {"<?/>"}
-            </h2>
+            </h2> */}
             {/* <span className="absolute -bottom-4 left-20 hidden text-base font-bold tracking-wider lg:block">
               TEAM RANDOM
             </span> */}
@@ -82,7 +82,7 @@ export const Navbar = () => {
           relative 
           text-lg 
           lg:text-2xl 
-          2xl:text-3xl
+          3xl:text-3xl
           transition-all
           duration-300
           delay-75

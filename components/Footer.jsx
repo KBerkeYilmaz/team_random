@@ -10,7 +10,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="h-fit w-screen">
+    <footer className="h-fit w-screen border-t-2">
       <div className="flex h-full w-full items-center justify-center bg-background p-20">
         <div className="flex h-full w-full items-center justify-center">
           <p className="text-center text-sm font-semibold">

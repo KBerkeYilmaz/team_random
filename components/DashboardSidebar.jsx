@@ -13,24 +13,31 @@ const DashboardSidebar = async ({ children }) => {
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <div className="hidden border-r dark:bg-background bg-muted/40 md:block">
+      <div className="hidden border-r bg-muted/40 dark:bg-background md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              <Package2 className="h-6 w-6" />
-              <span className="sr-only">Acme Inc</span>
+              <h2 className="rounded-lg bg-blue-500 text-center text-3xl text-white dark:bg-white dark:text-black">
+                {"<?/>"}
+              </h2>
+              {/* <span className="absolute -bottom-4 left-20 hidden text-base font-bold tracking-wider lg:block">
+              TEAM RANDOM
+            </span> */}
+              {/* <span className="hidden font-bold md:block text-sm">Team Random</span> */}
+
+              <span className="sr-only">Home</span>
             </Link>
-            <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
+            {/* <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
               <Bell className="h-4 w-4" />
               <span className="sr-only">Toggle notifications</span>
-            </Button>
+            </Button> */}
           </div>
           <DashboardSidebarNav unReadMailsCount={unReadMails} />
         </div>
       </div>
 
       <div className="flex flex-col">
-        <header className="flex h-14 items-center gap-4 border-b dark:bg-background bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+        <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 dark:bg-background lg:h-[60px] lg:px-6">
           <Sheet>
             <SheetTrigger asChild>
               <Button

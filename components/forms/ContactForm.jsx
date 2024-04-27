@@ -58,10 +58,10 @@ export default function ContactForm() {
     }
   };
   return (
-    <div className="sm:p-6 h-full w-full flex justify-center items-center">
-      <div className="flex flex-col md:flex-row border bg-muted/80 shadow-xl rounded-b-lg md:rounded-l-lg max-w-md md:max-w-none">
-        <div className="md:max-w-sm p-6 md:p-10 md:order-1 order-2 ">
-          <h1 className=" text-2xl md:text-4xl text-center md:text-start font-semibold pb-4 md:pb-10">
+    <div className="flex h-full w-full items-center justify-center sm:p-6">
+      <div className="flex max-w-md flex-col rounded-b-lg border bg-muted/80 shadow-xl md:max-w-none md:flex-row md:rounded-l-lg">
+        <div className="order-2 p-6 md:order-1 md:max-w-sm md:p-10 ">
+          <h1 className=" pb-4 text-center text-2xl font-semibold md:pb-10 md:text-start md:text-4xl">
             Send Us an Email!
           </h1>
           <Form {...form}>
@@ -111,32 +111,32 @@ export default function ContactForm() {
                 />
               </div>
               {!isSubmitting ? (
-                <Button className="w-full mt-3" type="submit">
+                <Button className="mt-3 w-full" type="submit">
                   Submit
                 </Button>
               ) : (
-                <Button className="w-full mt-3" disabled>
+                <Button className="mt-3 w-full" disabled>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Please wait
                 </Button>
               )}
             </form>
           </Form>
-          <p className="text-xs text-center py-2">
+          <p className="py-2 text-center text-xs">
             By pressing the button, you accept Terms and Conditions and
             acknowledge reading Privacy Policy.
           </p>
         </div>
 
-        <div className="bg-[url('/images/contact.svg')] dark:bg-[url('/images/contact-dark.svg')] md:max-w-lg py-8 sm:px-14 flex flex-col justify-center items-center text-center text-white gap-6 rounded-t-lg md:rounded-tl-none md:rounded-r-lg md:order-2 order-1 bg-cover bg-center">
-          <h2 className="md:text-4xl text-2xl font-bold drop-shadow-xl px-6 sm:p-6 md:p-0">
+        <div className="order-1 flex flex-col items-center justify-center gap-6 rounded-t-lg bg-[url('/images/bg/team-hands-linked-together.webp')] bg-cover bg-center py-8 text-center text-white dark:bg-[url('/images/bg/team-hands-linked-together.webp')] sm:px-14 md:order-2 md:max-w-lg md:rounded-r-lg md:rounded-tl-none lg:min-w-[35rem] h-[20rem] md:h-auto md:w-[30rem]">
+          {/* <h2 className="md:text-4xl text-2xl font-bold drop-shadow-xl px-6 sm:p-6 md:p-0">
             Lorem ipsum dolor sit amet consectetur.
           </h2>
           <p className="text-justify md:flex hidden">
             Lorem ipsum dolor sit amet, consectetur adipisicing elit.
             Voluptatum, harum nam dolor numquam laborum eligendi magnam sit
             suscipit.
-          </p>
+          </p> */}
         </div>
       </div>
     </div>
