@@ -181,11 +181,15 @@ export default function DataTable({ columns, data, filterAnchor, tag }) {
                   className="cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => {
+                    console.log();
                     if (
                       cell.id.slice(cell.id.length - 2, cell.id.length) !== "id"
                     ) {
                       return (
-                        <TableCell key={cell.id}>
+                        <TableCell
+                          className={`${cell.id.slice(cell.id.length - 3, cell.id.length) === "URL" ? " break-all" : ""}`}
+                          key={cell.id}
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
