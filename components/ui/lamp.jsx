@@ -27,7 +27,7 @@ export const LampContainer = ({ children, className }) => {
   return (
     <div
       className={cn(
-        "relative flex min-h-screen flex-col items-center justify-start overflow-hidden bg-background w-screen rounded-md z-0",
+        "relative flex min-h-screen flex-col items-center justify-start overflow-hidden bg-background md:w-full rounded-md z-0",
         className
       )}
     >
@@ -90,7 +90,7 @@ export const LampContainer = ({ children, className }) => {
         ></motion.div>
         <div className="absolute inset-auto z-40 h-44 w-full -translate-y-[12.5rem] bg-background "></div>
         <motion.div
-          className="w-[44rem] h-40 relative"
+          className="md:w-[44rem] w-full h-40 relative"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{

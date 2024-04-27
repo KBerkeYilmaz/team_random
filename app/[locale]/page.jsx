@@ -23,7 +23,7 @@ export default function Home() {
         id="about"
         className="flex min-h-screen w-full flex-col items-start justify-start"
       >
-        <div className="h-fit w-fit">
+        <div className="h-fit w-full">
           <LampDemo />
         </div>
       </section>
