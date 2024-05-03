@@ -68,7 +68,7 @@ export const EditWorkForm = ({ work, user }) => {
       const uploadPromises = fileStates.map((addedFileState) =>
         edgestore.publicFiles
           .upload({ file: addedFileState.file })
-          .then((res) => res.url),
+          .then((res) => res.url)
       );
       // Wait for all uploads to finish.
       const imageURLs = await Promise.all(uploadPromises);
@@ -89,8 +89,6 @@ export const EditWorkForm = ({ work, user }) => {
         description: `${response.message}`,
       });
 
-      // Reset form and state as needed.
-      form.reset();
       setFileStates([]);
     } catch (error) {
       console.error("Error submitting form:", error);
