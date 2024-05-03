@@ -106,7 +106,7 @@ const NewWorkForm = () => {
       toast({
         description: `${response.message}`,
       });
-
+      setOpen(false);
       // Reset form and state as needed.
       form.reset();
       setFileStates([]);

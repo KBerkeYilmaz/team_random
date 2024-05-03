@@ -83,10 +83,10 @@ export async function createWork(formData, role) {
       throw new Error
     }
     await connectDB();
-    const member = await Work.create(validatedFields.data);
+    const work = await Work.create(validatedFields.data);
     revalidatePath("/dashboard/works");
     return {
-      message: `Whoa! ${validatedFields.data.workTitle}, amazing project!`,
+      message: `Work "${validatedFields.data.workTitle}" created!`,
     }; // Return the created member object
   } catch (error) {
     console.error("Failed to create work:", error);
@@ -141,7 +141,7 @@ export async function UpdateWork(formData, id, role) {
     const result = await Work.findByIdAndUpdate(id, updatedWork, { new: true });
     revalidatePath("/dashboard/works");
     return {
-      message: `Whoa! ${validatedFields.data.workTitle}, amazing project!`,
+      message: `Work updated successfully!`,
     }; // Return the created member object
   } catch (error) {
     console.error("Failed to create work:", error);

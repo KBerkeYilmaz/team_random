@@ -32,7 +32,7 @@ export default function MemberDetails({ work }) {
       </div>
     );
   }
-
+  console.log(work);
   const handleDelete = () => {
     if (data.user.role !== "admin") {
       toast({
@@ -46,7 +46,7 @@ export default function MemberDetails({ work }) {
       console.log(work.id);
       deleteWork(work.id, data.user.role);
       toast({
-        title: `Member "${work.Title}" deleted successfully !`,
+        title: `Work "${work.workTitle}" deleted successfully !`,
       });
       router.push("/dashboard/works");
       console.log("Delete Successful");
