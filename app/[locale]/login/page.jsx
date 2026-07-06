@@ -1,10 +1,13 @@
 import LoginForm from "@/components/forms/LoginForm";
 import { redirect } from "@/navigation";
-import { getServerSession } from "next-auth";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 const Login = async () => {
-  const session = await getServerSession();
-  if (session !== null) {
+  // AUDIT #87 (Phase 1): session now from Better Auth (auth.api.getSession)
+  // instead of next-auth getServerSession(). Redirect away if already signed in.
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (session) {
     redirect("/");
   }
 

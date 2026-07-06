@@ -1,7 +1,8 @@
 import { getMemberCount } from "@/actions/memberAction";
 import { getWorkCount } from "@/actions/workAction";
 import { Separator } from "@/components/ui/separator";
-import { getServerSession } from "next-auth";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,7 +17,9 @@ import { Link } from "@/navigation";
 import CounterNumber from "@/components/CounterNumber";
 
 const Dashboard = async () => {
-  const session = await getServerSession();
+  // AUDIT #87 (Phase 1): session now from Better Auth (auth.api.getSession).
+  // The dashboard layout already enforces admin; this read is for the greeting.
+  const session = await auth.api.getSession({ headers: await headers() });
   const memberCount = await getMemberCount();
   const workCount = await getWorkCount();
 
@@ -27,7 +30,7 @@ const Dashboard = async () => {
       </h1>
       <Separator />
       <div className="py-10 text-xl w-full px-2">
-        <h2>Welcome, {session.user.name}</h2>
+        <h2>Welcome, {session?.user?.name}</h2>
       </div>
       <Separator />
 

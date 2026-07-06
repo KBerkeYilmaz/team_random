@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { ImapFlow } from "imapflow";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export async function GET(req) {
   // AUDIT #83 (issue #82): the unread-count endpoint was world-readable — it
   // connected to Gmail IMAP with no auth. Now admin-only.
-  const session = await getServerSession(authOptions);
+  // AUDIT #87 (Phase 1): admin session now from Better Auth (auth.api.getSession).
+  const session = await auth.api.getSession({ headers: await headers() });
   if (!session || session.user?.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

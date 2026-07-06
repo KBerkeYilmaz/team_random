@@ -1,8 +1,8 @@
 import { Inter } from "next/font/google";
 import "../../globals.css";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import { redirect } from "@/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -15,7 +15,9 @@ export default async function DashboardLayout({ children }) {
   // derived from the session, never trusted from the client.
   // AUDIT #83 (issue #82): this layout was a passthrough — role was only checked
   // on the (untrusted) client, so any authenticated user could reach the dashboard.
-  const session = await getServerSession(authOptions);
+  // AUDIT #87 (Phase 1): session now from Better Auth (auth.api.getSession);
+  // this remains the real admin-enforcement chokepoint (middleware is optimistic).
+  const session = await auth.api.getSession({ headers: await headers() });
   if (!session || session.user?.role !== "admin") {
     redirect("/login");
   }
