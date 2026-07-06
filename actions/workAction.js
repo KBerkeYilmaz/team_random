@@ -7,6 +7,11 @@ import { requireAdmin } from "@/lib/authGuard";
 import { z } from "zod";
 
 
+// AUDIT #83 (issue #82): every MUTATING action below (create/update/delete) is
+// gated by requireAdmin(), which derives the admin role from the server session.
+// Previously each took a `role` argument FROM THE CLIENT and checked
+// `if (role !== "admin")`, so a forged request passing role:"admin" bypassed
+// authorization. Read-only getters are intentionally left ungated.
 export async function getWorks() {
   try {
     await connectDB();

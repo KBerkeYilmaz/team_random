@@ -46,6 +46,8 @@ export const EditUserPasswordForm = ({ user }) => {
   });
   const onSubmit = async (values) => {
     console.log(values);
+    // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
+    // enforced server-side in the action (requireAdmin). Kept for a friendly toast.
     if (user.role !== "admin") {
       toast({
         variant: "destructive",

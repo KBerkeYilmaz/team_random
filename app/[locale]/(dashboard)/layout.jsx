@@ -13,6 +13,8 @@ export const metadata = {
 export default async function DashboardLayout({ children }) {
   // Single server-side enforcement point for the whole dashboard: role is
   // derived from the session, never trusted from the client.
+  // AUDIT #83 (issue #82): this layout was a passthrough — role was only checked
+  // on the (untrusted) client, so any authenticated user could reach the dashboard.
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "admin") {
     redirect("/login");

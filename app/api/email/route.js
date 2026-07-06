@@ -8,6 +8,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 
 export async function POST(request) {
+  // AUDIT #83: the contact form is public by design — only GET (the inbox read)
+  // was locked down; POST stays unauthenticated intentionally.
   const { email, name, message } = await request.json();
 
   const transport = nodemailer.createTransport({
@@ -46,6 +48,8 @@ export async function POST(request) {
 }
 
 export async function GET(req) {
+  // AUDIT #83 (issue #82): the inbox was world-readable — this handler connected
+  // to Gmail IMAP with no auth check, so anyone could read the mailbox.
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
