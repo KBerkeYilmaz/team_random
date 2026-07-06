@@ -55,7 +55,7 @@ export const EditUserPasswordForm = ({ user }) => {
       return;
     }
     setIsSubmitting(true);
-    const result = await updateUserPassword(values, user.id, user.role);
+    const result = await updateUserPassword(values, user.id);
 
     if (result.error) {
       toast({

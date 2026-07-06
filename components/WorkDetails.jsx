@@ -44,7 +44,7 @@ export default function MemberDetails({ work }) {
     }
     try {
       console.log(work.id);
-      deleteWork(work.id, data.user.role);
+      deleteWork(work.id);
       toast({
         title: `Work "${work.workTitle}" deleted successfully !`,
       });

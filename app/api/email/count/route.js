@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import { ImapFlow } from "imapflow";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 export async function GET(req) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user?.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const client = new ImapFlow({
     host: "imap.gmail.com",
     port: 993,
