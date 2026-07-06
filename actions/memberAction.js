@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import Member from "@/models/member";
 import connectDB from "@/lib/database";
+import { requireAdmin } from "@/lib/authGuard";
 import { z } from "zod";
 
 export async function getMembers() {
@@ -64,7 +65,7 @@ export async function getMember(id) {
     return { error: "Something went wrong" }
   }
 }
-export async function createMember(formData, role) {
+export async function createMember(formData) {
   const newMemberSchema = z.object({
     memberName: z.string().min(3, "Member name must be at least 3 characters."),
     memberLastName: z.string().min(3, "Last name must be at least 3 characters."),
@@ -96,9 +97,7 @@ export async function createMember(formData, role) {
   }
 
   try {
-    if (role !== "admin") {
-      throw new Error
-    }
+    await requireAdmin();
     await connectDB();
     const member = await Member.create(validatedFields.data);
     revalidatePath("/");
@@ -113,7 +112,7 @@ export async function createMember(formData, role) {
     };
   }
 }
-export async function updateMember(formData, id, role) {
+export async function updateMember(formData, id) {
   const newMemberSchema = z.object({
     memberName: z.string().min(3, "Member name must be at least 3 characters."),
     memberLastName: z.string().min(3, "Last name must be at least 3 characters."),
@@ -144,9 +143,7 @@ export async function updateMember(formData, id, role) {
     };
   }
   try {
-    if (role !== "admin") {
-      throw new Error
-    }
+    await requireAdmin();
     const updatedMember = {
       memberName: formData.memberName,
       memberLastName: formData.memberLastName,
@@ -170,11 +167,9 @@ export async function updateMember(formData, id, role) {
     };
   }
 }
-export const updateMemberImage = async (imgUrl, id, role) => {
+export const updateMemberImage = async (imgUrl, id) => {
   try {
-    if (role !== "admin") {
-      throw new Error
-    }
+    await requireAdmin();
     await connectDB();
     const result = await Member.findByIdAndUpdate(id, { memberImage: imgUrl }, { new: true })
 
@@ -187,11 +182,9 @@ export const updateMemberImage = async (imgUrl, id, role) => {
   }
 
 }
-export async function deleteMember(id, role) {
+export async function deleteMember(id) {
   try {
-    if (role !== "admin") {
-      throw new Error
-    }
+    await requireAdmin();
     await connectDB();
     const result = await Member.findByIdAndDelete(id)
     console.log(result);

@@ -1,10 +1,11 @@
 "use server"
 import connectDB from "@/lib/database"
 import User from "@/models/user"
+import { requireAdmin } from "@/lib/authGuard";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 
-export const updateUser = async (formData, id, role) => {
+export const updateUser = async (formData, id) => {
 
 
     const userSchema = z.object({
@@ -25,9 +26,7 @@ export const updateUser = async (formData, id, role) => {
         };
     }
     try {
-        if (role !== "admin") {
-            throw new Error
-        }
+        await requireAdmin();
 
         await connectDB();
         const result = await User.findByIdAndUpdate(id, { fullName: formData.name, userMail: formData.email }, { new: true })
@@ -42,12 +41,10 @@ export const updateUser = async (formData, id, role) => {
         return { error: "Something went wrong" }
     }
 }
-export const updateUserImage = async (imgUrl, id, role) => {
+export const updateUserImage = async (imgUrl, id) => {
 
     try {
-        if (role !== "admin") {
-            throw new Error
-        }
+        await requireAdmin();
 
         await connectDB();
         const result = await User.findByIdAndUpdate(id, { img: imgUrl }, { new: true })
@@ -60,7 +57,7 @@ export const updateUserImage = async (imgUrl, id, role) => {
     }
 
 }
-export const updateUserPassword = async (formData, id, role) => {
+export const updateUserPassword = async (formData, id) => {
     const userSchema = z.object({
         currentPassword: z.string().min(3),
         newPassword: z.string().min(3),
@@ -85,9 +82,7 @@ export const updateUserPassword = async (formData, id, role) => {
         };
     }
     try {
-        if (role !== "admin") {
-            throw new Error
-        }
+        await requireAdmin();
         await connectDB();
         const user = await User.findById(id)
         const isMatch = await bcrypt.compare(formData.currentPassword, user.userPassword);
