@@ -4,6 +4,8 @@ import { ImapFlow } from "imapflow";
 import base64 from "base-64";
 import { revalidatePath } from "next/cache";
 import { simpleParser } from "mailparser";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 export async function POST(request) {
   const { email, name, message } = await request.json();
@@ -44,6 +46,11 @@ export async function POST(request) {
 }
 
 export async function GET(req) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user?.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const client = new ImapFlow({
     host: "imap.gmail.com",
     port: 993,

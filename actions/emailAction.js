@@ -1,8 +1,13 @@
 "use server";
 
+import { cookies } from "next/headers";
+
 export async function fetchInbox() {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"; // Define the base URL
-  const res = await fetch(`${baseUrl}/api/email`, { cache: "no-store" }); // Use the full URL to fetch
+  const res = await fetch(`${baseUrl}/api/email`, {
+    cache: "no-store",
+    headers: { Cookie: cookies().toString() },
+  }); // Use the full URL to fetch, forwarding the caller's session cookie
   const data = await res.json(); // Convert the response to JSON
   const emails = data || []; // Ensure emails is always an array
 
@@ -17,7 +22,10 @@ export async function fetchInbox() {
 
 export async function fetchUnseen() {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"; // Define the base URL
-  const res = await fetch(`${baseUrl}/api/email/count`, { cache: "no-store" }); // Use the full URL to fetch
+  const res = await fetch(`${baseUrl}/api/email/count`, {
+    cache: "no-store",
+    headers: { Cookie: cookies().toString() },
+  }); // Use the full URL to fetch, forwarding the caller's session cookie
 
   if (!res.ok) {
     console.error("Failed to fetch count:", res);
