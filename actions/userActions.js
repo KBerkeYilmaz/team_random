@@ -5,6 +5,10 @@ import { requireAdmin } from "@/lib/authGuard";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 
+// AUDIT #83 (issue #82): every action below is gated by requireAdmin(), which
+// derives the admin role from the server session. Previously each took a `role`
+// argument FROM THE CLIENT and checked `if (role !== "admin")`, so a forged
+// request passing role:"admin" bypassed authorization entirely.
 export const updateUser = async (formData, id) => {
 
 

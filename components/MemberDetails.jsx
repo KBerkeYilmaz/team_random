@@ -26,6 +26,8 @@ export default function MemberDetails({ member }) {
   }
 
   const handleDelete = () => {
+    // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
+    // enforced server-side in the action (requireAdmin). Kept for a friendly toast.
     if (data.user.role !== "admin") {
       toast({
         variant: "destructive",

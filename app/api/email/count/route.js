@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 
 export async function GET(req) {
+  // AUDIT #83 (issue #82): the unread-count endpoint was world-readable — it
+  // connected to Gmail IMAP with no auth. Now admin-only.
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
