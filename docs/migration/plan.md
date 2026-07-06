@@ -159,3 +159,22 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 ## Better Auth references (verified July 2026)
 
 - [MongoDB adapter](https://www.better-auth.com/docs/adapters/mongo) · [Next.js integration](https://www.better-auth.com/docs/integrations/next) · [Admin plugin](https://www.better-auth.com/docs/plugins/admin) · [Email & Password (custom hash/verify)](https://www.better-auth.com/docs/authentication/email-password) · [Database concepts (additionalFields)](https://www.better-auth.com/docs/concepts/database) · [Clerk migration (bcrypt pattern)](https://www.better-auth.com/docs/guides/clerk-migration-guide)
+
+---
+
+## Deferred / candidate future migrations
+
+Ideas considered during scoping but **explicitly out of scope for Phases 0–6**. Recorded here (CLAUDE.md rule 1) so they are not re-litigated cold.
+
+### Prisma + tRPC data layer — considered & deferred (2026-07-06)
+
+Replacing the in-app ORM (Mongoose) with **Prisma**, and fronting the domain data with a **tRPC** API layer, was weighed and **deferred**. The data layer stays **Mongoose + MongoDB**, and Phase 1 (Better Auth) is unchanged (native `mongodbAdapter` sourcing the `Db` from the Mongoose connection; Mongoose kept for domain models).
+
+**Why deferred:**
+- **Prisma is hobbled on MongoDB** — pinned to Prisma v6 (v7 dropped Mongo support), no real migrations (`prisma db push` only), and it requires a replica-set deployment.
+- **tRPC is low-value for this app today** — it is Server-Actions-first and every domain read is server-rendered in RSCs (no client-side data fetching, no React Query/SWR — only `@tanstack/react-table` for UI). On TypeScript the Server Actions are already end-to-end typed, so tRPC would add an RPC layer + provider plumbing for little gain. (The one clean fit: Phase 0's `requireAdmin()` → a tRPC `adminProcedure` middleware.)
+
+**If ever pursued** — treat it as its own migration, not a bolt-on:
+- Pair Prisma with **Postgres**, its full-power home (v7, real migrations, no ObjectId friction). The domain models are flat and relation-free (`work.workContributors` is a plain string), so it is a small 3-table schema + one-time data move.
+- Adopt tRPC only if genuinely client-heavy / interactive features arrive.
+- Better Auth could stay on Mongo (two databases) or also move to Postgres via its Prisma adapter (which works cleanly on SQL, unlike the Prisma + Mongo ObjectId issues).
