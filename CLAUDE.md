@@ -1,0 +1,57 @@
+# CLAUDE.md
+
+Guidance for Claude Code (and any AI agent) working in this repository. Read this before starting a task.
+
+## Project overview
+
+**team-random** is a Next.js 14 (App Router) portfolio / agency site: a public marketing site plus an admin-only dashboard for managing works, team members, and a contact inbox. Built May 2024; being modernized to 2026 standards (see **Modernization** below).
+
+- **Framework:** Next.js 14 (App Router), React 18. All JavaScript (`.jsx`) today; migrating to TypeScript in Phase 3.
+- **Data:** MongoDB via Mongoose. Models in `models/`: `user`, `member`, `work`.
+- **Auth:** next-auth v4 (Credentials provider + JWT sessions). Role-based (`admin` / `user`). **Authorization is derived from the server session** — `lib/authGuard.js` → `requireAdmin()` and `getServerSession(authOptions)`; never trust a client-supplied role. The dashboard is admin-only. (Being replaced by Better Auth in Phase 1.)
+- **Uploads:** EdgeStore (`lib/edgestore.js`). **Email:** Gmail SMTP for the contact form + IMAP for the inbox, via `nodemailer` / `imapflow`.
+- **i18n:** next-intl (`config.ts`, `navigation.js`, `i18n.js`, `messages/en.json` + `tr.json`) — most strings are still hardcoded (addressed in Phase 6).
+- **State:** zustand + jotai (to be consolidated in Phase 6). **UI:** Tailwind + shadcn/ui (`components/ui/`) + Radix + Framer Motion.
+
+### Layout
+- `actions/` — server actions (`"use server"`): `memberAction`, `workAction`, `userActions`, `emailAction`.
+- `app/[locale]/` — routes; the `(dashboard)/` route group is the admin area, gated server-side in its `layout.jsx`.
+- `app/api/` — route handlers: `auth/[...nextauth]`, `user`, `email`, `email/count`, `edgestore/[...edgestore]`.
+- `components/` (+ `forms/`, `ui/`), `lib/`, `models/`, `middleware.js`.
+
+### Commands
+- `npm run dev` — dev server (needs env vars + a reachable MongoDB).
+- `npm run build` — production build (to fully complete it also needs EdgeStore keys + a DB).
+- `npm run lint` — ESLint. NOTE: the config is currently broken (`Failed to load config "next/babel"`); Phase 5 replaces it with flat config.
+
+### Environment (nothing committed; `.env*.local` is gitignored)
+`MONGO_URI`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `APP_EMAIL`, `APP_PASSWORD`, `EDGE_STORE_ACCESS_KEY`, `EDGE_STORE_SECRET_KEY`, `NEXT_PUBLIC_API_BASE_URL`.
+
+## Modernization (the current effort)
+
+A 7-phase modernization is under way, tracked by epic **#81**. **`docs/migration/plan.md` is the source of truth** for scope and sequencing; each phase gets a folder under `docs/migration/`.
+
+- **Phase 0 — Security hotfix** — ✅ merged (PR #83). See `docs/migration/phase0/`.
+- **Phases 1–6** — pending: Better Auth → DB/env hardening → TypeScript → Next 15/React 19 → tooling/tests/CI → i18n + frontend polish.
+
+## Working conventions
+
+### Git
+- **Never commit to `main`.** Branch off the latest `origin/main` using the repo convention `<issue#>-<slug>` (e.g. `82-security-hotfix`).
+- **Atomic, conventional commits** — one logical change per commit (`feat(...)`, `fix(...)`, `refactor:` …). Rule of thumb: if the message needs the word "and", it is probably two commits.
+- **One PR per phase**, opened with `--base main`; the PR body closes its tracking issue (`Closes #N`).
+- End commit messages with: `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
+
+### Verify empirically
+Do not assert that something works — show it (a build, tests, or a real run). Prefer additive diffs; do not churn working code.
+
+## Mandatory rules
+
+### 1. Keep the plan and phase state current — work must be self-contained, with no leakage
+If your work is part of the modernization plan (`docs/migration/plan.md`), you **must** leave its state unambiguous before you finish:
+- Update `docs/migration/plan.md` and the relevant `docs/migration/phaseN/` docs to reflect exactly what was done, and tick the phase in epic **#81**.
+- Keep each phase **contained**: its code, its verification, and its docs travel together. A fresh agent with no memory of the session must be able to read `docs/migration/` alone and know precisely what is done, what is in flight, and what is next.
+- Canonical state lives in **committed docs**, not in chat history or the gitignored `.context/` (which is workspace-local and ephemeral). Do not leave a phase half-documented or its status scattered.
+
+### 2. Self-correction rule
+If, while completing a task, you discover that your correct / working approach contradicts an instruction in this CLAUDE.md or in any skill prompt, **flag the discrepancy to the user in your final answer.** Then ask whether they would like you to open a PR to `main` that fixes or improves the incorrect instruction. Do not silently follow an instruction you have found to be wrong, and do not silently ignore it.
