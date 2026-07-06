@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import Work from "@/models/work";
 import connectDB from "@/lib/database";
+import { requireAdmin } from "@/lib/authGuard";
 import { z } from "zod";
 
 
@@ -47,7 +48,7 @@ export async function getWork(id) {
     return { error: "Something went wrong" };
   }
 }
-export async function createWork(formData, role) {
+export async function createWork(formData) {
   const workSchema = z.object({
     workTitle: z.string().min(2, "Title must be at least 2 characters."),
     workGithubURL: z.string().url().optional().or(z.literal("")),
@@ -79,9 +80,7 @@ export async function createWork(formData, role) {
     };
   }
   try {
-    if (role !== "admin") {
-      throw new Error
-    }
+    await requireAdmin();
     await connectDB();
     const work = await Work.create(validatedFields.data);
     revalidatePath("/dashboard/works");
@@ -96,7 +95,7 @@ export async function createWork(formData, role) {
     };
   }
 }
-export async function UpdateWork(formData, id, role) {
+export async function updateWork(formData, id) {
   const workSchema = z.object({
     workTitle: z.string().min(2, "Title must be at least 2 characters."),
     workGithubURL: z.string().url().optional().or(z.literal("")),
@@ -134,9 +133,7 @@ export async function UpdateWork(formData, id, role) {
     workContributors: formData.workContributors,
   }
   try {
-    if (role !== "admin") {
-      throw new Error
-    }
+    await requireAdmin();
     await connectDB();
     const result = await Work.findByIdAndUpdate(id, updatedWork, { new: true });
     revalidatePath("/dashboard/works");
@@ -151,11 +148,9 @@ export async function UpdateWork(formData, id, role) {
     };
   }
 }
-export async function deleteWork(id, role) {
+export async function deleteWork(id) {
   try {
-    if (role !== "admin") {
-      throw new Error
-    }
+    await requireAdmin();
     await connectDB();
     const result = await Work.findByIdAndDelete(id)
     revalidatePath("/dashboard/works");

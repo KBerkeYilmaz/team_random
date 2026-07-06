@@ -72,7 +72,7 @@ export const EditUserForm = ({ user }) => {
       return;
     }
     setIsSubmitting(true);
-    const result = await updateUser(values, user.id, user.role);
+    const result = await updateUser(values, user.id);
     if (file) {
       handlePicture();
     }
@@ -110,7 +110,7 @@ export const EditUserForm = ({ user }) => {
   };
 
   const handleUpdatePicture = async (imgUrl) => {
-    const result = await updateUserImage(imgUrl, user.id, user.role);
+    const result = await updateUserImage(imgUrl, user.id);
 
     // console.log("handlePicture: ", file);
     // console.log("handlePicture: ", imgUrl);
