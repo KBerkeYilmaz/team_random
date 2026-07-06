@@ -63,7 +63,7 @@ export const EditMemberForm = ({ member, user }) => {
       return;
     }
     setIsSubmitting(true);
-    const result = await updateMember(values, member.id, user.role);
+    const result = await updateMember(values, member.id);
 
     if (file) {
       handlePicture();

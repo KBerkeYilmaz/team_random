@@ -20,7 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { MultiImageDropzone } from "../MultiImageDropzone";
-import { UpdateWork } from "@/actions/workAction";
+import { updateWork } from "@/actions/workAction";
 import { Textarea } from "../ui/textarea";
 
 const formSchema = z.object({
@@ -79,7 +79,7 @@ export const EditWorkForm = ({ work, user }) => {
       };
 
       // Then, pass this updated data object to your API call function.
-      const response = await UpdateWork(dataWithImages, work.id, user.role);
+      const response = await updateWork(dataWithImages, work.id);
       if (response.error) {
         throw new Error(response.error);
       }

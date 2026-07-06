@@ -83,7 +83,7 @@ const NewMemberForm = () => {
       console.log("handlePicture-res.url: ", res.url);
 
       const userInfo = { ...values, memberImage: res.url };
-      const result = await createMember(userInfo, data.user.role);
+      const result = await createMember(userInfo);
       if (result.error) {
         toast({
           variant: "destructive",
