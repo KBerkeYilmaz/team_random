@@ -18,7 +18,7 @@ Plus: DB connection isn't pooled (`lib/database.js` does `mongoose.connect()` pe
 
 1. **Security first** — fix the auth/role vulnerabilities before anything else.
 2. **Full TypeScript migration** (typed models, actions, env).
-3. **Upgrade Next 14→15 and React 18→19.**
+3. **Upgrade Next 14→16 and React 18→19.**
 4. **Replace next-auth v4 with Better Auth** (user's explicit preference over Auth.js/NextAuth).
 5. **Engineering polish only — no new AI features.**
 
@@ -31,9 +31,9 @@ Plus: DB connection isn't pooled (`lib/database.js` does `mongoose.connect()` pe
 
 - **Security hotfix ships first, in plain JS, still on next-auth v4** (Phase 0). The vulns are exploitable today; the Better Auth swap is large and risky. Decouple them — a small surgical fix ships security in hours and is independently revertible.
 - **Better Auth before the full TS migration** (Phase 1 before Phase 3). Better Auth is TS-first; write *only the new auth surface* in TS as a beachhead (`allowJs` already lets `.ts` and `.jsx` coexist). Migrating everything to TS first would type the *old* next-auth session shape, then throw it away. Auth files get written in TS exactly once.
-- **Next 15 / React 19 after the TS sweep, via the official codemod** (Phase 4). Next 15 makes `params`/`searchParams`/`headers()`/`cookies()` **async** — pervasive across every page/layout and the Better Auth `getSession` calls. Running `@next/codemod` on already-typed files lands the async-signature change cleanly with compiler backup.
+- **Next 16 / React 19 after the TS sweep, via the official codemod** (Phase 4). Async `params`/`searchParams`/`headers()`/`cookies()` (introduced in Next 15, carried into 16) are pervasive across every page/layout and the Better Auth `getSession` calls; Next 16 additionally renames the middleware convention to **`proxy`** (`middleware.ts` → `proxy.ts`). Running `@next/codemod` on already-typed files lands both changes cleanly with compiler backup.
 
-**Order:** Phase 0 (security hotfix) → 1 (Better Auth) → 2 (DB/env) → 3 (TypeScript) → 4 (Next 15/React 19) → 5 (tooling/tests/CI) → 6 (i18n + frontend polish). Each phase is independently shippable.
+**Order:** Phase 0 (security hotfix) → 1 (Better Auth) → 2 (DB/env) → 3 (TypeScript) → 4 (Next 16/React 19) → 5 (tooling/tests/CI) → 6 (i18n + frontend polish). Each phase is independently shippable.
 
 ---
 
@@ -92,15 +92,16 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 
 ---
 
-## Phase 4 — Next 14→15 / React 18→19 (P1) · ~1.5–2.5 days
+## Phase 4 — Next 14→16 / React 18→19 (P1) · ~2–3 days
 
-- Run **`npx @next/codemod@canary upgrade latest`** — bumps `next`/`react`/`react-dom`/`eslint-config-next` and applies the **async `params`/`searchParams`/`cookies()`/`headers()`** codemod across all pages/layouts and the Better Auth `getSession` calls (lands on Phase-3-typed signatures).
+- Run **`npx @next/codemod@latest upgrade latest`** (targets **Next 16**) — bumps `next`/`react`/`react-dom`/`eslint-config-next` and applies the **async `params`/`searchParams`/`cookies()`/`headers()`** codemod across all pages/layouts and the Better Auth `getSession` calls (lands on Phase-3-typed signatures).
 - `@types/react`/`@types/react-dom` → 19.
-- **next-intl compat**: bump if needed for Next 15 (newer next-intl makes request-config `locale` async) — the most likely integration snag.
+- **Middleware → Proxy (Next 16):** rename `middleware.ts` → **`proxy.ts`** and the exported `middleware` → `proxy` via `npx @next/codemod@latest rename-middleware-to-proxy .`. `proxy.ts` runs on the **Node.js runtime** (Edge unsupported) — fine for us; re-verify Better Auth's `getSessionCookie` and the next-intl composition run under it. Do **not** leave a stray `middleware.ts` (deprecated in 16; may be silently ignored → the optimistic gate stops firing, though the dashboard-layout enforcement still holds). Refs: [rename guide](https://nextjs.org/docs/messages/middleware-to-proxy) · [proxy convention](https://nextjs.org/docs/app/api-reference/file-conventions/proxy) · [v16 upgrade](https://nextjs.org/docs/app/guides/upgrading/version-16).
+- **next-intl compat**: bump for Next 16 (newer next-intl makes request-config `locale` async, and must support the `proxy.ts` convention) — the most likely integration snag.
 - Verify peer-dep compatibility for EdgeStore / Framer Motion 11 / Radix under React 19.
-- Audit caching: Next 15 is uncached-by-default; inbox actions already use `cache:"no-store"`; confirm `revalidatePath` usage still holds.
+- Audit caching: Next 15+ is uncached-by-default; inbox actions already use `cache:"no-store"`; confirm `revalidatePath` usage still holds.
 
-**Verify:** `npm run build` on 15, `tsc --noEmit`, manual pass of all routes incl. login→session→dashboard (async `headers()`), both locales resolve; grep for any sync `params.` the codemod missed.
+**Verify:** `npm run build` on 16, `tsc --noEmit`, manual pass of all routes incl. login→session→dashboard (async `headers()`, `proxy.ts` gate), both locales resolve; grep for any sync `params.` the codemod missed and any leftover `middleware.ts`.
 
 ---
 
@@ -113,7 +114,7 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 - **CI** `.github/workflows/ci.yml`: install → `tsc --noEmit` → lint → `vitest run` → `next build` → Playwright (test DB / `mongodb-memory-server`), Node 20.
 - **Docs**: real `README`; `.env.example` generated from `lib/env.ts` (single source of truth).
 
-*The lint/prettier/husky config can be pulled earlier (right after Phase 0) for guardrails during the migration; keep tests/CI here so they assert the final TS + Next 15 shape.* **Verify:** lint/typecheck/vitest/playwright green locally; PR CI green; a bad commit is blocked by husky.
+*The lint/prettier/husky config can be pulled earlier (right after Phase 0) for guardrails during the migration; keep tests/CI here so they assert the final TS + Next 16 shape.* **Verify:** lint/typecheck/vitest/playwright green locally; PR CI green; a bad commit is blocked by husky.
 
 ---
 
@@ -139,12 +140,12 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 | 1 | Better Auth migration (new files TS) | 3–5 d |
 | 2 | DB/env hardening | 1–1.5 d |
 | 3 | Full TypeScript migration | 3–5 d |
-| 4 | Next 15 / React 19 | 1.5–2.5 d |
+| 4 | Next 16 / React 19 | 2–3 d |
 | 5 | Tooling / tests / CI | 2–3 d |
 | 6 | i18n + frontend polish | 3–5 d |
-| **Total** | | **~15–23 days** |
+| **Total** | | **~15.5–23.5 days** |
 
-**Dependencies:** Phase 1 depends on Phase 0's server-side role derivation (so the swap doesn't reintroduce the vuln) and Phase 2's cached connection (pull forward for the `Db`). Phase 3 depends on Phase 1 (type against final auth). Phase 4's codemod runs after Phase 3. Phases 5–6 want the final TS/Next-15 shape (except Phase 5's lint/format config, which can move earlier).
+**Dependencies:** Phase 1 depends on Phase 0's server-side role derivation (so the swap doesn't reintroduce the vuln) and Phase 2's cached connection (pull forward for the `Db`). Phase 3 depends on Phase 1 (type against final auth). Phase 4's codemod runs after Phase 3. Phases 5–6 want the final TS/Next-16 shape (except Phase 5's lint/format config, which can move earlier).
 
 ## Critical files
 
