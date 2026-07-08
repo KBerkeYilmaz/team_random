@@ -20,7 +20,7 @@ export async function getMembers({ skip = 0, limit = 0 } = {}) {
     const docs = await Member.find().skip(skip).limit(limit).lean();
     return docs.map(({ _id, __v, ...rest }) => ({ id: _id.toString(), ...rest }));
   } catch (error) {
-    console.log(error);
+    console.error("getMembers failed:", error);
     return { error: "Something went wrong" }
   }
 }
@@ -30,7 +30,7 @@ export async function getMemberCount() {
     const result = await Member.countDocuments()
     return result
   } catch (error) {
-    console.log(error);
+    console.error("getMemberCount failed:", error);
     return { error: "Something went wrong" }
   }
 }
@@ -42,7 +42,7 @@ export async function getMember(id) {
     const { _id, __v, ...rest } = doc;
     return { id: _id.toString(), ...rest };
   } catch (error) {
-    console.log(error);
+    console.error("getMember failed:", error);
     return { error: "Something went wrong" }
   }
 }
@@ -71,7 +71,6 @@ export async function createMember(formData) {
 
   // Return early if the form data is invalid
   if (!validatedFields.success) {
-    console.log(validatedFields.error);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
     };
@@ -118,7 +117,6 @@ export async function updateMember(formData, id) {
 
   // Return early if the form data is invalid
   if (!validatedFields.success) {
-    console.log(validatedFields.error);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
     };
@@ -135,8 +133,7 @@ export async function updateMember(formData, id) {
       memberLinkedin: formData.memberLinkedin,
     }
     await connectDB();
-    const result = await Member.findByIdAndUpdate(id, updatedMember, { new: true })
-    console.log(result);
+    await Member.findByIdAndUpdate(id, updatedMember, { new: true })
     revalidatePath("/");
     return {}
 
@@ -152,13 +149,11 @@ export const updateMemberImage = async (imgUrl, id) => {
   try {
     await requireAdmin();
     await connectDB();
-    const result = await Member.findByIdAndUpdate(id, { memberImage: imgUrl }, { new: true })
-
-    console.log(result);
+    await Member.findByIdAndUpdate(id, { memberImage: imgUrl }, { new: true })
     revalidatePath("/dashboard/members");
     return {}
   } catch (error) {
-    console.log(error);
+    console.error("updateMemberImage failed:", error);
     return { error: "Something went wrong" }
   }
 
@@ -167,12 +162,11 @@ export async function deleteMember(id) {
   try {
     await requireAdmin();
     await connectDB();
-    const result = await Member.findByIdAndDelete(id)
-    console.log(result);
+    await Member.findByIdAndDelete(id)
     revalidatePath("/dashboard/members");
     return { message: "Member deleted Successfully" }
   } catch (error) {
-    console.log(error);
+    console.error("deleteMember failed:", error);
     return { error: "Something went wrong" }
   }
 }

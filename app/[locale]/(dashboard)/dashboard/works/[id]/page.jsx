@@ -12,7 +12,6 @@ const WorkPage = async ({ params }) => {
     workImages: work.workImages,
     workTechStack: work.workTechStack,
   };
-  console.log(filteredWork)
   return (
     <>
       <WorkDetails work={filteredWork} />

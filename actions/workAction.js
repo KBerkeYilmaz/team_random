@@ -25,7 +25,7 @@ export async function getWorks({ skip = 0, limit = 0 } = {}) {
       .lean();
     return docs.map(({ _id, ...rest }) => ({ id: _id.toString(), ...rest }));
   } catch (error) {
-    console.log(error);
+    console.error("getWorks failed:", error);
     return { error: "Something went wrong" };
   }
 }
@@ -35,7 +35,7 @@ export async function getWorkCount() {
     const result = await Work.countDocuments()
     return result
   } catch (error) {
-    console.log(error);
+    console.error("getWorkCount failed:", error);
     return { error: "Something went wrong" }
   }
 }
@@ -50,7 +50,7 @@ export async function getWork(id) {
     const { _id, __v, ...rest } = doc;
     return { id: _id.toString(), ...rest, workImages: doc.workImages ?? [] };
   } catch (error) {
-    console.log(error);
+    console.error("getWork failed:", error);
     return { error: "Something went wrong" };
   }
 }
@@ -80,7 +80,6 @@ export async function createWork(formData) {
   //   const validatedFields = workSchema.safeParse(formData);
 
   if (!validatedFields.success) {
-    console.log(validatedFields.error);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
     };
@@ -124,7 +123,6 @@ export async function updateWork(formData, id) {
   });
 
   if (!validatedFields.success) {
-    console.log(validatedFields.error);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
     };
@@ -162,7 +160,7 @@ export async function deleteWork(id) {
     revalidatePath("/dashboard/works");
     return { message: "Work deleted Successfully" }
   } catch (error) {
-    console.log(error);
+    console.error("deleteWork failed:", error);
     return { error: "Something went wrong" }
   }
 }
