@@ -78,6 +78,6 @@ The `admin@teamrandom.com` / `user@teamrandom.com` accounts used above were seed
 
 ## References
 
-- Modernization plan: `.context/plans/modernization-plan-team-random-next-js-portfolio-a.md`
+- Modernization plan: [docs/migration/plan.md](../plan.md)
 - PR [#83](https://github.com/KBerkeYilmaz/team_random/pull/83) · Issue [#82](https://github.com/KBerkeYilmaz/team_random/issues/82) · Epic [#81](https://github.com/KBerkeYilmaz/team_random/issues/81)
 - e2e harness: `.context/e2e/` (`seed.mjs`, `playwright.config.ts`, `security.spec.ts`, `README.md`)

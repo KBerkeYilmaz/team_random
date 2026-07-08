@@ -72,6 +72,8 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 
 ## Phase 2 — Database & env hardening (P1) · ~1–1.5 days
 
+**Status: 🔄 In review** (PR #97, closes #96) — see [phase2/db-env-hardening.md](phase2/db-env-hardening.md) for the full write-up. Note: the Better Auth + Mongoose pools were evaluated for consolidation and **deferred** (a top-level `await` breaks the tsx/test tooling); both now read `MONGO_URI` from `lib/env.ts`.
+
 - **`lib/database.ts`**: replace per-call connect + `process.exit(1)` with the **global-cached-connection** pattern (cache the *promise*), ESM not CommonJS. This is what Phase 1's adapter leans on.
 - **`lib/env.ts`**: Zod-validated typed env parsed once, fail-fast: `MONGO_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_EMAIL`, `APP_PASSWORD`, optional `NEXT_PUBLIC_API_BASE_URL`, `IMAP_HOST` (default `imap.gmail.com`), `SALT_ROUNDS` (default 10). Import wherever `process.env.*` is read.
 - **Data-fetch hygiene**: add `.lean()`/`.select()` to `getMembers`/`getWorks`/`getMember`/`getWork`; drop the verbose manual field-mapping in `getMembers` (`memberAction.js:11–24`); add optional skip/limit pagination.
@@ -115,6 +117,7 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 - **Tests**: **Vitest** + RTL (Zod schemas, `ActionResult` logic, `requireAdmin`, form validation — incl. a test proving the forged-role request is rejected) and **Playwright** e2e (login, role enforcement, CRUD, contact form).
 - **CI** `.github/workflows/ci.yml`: install → `tsc --noEmit` → lint → `vitest run` → `next build` → Playwright (test DB / `mongodb-memory-server`), Node 20.
 - **Docs**: real `README`; `.env.example` generated from `lib/env.ts` (single source of truth).
+- **Logging abstraction (candidate, deferred from Phase 2)**: Phase 2 deliberately kept a plain `console.error("<fn> failed:", …)` in catch blocks (YAGNI). If the server logs later need structure / levels / redaction, add a small `lib/logger.ts` here and route the action + route-handler catches through it.
 
 *The lint/prettier/husky config can be pulled earlier (right after Phase 0) for guardrails during the migration; keep tests/CI here so they assert the final TS + Next 16 shape.* **Verify:** lint/typecheck/vitest/playwright green locally; PR CI green; a bad commit is blocked by husky.
 
