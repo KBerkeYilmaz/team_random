@@ -33,7 +33,7 @@ A 7-phase modernization is under way, tracked by epic **#81**. **`docs/migration
 
 - **Phase 0 — Security hotfix** — ✅ merged (PR #83). See `docs/migration/phase0/`.
 - **Phase 1 — Better Auth** (replaces next-auth v4) — ✅ shipped (PR #88). See `docs/migration/phase1/`.
-- **Phases 2–6** — pending: DB/env hardening → TypeScript → Next 15/React 19 → tooling/tests/CI → i18n + frontend polish.
+- **Phases 2–6** — pending: DB/env hardening → TypeScript → Next 16/React 19 → tooling/tests/CI → i18n + frontend polish.
 
 ## Working conventions
 
