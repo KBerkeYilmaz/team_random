@@ -53,11 +53,11 @@ Close privilege escalation, the exposed inbox, and open registration **without**
 
 ## Phase 1 — Replace next-auth v4 with Better Auth (the hard part) · ~3–5 days
 
-**Status: ✅ Shipped** (PR #88, closes #87) — see [phase1/better-auth.md](phase1/better-auth.md). Two deviations from the spec below: (1) Better Auth uses a dedicated `MongoClient` on the same `MONGO_URI` rather than Mongoose's pool — sourcing the `Db` from Mongoose required a top-level `await` that breaks CJS tooling (tsx / Phase 5 tests); (2) `jsconfig.json` → `tsconfig.json` was pulled forward from Phase 3 to host the first `.ts` files.
+**Status: ✅ Shipped** (PR #88, closes #87) — see [phase1/better-auth.md](phase1/better-auth.md) for the full write-up. Cross-phase note: `jsconfig.json` → `tsconfig.json` was pulled forward from Phase 3 to host the first `.ts` files (the full TS sweep still happens in Phase 3).
 
 Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain models, **preserve existing bcrypt passwords**, enforce admin via the admin plugin server-side. New auth files in **TypeScript**.
 
-- **Source the native `Db` from Mongoose** (Better Auth's `mongodbAdapter` needs a native `Db`, not Mongoose): after `connectDB()`, use `mongoose.connection.db` (+ `.getClient()` for the optional transaction `client`). One pool, one credential set — no second connection. Ensure the Mongoose connection resolves before `auth` handles a request (cached-connect promise; Phase 2 formalizes it).
+- **Give Better Auth its own native `MongoClient`** (its `mongodbAdapter` needs a native `Db`, not a Mongoose model): `new MongoClient(process.env.MONGO_URI).db()` — the driver connects lazily on first use, so there is no top-level `await` and the module stays CJS/ESM-tooling-safe (tsx, tests, build). Same `MONGO_URI` as Mongoose (one credential set), separate pool. *(The initial brief reused Mongoose's `connection.db`, but that needs a top-level `await` — `db` is undefined until connected — which breaks CJS tooling, so this was switched. Phase 2 can consolidate the two pools.)*
 - **Subsume User into Better Auth's `user` collection**: `email`←`userMail`, `name`←`fullName`, `image`←`img`; `role` comes from the **admin plugin** (`admin({ adminRoles:["admin"] })`); password moves into Better Auth's **`account`** collection (`providerId:"credential"`, hash in `account.password`) — *not* on `user`. Add only truly-needed extras via `user.additionalFields` (note: additionalFields can't be column-remapped).
 - **Migration script** `scripts/migrate-to-better-auth.ts` (run manually against a DB copy): per legacy user, insert the Better Auth `user` doc + `account` doc carrying the existing bcrypt hash; verify with a sign-in. Keep `models/user.js` until cutover is verified, then drop it.
 - **Keep bcrypt** via custom hash/verify (documented migration path — no forced reset): `emailAndPassword.password = { hash: p => bcrypt.hash(p, SALT_ROUNDS), verify: ({hash,password}) => bcrypt.compare(password, hash) }`.
@@ -66,7 +66,7 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 - **Middleware** `middleware.ts`: keep the next-intl composition unchanged; replace `withAuth` with an **optimistic** `getSessionCookie(request)` existence check (redirect to `/login`). Real admin enforcement stays in the dashboard **layout** (Better Auth docs: middleware cookie checks are not a security boundary).
 - **Env**: add `BETTER_AUTH_SECRET` + `BETTER_AUTH_URL`, retire `NEXTAUTH_SECRET` (folded into Phase 2).
 
-**Gotchas:** adapter `Db` must be defined before first request; password belongs on `account` not `user`; `role` on the client type requires `adminClient()` registered. **Verify:** run migration on a DB copy → migrated user logs in with their *existing* password, session has `role`; non-admin/anon → redirected; forged-role action still rejected; password change writes new bcrypt hash to `account`; grep confirms zero `next-auth` imports before removing the dep; `npm run build`.
+**Gotchas:** password belongs on `account` not `user`; `role` on the client type requires `adminClient()` registered. **Verify:** run migration on a DB copy → migrated user logs in with their *existing* password, session has `role`; non-admin/anon → redirected; forged-role action still rejected; password change writes new bcrypt hash to `account`; grep confirms zero `next-auth` imports before removing the dep; `npm run build`.
 
 ---
 
