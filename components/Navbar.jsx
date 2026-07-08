@@ -14,7 +14,7 @@ import { Home, Menu } from "lucide-react";
 import LangSwitch from "./LangSwitch";
 import { ModeToggle } from "./ModeToggle";
 import { Separator } from "./ui/separator";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 
 export const Navbar = () => {

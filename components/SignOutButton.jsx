@@ -1,21 +1,26 @@
 "use client";
 import { Loader2 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut } from "@/lib/auth-client";
 import { Button } from "./ui/button";
 import { useState } from "react";
+import { useRouter } from "@/navigation";
 import { useToast } from "./ui/use-toast";
 
 export const SignOutButton = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
-  const handleSignOut = () => {
+  // AUDIT #87 (Phase 1): Better Auth's signOut() takes no callbackUrl — clear the
+  // session, then redirect manually (locale-aware) to the home page.
+  const handleSignOut = async () => {
     setIsSigningOut(true);
-    signOut({ callbackUrl: "/" });
+    await signOut();
     toast({
       title: "Sign Out Successful !",
       description: "- Redirecting to Home",
     });
+    router.push("/");
   };
   return (
     <>

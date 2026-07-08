@@ -10,14 +10,16 @@ import { useState } from "react";
 import { DeleteAlert } from "./DeleteAlert";
 import Image from "next/image";
 import { EditMemberForm } from "./forms/EditMemberForm";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-client";
 
 export default function MemberDetails({ member }) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { data } = useSession();
-  if (!member) {
+  // AUDIT #87 (Phase 1): also wait for the Better Auth session (data) before
+  // rendering, since data.user is read below and useSession resolves async.
+  if (!member || !data) {
     return (
       <div className="flex w-full justify-center mt-10">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
