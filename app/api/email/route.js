@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { simpleParser } from "mailparser";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { env } from "@/lib/env";
 
 export async function POST(request) {
   // AUDIT #83: the contact form is public by design — only GET (the inbox read)
@@ -15,14 +16,14 @@ export async function POST(request) {
   const transport = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.APP_EMAIL,
-      pass: process.env.APP_PASSWORD,
+      user: env.APP_EMAIL,
+      pass: env.APP_PASSWORD,
     },
   });
 
   const mailOptions = {
-    from: process.env.APP_EMAIL,
-    to: process.env.APP_EMAIL,
+    from: env.APP_EMAIL,
+    to: env.APP_EMAIL,
     // cc: email, (uncomment this line if you want to send a copy to the sender)
     subject: `Message from ${name} (${email})`,
     text: message,
@@ -57,12 +58,12 @@ export async function GET(req) {
   }
 
   const client = new ImapFlow({
-    host: "imap.gmail.com",
-    port: 993,
+    host: env.IMAP_HOST,
+    port: env.IMAP_PORT,
     secure: true,
     auth: {
-      user: process.env.APP_EMAIL,
-      pass: process.env.APP_PASSWORD,
+      user: env.APP_EMAIL,
+      pass: env.APP_PASSWORD,
     },
   });
   let emailList = []; // Initialize an array to hold email data
