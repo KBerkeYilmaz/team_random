@@ -72,6 +72,8 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 
 ## Phase 2 — Database & env hardening (P1) · ~1–1.5 days
 
+**Status: ✅ Shipped** (PR #97, closes #96) — see [phase2/db-env-hardening.md](phase2/db-env-hardening.md) for the full write-up. Note: the Better Auth + Mongoose pools were evaluated for consolidation and **deferred** (a top-level `await` breaks the tsx/test tooling); both now read `MONGO_URI` from `lib/env.ts`.
+
 - **`lib/database.ts`**: replace per-call connect + `process.exit(1)` with the **global-cached-connection** pattern (cache the *promise*), ESM not CommonJS. This is what Phase 1's adapter leans on.
 - **`lib/env.ts`**: Zod-validated typed env parsed once, fail-fast: `MONGO_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_EMAIL`, `APP_PASSWORD`, optional `NEXT_PUBLIC_API_BASE_URL`, `IMAP_HOST` (default `imap.gmail.com`), `SALT_ROUNDS` (default 10). Import wherever `process.env.*` is read.
 - **Data-fetch hygiene**: add `.lean()`/`.select()` to `getMembers`/`getWorks`/`getMember`/`getWork`; drop the verbose manual field-mapping in `getMembers` (`memberAction.js:11–24`); add optional skip/limit pagination.
@@ -86,7 +88,7 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 
 - `jsconfig.json` → `tsconfig.json` (keep `strict`, `paths`, `moduleResolution:"bundler"`); set `components.json` `"tsx": true`; add a `typecheck` script (`tsc --noEmit`).
 - **Models** → `.ts` with interfaces + typed schemas (`Schema<IMember>`, `models.X as Model<IX>`). Flag `work.workContributors` (String vs the commented-out ObjectId ref).
-- **Actions** → `.ts` with a shared discriminated-union `ActionResult<T> = { data:T } | { error:string } | { errors:FieldErrors }`, making the `result.error`/`result.errors` form checks type-safe. Share Zod schemas via `z.infer` between action and form.
+- **Actions** → `.ts` with a shared discriminated-union `ActionResult<T> = { data:T } | { error:string } | { errors:FieldErrors }`, making the `result.error`/`result.errors` form checks type-safe. Share Zod schemas via `z.infer` between action and form. **Fold in the Phase 2-surfaced cleanups** (see `phase2/db-env-hardening.md` → "Observed but out of scope"): `workAction`'s `createWork`/`updateWork` catch logs and error returns say "work"/"member" inconsistently (copy-pasted from `memberAction` — the error string reads "…the member…" inside work actions), and `updateWork`/`deleteWork` carry unused `const result` bindings that `noUnusedLocals` will flag.
 - **Components/pages/forms** → `.tsx`, leaf-up (shadcn `ui/` first — CLI can re-emit as TSX — then shared components, forms, pages). The `forwardRef`+generic image dropzones are the fiddliest.
 - Migrate `lib/*`, `navigation.js`, `i18n.js`, `app/fonts.js` → `.ts` (`config.ts` already TS).
 
@@ -115,6 +117,7 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 - **Tests**: **Vitest** + RTL (Zod schemas, `ActionResult` logic, `requireAdmin`, form validation — incl. a test proving the forged-role request is rejected) and **Playwright** e2e (login, role enforcement, CRUD, contact form).
 - **CI** `.github/workflows/ci.yml`: install → `tsc --noEmit` → lint → `vitest run` → `next build` → Playwright (test DB / `mongodb-memory-server`), Node 20.
 - **Docs**: real `README`; `.env.example` generated from `lib/env.ts` (single source of truth).
+- **Logging abstraction (candidate, deferred from Phase 2)**: Phase 2 deliberately kept a plain `console.error("<fn> failed:", …)` in catch blocks (YAGNI). If the server logs later need structure / levels / redaction, add a small `lib/logger.ts` here and route the action + route-handler catches through it.
 
 *The lint/prettier/husky config can be pulled earlier (right after Phase 0) for guardrails during the migration; keep tests/CI here so they assert the final TS + Next 16 shape.* **Verify:** lint/typecheck/vitest/playwright green locally; PR CI green; a bad commit is blocked by husky.
 
@@ -125,7 +128,7 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 - **i18n**: expand `messages/en.json`/`tr.json` from 2 keys to full coverage; extract ~95% hardcoded strings (Navbar, Footer, `HeroWavy`, About, forms, ~30 Zod messages) into namespaced keys via `useTranslations`/`getTranslations`; move Zod messages into schema factories taking `t` so validation localizes.
 - **State consolidation**: standardize on **zustand**; port the inbox jotai atom (`use-mail.jsx`) to a small store; **delete** dead `stores/counter-store.js`, `components/Counter.jsx`, the broken-import `stores/mailStore.js`, and jotai from deps.
 - **RSC-by-default**: remove needless `"use client"` (~55/90 files — `Footer`, static content) leaf-up; keep it only where hooks/handlers/`useSession`/framer-motion/dropzones need it.
-- **Error/loading boundaries**: add `error.tsx` at `app/[locale]/` and `(dashboard)/` + root `global-error.tsx`; replace manual `if(!data)` blocks with `Suspense` + the existing `loading.jsx` files.
+- **Error/loading boundaries**: add `error.tsx` at `app/[locale]/` and `(dashboard)/` + root `global-error.tsx`; replace manual `if(!data)` blocks with `Suspense` + the existing `loading.jsx` files. This also covers the Phase 2-surfaced fragility where `app/[locale]/about/page.jsx` does `members?.map(...)`, which throws if `getMembers` returns its `{ error }` shape on a getter DB failure (see `phase2/db-env-hardening.md`).
 - **a11y**: skip link + real `<main>` landmark on the public layout; `aria-current` on active nav; consistent `htmlFor`/`id`; descriptive `alt`; `rel="noopener noreferrer"` on external links; guard `AccountMenu` name access.
 - **DRY dropzones**: extract a shared `useImageDropzone` hook/base; the three variants become thin wrappers. Extract the copy-pasted responsive-width `useEffect`.
 - **Images**: replace raw `<img>` with `next/image` (remote patterns already in `next.config.mjs`).

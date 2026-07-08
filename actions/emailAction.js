@@ -1,9 +1,10 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { env } from "@/lib/env";
 
 export async function fetchInbox() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"; // Define the base URL
+  const baseUrl = env.NEXT_PUBLIC_API_BASE_URL; // validated + defaulted in lib/env.ts
   // AUDIT #83: /api/email is now admin-guarded. A server-to-server fetch does not
   // inherit the user's cookies automatically, so forward them — otherwise the
   // admin's own inbox view would 401.
@@ -24,7 +25,7 @@ export async function fetchInbox() {
 }
 
 export async function fetchUnseen() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"; // Define the base URL
+  const baseUrl = env.NEXT_PUBLIC_API_BASE_URL; // validated + defaulted in lib/env.ts
   // AUDIT #83: forward the session cookie (see fetchInbox) — /api/email/count is admin-guarded.
   const res = await fetch(`${baseUrl}/api/email/count`, {
     cache: "no-store",

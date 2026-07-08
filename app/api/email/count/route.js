@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ImapFlow } from "imapflow";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { env } from "@/lib/env";
 
 export async function GET(req) {
   // AUDIT #83 (issue #82): the unread-count endpoint was world-readable — it
@@ -13,12 +14,12 @@ export async function GET(req) {
   }
 
   const client = new ImapFlow({
-    host: "imap.gmail.com",
-    port: 993,
+    host: env.IMAP_HOST,
+    port: env.IMAP_PORT,
     secure: true,
     auth: {
-      user: process.env.APP_EMAIL,
-      pass: process.env.APP_PASSWORD,
+      user: env.APP_EMAIL,
+      pass: env.APP_PASSWORD,
     },
   });
 

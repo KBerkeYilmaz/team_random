@@ -12,24 +12,20 @@ import { z } from "zod";
 // Previously each took a `role` argument FROM THE CLIENT and checked
 // `if (role !== "admin")`, so a forged request passing role:"admin" bypassed
 // authorization. Read-only getters are intentionally left ungated.
-export async function getWorks() {
+export async function getWorks({ skip = 0, limit = 0 } = {}) {
   try {
     await connectDB();
-    const rawResult = await Work.find();
-    const result = rawResult.map(item => ({
-      id: item._id.toString(),
-      workTitle: item.workTitle,
-      workGithubURL: item.workGithubURL,
-      workAppURL: item.workAppURL,
-      workReadme: item.workReadme,
-      workTechStack: item.workTechStack,
-      // Uncomment other fields as necessary
-      // workContributors: item.workContributors,
-      // workImages: item.workImages,
-    }));
-    return result;
+    // .select() preserves the exact field set the table used before (it omits
+    // workContributors, workImages and timestamps); .lean() makes them plain
+    // RSC-safe objects. limit(0) = no limit, so no-arg callers are unchanged.
+    const docs = await Work.find()
+      .select("workTitle workGithubURL workAppURL workReadme workTechStack")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    return docs.map(({ _id, ...rest }) => ({ id: _id.toString(), ...rest }));
   } catch (error) {
-    console.log(error);
+    console.error("getWorks failed:", error);
     return { error: "Something went wrong" };
   }
 }
@@ -39,17 +35,22 @@ export async function getWorkCount() {
     const result = await Work.countDocuments()
     return result
   } catch (error) {
-    console.log(error);
+    console.error("getWorkCount failed:", error);
     return { error: "Something went wrong" }
   }
 }
 export async function getWork(id) {
   try {
     await connectDB();
-    const result = await Work.findById(id);
-    return result;
+    const doc = await Work.findById(id).lean();
+    if (!doc) return null;
+    // Restore the string `id` (previously the Mongoose `id` virtual on the raw
+    // doc this used to return) and default workImages to [] so WorkDetails'
+    // `work.workImages.length` never hits undefined — .lean() omits empty arrays.
+    const { _id, __v, ...rest } = doc;
+    return { id: _id.toString(), ...rest, workImages: doc.workImages ?? [] };
   } catch (error) {
-    console.log(error);
+    console.error("getWork failed:", error);
     return { error: "Something went wrong" };
   }
 }
@@ -79,7 +80,6 @@ export async function createWork(formData) {
   //   const validatedFields = workSchema.safeParse(formData);
 
   if (!validatedFields.success) {
-    console.log(validatedFields.error);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
     };
@@ -123,7 +123,6 @@ export async function updateWork(formData, id) {
   });
 
   if (!validatedFields.success) {
-    console.log(validatedFields.error);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
     };
@@ -161,7 +160,7 @@ export async function deleteWork(id) {
     revalidatePath("/dashboard/works");
     return { message: "Work deleted Successfully" }
   } catch (error) {
-    console.log(error);
+    console.error("deleteWork failed:", error);
     return { error: "Something went wrong" }
   }
 }
