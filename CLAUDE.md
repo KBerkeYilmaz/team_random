@@ -43,6 +43,7 @@ A 7-phase modernization is under way, tracked by epic **#81**. **`docs/migration
 - **One PR per phase**, opened with `--base main`; the PR body closes its tracking issue (`Closes #N`).
 - **One PR = one issue.** Every PR must revolve around a single issue/concern — never bundle unrelated changes into one PR (this generalizes the per-phase rule above). Open a separate issue + PR for each distinct concern.
 - **Minimal, focused diffs.** Change only what the issue requires; keep edits surgical and additive. Do not churn, reformat, or refactor unrelated code in the same PR.
+- **Surface new concerns; don't smuggle them in.** If, mid-task, you discover a new issue/bug/cleanup whose fix would breach the minimal-diff / one-PR-one-issue rule, **pause and ask the user** whether to open a separate issue + PR for it (the default) or fold it into the current one. Never silently bundle an unrelated change, and never silently drop the finding.
 - End commit messages with: `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
 
 ### Verify empirically
