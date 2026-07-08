@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SignOutButton } from "./SignOutButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-client";
 
 export default function AccountMenu() {
   const router = useRouter();
@@ -22,8 +22,10 @@ export default function AccountMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="icon" className="rounded-full">
           <Avatar>
-            <AvatarImage src={data?.user.image} />
-            <AvatarFallback>{data?.user.name[0].toUpperCase()}</AvatarFallback>
+            <AvatarImage src={data?.user?.image} />
+            {/* AUDIT #87 (Phase 1): guard nullish name/[0] — data is null until
+                the Better Auth session resolves (useSession is async). */}
+            <AvatarFallback>{data?.user?.name?.[0]?.toUpperCase()}</AvatarFallback>
           </Avatar>
           <span className="sr-only">Toggle user menu</span>
         </Button>

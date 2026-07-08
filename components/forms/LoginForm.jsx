@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn } from "@/lib/auth-client";
 import { useRouter } from "@/navigation";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
@@ -26,31 +26,26 @@ const LoginForm = () => {
 
   const onSubmit = async (values) => {
     setIsSubmitting(true);
-    // Use Next-Auth's signIn function instead of fetch
     const { email, password } = values;
-    const result = await signIn("credentials", {
-      redirect: false, // Prevent Next-Auth from redirecting automatically
-      email,
-      password,
-    });
+    // AUDIT #87 (Phase 1): Better Auth email/password sign-in. The result shape is
+    // { data, error } (was next-auth's { error }); on success the client sets the
+    // session cookie, so we just redirect.
+    const { error } = await signIn.email({ email, password });
 
-    if (result?.error) {
+    if (error) {
       setIsSubmitting(false);
-      // Handle errors (e.g., display a message to the user)
-      console.log(result.error || "Login failed!"); // Display error toast
       toast({
         title: "Error !",
-        description: `- ${result.error}`,
+        description: `- ${error.message}`,
       });
     } else {
       toast({
         title: "Login Successful !",
         description: "- Redirecting to Dashboard",
       });
-      console.log("Login Successful");
       setTimeout(() => {
-        router.push(`/dashboard`); // Redirect to the user page
-      }, 500); // Wait for 1 second before redirecting
+        router.push(`/dashboard`);
+      }, 500);
     }
   };
 

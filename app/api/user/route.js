@@ -1,42 +1,45 @@
-import connectDB from "@/lib/database"; // Adjust the path as necessary
-import User from "@/models/user"; // Adjust the path as necessary
-import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
 // AUDIT #83 (issue #82): this route was previously unauthenticated and exported
-// as BOTH POST and GET, so anyone could create users. The GET export has been
-// removed; only an authenticated admin may POST here.
+// as BOTH POST and GET, so anyone could create users. It also wrote `role` from
+// the request body (privilege escalation) and leaked the bcrypt hash in the
+// response. The GET export was removed and creation was locked to admins with
+// role forced to "user".
+//
+// AUDIT #87 (Phase 1): creation moves off the direct Mongoose `User.create`
+// (legacy `users` collection, next-auth) onto Better Auth's admin API, so new
+// accounts land in Better Auth's `user`/`account` collections and can actually
+// sign in. The admin plugin authorizes the caller (must be an admin); role is
+// still forced to "user" server-side and never read from the request body.
 export async function POST(req) {
-  // Only an authenticated admin may create users. There is no public signup UI.
-  const session = await getServerSession(authOptions);
-  if (!session || session.user?.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const body = await req.json();
 
-  await connectDB();
   try {
-    const body = await req.json();
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(body.password, 10);
-    // Create a new user with the hashed password. Role is never taken from the
-    // request body — new users are always created as "user".
-    // AUDIT #83: was `role: res.role` (trusted the request body) → privilege escalation.
-    const user = await User.create({
-      userMail: body.email,
-      userPassword: hashedPassword,
-      fullName: body.fullName,
-      img: body.img,
-      role: "user",
+    const created = await auth.api.createUser({
+      body: {
+        email: body.email,
+        password: body.password,
+        name: body.fullName,
+        role: "user", // never trust a client-supplied role
+        // `image` is a core Better Auth user field; extra fields go via `data`.
+        data: body.img ? { image: body.img } : undefined,
+      },
+      // The admin plugin authorizes this call against the caller's session.
+      headers: await headers(),
     });
-    // Respond with the created user, explicitly omitting the password hash.
-    // AUDIT #83: the omit destructured `password` (a field that does not exist)
-    // instead of `userPassword`, so the bcrypt hash leaked in the response.
-    const { userPassword, ...userWithoutPassword } = user.toObject();
-    return NextResponse.json(userWithoutPassword, { status: 201 });
+
+    return NextResponse.json(created, { status: 201 });
   } catch (error) {
-    console.error("Signup error:", error);
-    return NextResponse.json({ error: "User creation failed" }, { status: 400 });
+    // Better Auth throws an APIError carrying an HTTP status (401/403 for a
+    // non-admin caller, 422 for a duplicate email, etc.).
+    const status =
+      typeof error?.statusCode === "number"
+        ? error.statusCode
+        : typeof error?.status === "number"
+          ? error.status
+          : 400;
+    return NextResponse.json({ error: "User creation failed" }, { status });
   }
 }

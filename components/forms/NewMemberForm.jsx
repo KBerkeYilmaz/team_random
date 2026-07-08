@@ -28,7 +28,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "../ui/textarea";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-client";
 
 const formSchema = z.object({
   memberName: z.string().min(3, "Member name must be at least 3 characters."),
@@ -65,7 +65,7 @@ const NewMemberForm = () => {
   const onSubmit = async (values) => {
     // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
     // enforced server-side in the action (requireAdmin). Kept for a friendly toast.
-    if (data.user.role !== "admin") {
+    if (data?.user?.role !== "admin") {
       toast({
         variant: "destructive",
         title: "Error !",

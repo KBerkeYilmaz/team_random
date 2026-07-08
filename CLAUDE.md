@@ -8,7 +8,7 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 
 - **Framework:** Next.js 14 (App Router), React 18. All JavaScript (`.jsx`) today; migrating to TypeScript in Phase 3.
 - **Data:** MongoDB via Mongoose. Models in `models/`: `user`, `member`, `work`.
-- **Auth:** next-auth v4 (Credentials provider + JWT sessions). Role-based (`admin` / `user`). **Authorization is derived from the server session** — `lib/authGuard.js` → `requireAdmin()` and `getServerSession(authOptions)`; never trust a client-supplied role. The dashboard is admin-only. (Being replaced by Better Auth in Phase 1.)
+- **Auth:** Better Auth (email/password over MongoDB; existing bcrypt hashes preserved from the legacy next-auth data). Role-based (`admin` / `user`) via the admin plugin. **Authorization is derived from the server session** — `lib/authGuard.js` → `requireAdmin()` and `auth.api.getSession()` (`lib/auth.ts`); never trust a client-supplied role. The dashboard is admin-only, enforced server-side in its layout. (Replaced next-auth v4 in Phase 1 — PR #88.)
 - **Uploads:** EdgeStore (`lib/edgestore.js`). **Email:** Gmail SMTP for the contact form + IMAP for the inbox, via `nodemailer` / `imapflow`.
 - **i18n:** next-intl (`config.ts`, `navigation.js`, `i18n.js`, `messages/en.json` + `tr.json`) — most strings are still hardcoded (addressed in Phase 6).
 - **State:** zustand + jotai (to be consolidated in Phase 6). **UI:** Tailwind + shadcn/ui (`components/ui/`) + Radix + Framer Motion.
@@ -16,8 +16,8 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 ### Layout
 - `actions/` — server actions (`"use server"`): `memberAction`, `workAction`, `userActions`, `emailAction`.
 - `app/[locale]/` — routes; the `(dashboard)/` route group is the admin area, gated server-side in its `layout.jsx`.
-- `app/api/` — route handlers: `auth/[...nextauth]`, `user`, `email`, `email/count`, `edgestore/[...edgestore]`.
-- `components/` (+ `forms/`, `ui/`), `lib/`, `models/`, `middleware.js`.
+- `app/api/` — route handlers: `auth/[...all]` (Better Auth), `user`, `email`, `email/count`, `edgestore/[...edgestore]`.
+- `components/` (+ `forms/`, `ui/`), `lib/`, `models/`, `middleware.ts`.
 
 ### Commands
 - `npm run dev` — dev server (needs env vars + a reachable MongoDB).
@@ -25,14 +25,15 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 - `npm run lint` — ESLint. NOTE: the config is currently broken (`Failed to load config "next/babel"`); Phase 5 replaces it with flat config.
 
 ### Environment (nothing committed; `.env*.local` is gitignored)
-`MONGO_URI`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `APP_EMAIL`, `APP_PASSWORD`, `EDGE_STORE_ACCESS_KEY`, `EDGE_STORE_SECRET_KEY`, `NEXT_PUBLIC_API_BASE_URL`.
+`MONGO_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_EMAIL`, `APP_PASSWORD`, `EDGE_STORE_ACCESS_KEY`, `EDGE_STORE_SECRET_KEY`, `NEXT_PUBLIC_API_BASE_URL`.
 
 ## Modernization (the current effort)
 
 A 7-phase modernization is under way, tracked by epic **#81**. **`docs/migration/plan.md` is the source of truth** for scope and sequencing; each phase gets a folder under `docs/migration/`.
 
 - **Phase 0 — Security hotfix** — ✅ merged (PR #83). See `docs/migration/phase0/`.
-- **Phases 1–6** — pending: Better Auth → DB/env hardening → TypeScript → Next 15/React 19 → tooling/tests/CI → i18n + frontend polish.
+- **Phase 1 — Better Auth** (replaces next-auth v4) — ✅ shipped (PR #88). See `docs/migration/phase1/`.
+- **Phases 2–6** — pending: DB/env hardening → TypeScript → Next 16/React 19 → tooling/tests/CI → i18n + frontend polish.
 
 ## Working conventions
 

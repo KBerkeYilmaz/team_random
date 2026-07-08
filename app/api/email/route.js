@@ -4,8 +4,8 @@ import { ImapFlow } from "imapflow";
 import base64 from "base-64";
 import { revalidatePath } from "next/cache";
 import { simpleParser } from "mailparser";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export async function POST(request) {
   // AUDIT #83: the contact form is public by design — only GET (the inbox read)
@@ -50,7 +50,8 @@ export async function POST(request) {
 export async function GET(req) {
   // AUDIT #83 (issue #82): the inbox was world-readable — this handler connected
   // to Gmail IMAP with no auth check, so anyone could read the mailbox.
-  const session = await getServerSession(authOptions);
+  // AUDIT #87 (Phase 1): admin session now from Better Auth (auth.api.getSession).
+  const session = await auth.api.getSession({ headers: await headers() });
   if (!session || session.user?.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

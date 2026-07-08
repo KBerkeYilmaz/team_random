@@ -53,9 +53,11 @@ Close privilege escalation, the exposed inbox, and open registration **without**
 
 ## Phase 1 — Replace next-auth v4 with Better Auth (the hard part) · ~3–5 days
 
+**Status: ✅ Shipped** (PR #88, closes #87) — see [phase1/better-auth.md](phase1/better-auth.md) for the full write-up. Cross-phase note: `jsconfig.json` → `tsconfig.json` was pulled forward from Phase 3 to host the first `.ts` files (the full TS sweep still happens in Phase 3).
+
 Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain models, **preserve existing bcrypt passwords**, enforce admin via the admin plugin server-side. New auth files in **TypeScript**.
 
-- **Source the native `Db` from Mongoose** (Better Auth's `mongodbAdapter` needs a native `Db`, not Mongoose): after `connectDB()`, use `mongoose.connection.db` (+ `.getClient()` for the optional transaction `client`). One pool, one credential set — no second connection. Ensure the Mongoose connection resolves before `auth` handles a request (cached-connect promise; Phase 2 formalizes it).
+- **Give Better Auth its own native `MongoClient`** (its `mongodbAdapter` needs a native `Db`, not a Mongoose model): `new MongoClient(process.env.MONGO_URI).db()` — the driver connects lazily on first use, so there is no top-level `await` and the module stays CJS/ESM-tooling-safe (tsx, tests, build). Same `MONGO_URI` as Mongoose (one credential set), separate pool. *(The initial brief reused Mongoose's `connection.db`, but that needs a top-level `await` — `db` is undefined until connected — which breaks CJS tooling, so this was switched. Phase 2 can consolidate the two pools.)*
 - **Subsume User into Better Auth's `user` collection**: `email`←`userMail`, `name`←`fullName`, `image`←`img`; `role` comes from the **admin plugin** (`admin({ adminRoles:["admin"] })`); password moves into Better Auth's **`account`** collection (`providerId:"credential"`, hash in `account.password`) — *not* on `user`. Add only truly-needed extras via `user.additionalFields` (note: additionalFields can't be column-remapped).
 - **Migration script** `scripts/migrate-to-better-auth.ts` (run manually against a DB copy): per legacy user, insert the Better Auth `user` doc + `account` doc carrying the existing bcrypt hash; verify with a sign-in. Keep `models/user.js` until cutover is verified, then drop it.
 - **Keep bcrypt** via custom hash/verify (documented migration path — no forced reset): `emailAndPassword.password = { hash: p => bcrypt.hash(p, SALT_ROUNDS), verify: ({hash,password}) => bcrypt.compare(password, hash) }`.
@@ -64,7 +66,7 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 - **Middleware** `middleware.ts`: keep the next-intl composition unchanged; replace `withAuth` with an **optimistic** `getSessionCookie(request)` existence check (redirect to `/login`). Real admin enforcement stays in the dashboard **layout** (Better Auth docs: middleware cookie checks are not a security boundary).
 - **Env**: add `BETTER_AUTH_SECRET` + `BETTER_AUTH_URL`, retire `NEXTAUTH_SECRET` (folded into Phase 2).
 
-**Gotchas:** adapter `Db` must be defined before first request; password belongs on `account` not `user`; `role` on the client type requires `adminClient()` registered. **Verify:** run migration on a DB copy → migrated user logs in with their *existing* password, session has `role`; non-admin/anon → redirected; forged-role action still rejected; password change writes new bcrypt hash to `account`; grep confirms zero `next-auth` imports before removing the dep; `npm run build`.
+**Gotchas:** password belongs on `account` not `user`; `role` on the client type requires `adminClient()` registered. **Verify:** run migration on a DB copy → migrated user logs in with their *existing* password, session has `role`; non-admin/anon → redirected; forged-role action still rejected; password change writes new bcrypt hash to `account`; grep confirms zero `next-auth` imports before removing the dep; `npm run build`.
 
 ---
 
@@ -160,3 +162,22 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 ## Better Auth references (verified July 2026)
 
 - [MongoDB adapter](https://www.better-auth.com/docs/adapters/mongo) · [Next.js integration](https://www.better-auth.com/docs/integrations/next) · [Admin plugin](https://www.better-auth.com/docs/plugins/admin) · [Email & Password (custom hash/verify)](https://www.better-auth.com/docs/authentication/email-password) · [Database concepts (additionalFields)](https://www.better-auth.com/docs/concepts/database) · [Clerk migration (bcrypt pattern)](https://www.better-auth.com/docs/guides/clerk-migration-guide)
+
+---
+
+## Deferred / candidate future migrations
+
+Ideas considered during scoping but **explicitly out of scope for Phases 0–6**. Recorded here (CLAUDE.md rule 1) so they are not re-litigated cold.
+
+### Prisma + tRPC data layer — considered & deferred (2026-07-06)
+
+Replacing the in-app ORM (Mongoose) with **Prisma**, and fronting the domain data with a **tRPC** API layer, was weighed and **deferred**. The data layer stays **Mongoose + MongoDB**, and Phase 1 (Better Auth) is unchanged (native `mongodbAdapter` sourcing the `Db` from the Mongoose connection; Mongoose kept for domain models).
+
+**Why deferred:**
+- **Prisma is hobbled on MongoDB** — pinned to Prisma v6 (v7 dropped Mongo support), no real migrations (`prisma db push` only), and it requires a replica-set deployment.
+- **tRPC is low-value for this app today** — it is Server-Actions-first and every domain read is server-rendered in RSCs (no client-side data fetching, no React Query/SWR — only `@tanstack/react-table` for UI). On TypeScript the Server Actions are already end-to-end typed, so tRPC would add an RPC layer + provider plumbing for little gain. (The one clean fit: Phase 0's `requireAdmin()` → a tRPC `adminProcedure` middleware.)
+
+**If ever pursued** — treat it as its own migration, not a bolt-on:
+- Pair Prisma with **Postgres**, its full-power home (v7, real migrations, no ObjectId friction). The domain models are flat and relation-free (`work.workContributors` is a plain string), so it is a small 3-table schema + one-time data move.
+- Adopt tRPC only if genuinely client-heavy / interactive features arrive.
+- Better Auth could stay on Mongo (two databases) or also move to Postgres via its Prisma adapter (which works cleanly on SQL, unlike the Prisma + Mongo ObjectId issues).

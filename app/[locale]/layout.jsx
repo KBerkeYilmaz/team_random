@@ -1,7 +1,6 @@
 import "../globals.css";
 import { NextIntlClientProvider, useMessages } from "next-intl";
 import { ThemeProvider } from "@/providers/theme-provider";
-import SessionProvider from "@/providers/SessionProvider";
 import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 import { EdgeStoreProvider } from "@/lib/edgestore";
@@ -18,23 +17,23 @@ export default function LocaleLayout({ children, params: { locale } }) {
   return (
     <html suppressHydrationWarning lang={locale} className={inter.className}>
       <body>
+        {/* AUDIT #87 (Phase 1): the next-auth <SessionProvider> wrapper was removed —
+            Better Auth's useSession reads from its own store and needs no provider. */}
         <EdgeStoreProvider>
-          <SessionProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <NextIntlClientProvider messages={messages}>
-                <div className="grid h-screen">
-                  <Navbar />
-                  <div className="flex h-full w-full">{children}</div>
-                  <Footer />
-                </div>
-              </NextIntlClientProvider>
-            </ThemeProvider>
-          </SessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <NextIntlClientProvider messages={messages}>
+              <div className="grid h-screen">
+                <Navbar />
+                <div className="flex h-full w-full">{children}</div>
+                <Footer />
+              </div>
+            </NextIntlClientProvider>
+          </ThemeProvider>
         </EdgeStoreProvider>
         <Toaster />
       </body>

@@ -27,7 +27,7 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-client";
 
 const NewWorkForm = () => {
   const { edgestore } = useEdgeStore();
@@ -70,7 +70,7 @@ const NewWorkForm = () => {
   async function newWork(formData) {
     // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
     // enforced server-side in the action (requireAdmin). Kept for a friendly toast.
-    if (data.user.role !== "admin") {
+    if (data?.user?.role !== "admin") {
       toast({
         variant: "destructive",
         title: "Error !",

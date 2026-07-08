@@ -18,14 +18,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-client";
 
 export default function MemberDetails({ work }) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { data } = useSession();
-  if (!work) {
+  // AUDIT #87 (Phase 1): also wait for the Better Auth session (data) before
+  // rendering, since data.user is read below and useSession resolves async.
+  if (!work || !data) {
     return (
       <div className="flex w-full justify-center mt-10">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
