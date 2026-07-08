@@ -53,6 +53,8 @@ Close privilege escalation, the exposed inbox, and open registration **without**
 
 ## Phase 1 — Replace next-auth v4 with Better Auth (the hard part) · ~3–5 days
 
+**Status: ✅ Shipped** (PR #TBD, closes #87) — see [phase1/better-auth.md](phase1/better-auth.md). Two deviations from the spec below: (1) Better Auth uses a dedicated `MongoClient` on the same `MONGO_URI` rather than Mongoose's pool — sourcing the `Db` from Mongoose required a top-level `await` that breaks CJS tooling (tsx / Phase 5 tests); (2) `jsconfig.json` → `tsconfig.json` was pulled forward from Phase 3 to host the first `.ts` files.
+
 Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain models, **preserve existing bcrypt passwords**, enforce admin via the admin plugin server-side. New auth files in **TypeScript**.
 
 - **Source the native `Db` from Mongoose** (Better Auth's `mongodbAdapter` needs a native `Db`, not Mongoose): after `connectDB()`, use `mongoose.connection.db` (+ `.getClient()` for the optional transaction `client`). One pool, one credential set — no second connection. Ensure the Mongoose connection resolves before `auth` handles a request (cached-connect promise; Phase 2 formalizes it).
