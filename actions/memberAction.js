@@ -10,27 +10,15 @@ import { z } from "zod";
 // Previously each took a `role` argument FROM THE CLIENT and checked
 // `if (role !== "admin")`, so a forged request passing role:"admin" bypassed
 // authorization. Read-only getters are intentionally left ungated.
-export async function getMembers() {
+export async function getMembers({ skip = 0, limit = 0 } = {}) {
   try {
     await connectDB();
-    const rawResult = await Member.find()
-    const result = rawResult.map((member) => {
-      return {
-        memberName: member.memberName,
-        memberLastName: member.memberLastName,
-        memberTitle: member.memberTitle,
-        memberBio: member.memberBio,
-        memberGithub: member.memberGithub,
-        memberPersonal: member.memberPersonal,
-        memberLinkedin: member.memberLinkedin,
-        memberImage: member.memberImage,
-        createdAt: member.createdAt,
-        updatedAt: member.updatedAt,
-        id: member._id.toString(),
-      };
-    });
-
-    return result
+    // .lean() returns plain objects (not hydrated Mongoose docs) that are safe to
+    // pass across the RSC boundary; limit(0) means "no limit", so existing no-arg
+    // callers are unchanged. Destructure _id/__v out so the raw ObjectId is never
+    // spread into the payload, and emit the string `id` the tables/detail pages use.
+    const docs = await Member.find().skip(skip).limit(limit).lean();
+    return docs.map(({ _id, __v, ...rest }) => ({ id: _id.toString(), ...rest }));
   } catch (error) {
     console.log(error);
     return { error: "Something went wrong" }
@@ -49,22 +37,10 @@ export async function getMemberCount() {
 export async function getMember(id) {
   try {
     await connectDB();
-    const rawResult = await Member.findById(id)
-    const result = {
-      memberName: rawResult.memberName,
-      memberLastName: rawResult.memberLastName,
-      memberTitle: rawResult.memberTitle,
-      memberBio: rawResult.memberBio,
-      memberGithub: rawResult.memberGithub,
-      memberPersonal: rawResult.memberPersonal,
-      memberLinkedin: rawResult.memberLinkedin,
-      memberImage: rawResult.memberImage,
-      createdAt: rawResult.createdAt,
-      updatedAt: rawResult.updatedAt,
-      id: rawResult._id.toString(),
-    };
-    return result
-
+    const doc = await Member.findById(id).lean();
+    if (!doc) return null; // MemberDetails already renders a loader on null
+    const { _id, __v, ...rest } = doc;
+    return { id: _id.toString(), ...rest };
   } catch (error) {
     console.log(error);
     return { error: "Something went wrong" }

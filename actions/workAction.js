@@ -12,22 +12,18 @@ import { z } from "zod";
 // Previously each took a `role` argument FROM THE CLIENT and checked
 // `if (role !== "admin")`, so a forged request passing role:"admin" bypassed
 // authorization. Read-only getters are intentionally left ungated.
-export async function getWorks() {
+export async function getWorks({ skip = 0, limit = 0 } = {}) {
   try {
     await connectDB();
-    const rawResult = await Work.find();
-    const result = rawResult.map(item => ({
-      id: item._id.toString(),
-      workTitle: item.workTitle,
-      workGithubURL: item.workGithubURL,
-      workAppURL: item.workAppURL,
-      workReadme: item.workReadme,
-      workTechStack: item.workTechStack,
-      // Uncomment other fields as necessary
-      // workContributors: item.workContributors,
-      // workImages: item.workImages,
-    }));
-    return result;
+    // .select() preserves the exact field set the table used before (it omits
+    // workContributors, workImages and timestamps); .lean() makes them plain
+    // RSC-safe objects. limit(0) = no limit, so no-arg callers are unchanged.
+    const docs = await Work.find()
+      .select("workTitle workGithubURL workAppURL workReadme workTechStack")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    return docs.map(({ _id, ...rest }) => ({ id: _id.toString(), ...rest }));
   } catch (error) {
     console.log(error);
     return { error: "Something went wrong" };
@@ -46,8 +42,13 @@ export async function getWorkCount() {
 export async function getWork(id) {
   try {
     await connectDB();
-    const result = await Work.findById(id);
-    return result;
+    const doc = await Work.findById(id).lean();
+    if (!doc) return null;
+    // Restore the string `id` (previously the Mongoose `id` virtual on the raw
+    // doc this used to return) and default workImages to [] so WorkDetails'
+    // `work.workImages.length` never hits undefined — .lean() omits empty arrays.
+    const { _id, __v, ...rest } = doc;
+    return { id: _id.toString(), ...rest, workImages: doc.workImages ?? [] };
   } catch (error) {
     console.log(error);
     return { error: "Something went wrong" };
