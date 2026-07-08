@@ -1,6 +1,6 @@
 # Phase 2 — Database & Env Hardening
 
-**Status: 🔄 In review** (PR #97, closes #96) — part of epic [#81](https://github.com/KBerkeYilmaz/team_random/issues/81).
+**Status: ✅ Shipped** (PR #97, closes #96) — part of epic [#81](https://github.com/KBerkeYilmaz/team_random/issues/81).
 
 Hardens the data/env layer: a cached Mongo connection, one Zod-validated env source of truth, `.lean()` data-fetch hygiene, and a focused server-layer log cleanup. No behaviour change for users — env defaults reproduce the exact fallbacks the code used before.
 
