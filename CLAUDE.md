@@ -8,7 +8,7 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 
 - **Framework:** Next.js 14 (App Router), React 18. All JavaScript (`.jsx`) today; migrating to TypeScript in Phase 3.
 - **Data:** MongoDB via Mongoose. Models in `models/`: `user`, `member`, `work`.
-- **Auth:** Better Auth (email/password over MongoDB; existing bcrypt hashes preserved from the legacy next-auth data). Role-based (`admin` / `user`) via the admin plugin. **Authorization is derived from the server session** — `lib/authGuard.js` → `requireAdmin()` and `auth.api.getSession()` (`lib/auth.ts`); never trust a client-supplied role. The dashboard is admin-only, enforced server-side in its layout. (Replaced next-auth v4 in Phase 1 — PR #TBD.)
+- **Auth:** Better Auth (email/password over MongoDB; existing bcrypt hashes preserved from the legacy next-auth data). Role-based (`admin` / `user`) via the admin plugin. **Authorization is derived from the server session** — `lib/authGuard.js` → `requireAdmin()` and `auth.api.getSession()` (`lib/auth.ts`); never trust a client-supplied role. The dashboard is admin-only, enforced server-side in its layout. (Replaced next-auth v4 in Phase 1 — PR #88.)
 - **Uploads:** EdgeStore (`lib/edgestore.js`). **Email:** Gmail SMTP for the contact form + IMAP for the inbox, via `nodemailer` / `imapflow`.
 - **i18n:** next-intl (`config.ts`, `navigation.js`, `i18n.js`, `messages/en.json` + `tr.json`) — most strings are still hardcoded (addressed in Phase 6).
 - **State:** zustand + jotai (to be consolidated in Phase 6). **UI:** Tailwind + shadcn/ui (`components/ui/`) + Radix + Framer Motion.
@@ -32,7 +32,7 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 A 7-phase modernization is under way, tracked by epic **#81**. **`docs/migration/plan.md` is the source of truth** for scope and sequencing; each phase gets a folder under `docs/migration/`.
 
 - **Phase 0 — Security hotfix** — ✅ merged (PR #83). See `docs/migration/phase0/`.
-- **Phase 1 — Better Auth** (replaces next-auth v4) — ✅ shipped (PR #TBD). See `docs/migration/phase1/`.
+- **Phase 1 — Better Auth** (replaces next-auth v4) — ✅ shipped (PR #88). See `docs/migration/phase1/`.
 - **Phases 2–6** — pending: DB/env hardening → TypeScript → Next 15/React 19 → tooling/tests/CI → i18n + frontend polish.
 
 ## Working conventions

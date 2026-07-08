@@ -6,7 +6,7 @@ per phase lives under docs/migration/.
 
 # Phase 1 — Replace next-auth v4 with Better Auth
 
-**Status:** Shipped — PR #TBD (closes issue [#87](https://github.com/KBerkeYilmaz/team_random/issues/87))
+**Status:** Shipped — PR #88 (closes issue [#87](https://github.com/KBerkeYilmaz/team_random/issues/87))
 **Epic:** [#81](https://github.com/KBerkeYilmaz/team_random/issues/81) — 7-phase modernization to 2026 best practices
 **Date:** 2026-07-08
 **Constraints:** Keep MongoDB + Mongoose for the domain models; **preserve existing bcrypt passwords** (no forced reset); enforce admin **server-side**; the new auth surface is written in **TypeScript** (an `allowJs` beachhead ahead of the Phase 3 TS sweep). Depends on Phase 0's server-side role derivation (#82/#83) so the swap does not reintroduce the privilege-escalation hole.
@@ -79,5 +79,5 @@ Verified **empirically** against a throwaway Dockerized MongoDB (single-node rep
 ## References
 
 - Plan: [`docs/migration/plan.md`](../plan.md) §"Phase 1"
-- PR #TBD · Issue [#87](https://github.com/KBerkeYilmaz/team_random/issues/87) · Epic [#81](https://github.com/KBerkeYilmaz/team_random/issues/81)
+- PR #88 · Issue [#87](https://github.com/KBerkeYilmaz/team_random/issues/87) · Epic [#81](https://github.com/KBerkeYilmaz/team_random/issues/81)
 - Better Auth: [MongoDB adapter](https://www.better-auth.com/docs/adapters/mongo) · [Next.js](https://www.better-auth.com/docs/integrations/next) · [Admin plugin](https://www.better-auth.com/docs/plugins/admin) · [Email & Password](https://www.better-auth.com/docs/authentication/email-password)
