@@ -26,6 +26,7 @@ The auth engine moves from **next-auth v4** (EOL; Credentials provider + JWT ses
 | 5 | `feat(auth)` | `middleware.js` → `middleware.ts`: keep the next-intl composition; replace next-auth `withAuth` with an **optimistic** `getSessionCookie()` check. |
 | 6 | `chore(auth)` | Remove the next-auth surface: delete `[...nextauth]/route.js`, `lib/authOptions.js`, `providers/SessionProvider.jsx` (+ its layout wrap); uninstall `next-auth`. |
 | 7 | `feat(auth)` | `scripts/migrate-to-better-auth.ts` — bcrypt-preserving migration. |
+| 8 | `fix(auth)` | Repoint account-settings actions (`updateUser` / `updateUserImage` / `updateUserPassword`) to Better Auth (`auth.api.updateUser` / `changePassword`); drop the now-unused legacy `models/user.js`. (Found in review — they still hit the legacy Mongoose model, so profile/password edits were broken post-migration.) |
 
 ## Data model & migration
 
@@ -33,6 +34,7 @@ The auth engine moves from **next-auth v4** (EOL; Credentials provider + JWT ses
 - **Mapping:** `userMail`→`user.email`, `fullName`→`user.name`, `img`→`user.image`, `role`→`user.role` (surfaced by the admin plugin). The password moves to **`account`** (`providerId: "credential"`, `account.password` = the existing bcrypt hash) — never on `user`.
 - **Verified schema (Better Auth mongodbAdapter):** `user._id` / `account.userId` are **ObjectId**; `account.accountId` is the **string hex** of the user id. `scripts/migrate-to-better-auth.ts` mirrors this exactly and is **idempotent** (skips users whose email already exists in `user`).
 - **Run manually against a DB copy:** `node --env-file=.env.local --import tsx scripts/migrate-to-better-auth.ts`.
+- **Legacy model removed:** `models/user.js` (the Mongoose `User`) is deleted — after the account-settings actions moved to Better Auth, nothing references it.
 
 ## Deviations from the original plan (flagged per CLAUDE.md rule 2)
 
@@ -58,6 +60,14 @@ Verified **empirically** against a throwaway Dockerized MongoDB (single-node rep
 | Session carries `role = admin` | ✓ (admin plugin surfaces role) |
 | Wrong password rejected | ✓ |
 
+**Account settings (server API, exactly as the actions invoke it):**
+
+| Assertion | Result |
+|---|---|
+| `updateUser` → name + image persist | ✓ |
+| `changePassword` → new bcrypt hash written to `account` (old password required) | ✓ |
+| Sign-in with the new password works; old + wrong-current rejected | ✓ |
+
 **HTTP end-to-end (`next dev` + real requests):**
 
 | # | Assertion | Result |
@@ -72,6 +82,7 @@ Verified **empirically** against a throwaway Dockerized MongoDB (single-node rep
 ## Deferred / follow-ups
 
 - **Full Playwright e2e** (login form UI, non-admin bounce, forged-action replay) is best expressed in the Phase 5 test harness; the HTTP smoke test above already proves the gate, the sign-in endpoint, and the inbox guard.
+- **Email change** in account settings is deferred: Better Auth requires a verification-email flow for it, which needs email-sending infrastructure not yet wired for Better Auth. `updateUser` updates name/image and rejects email edits with a clear message; wiring change-email verification is a follow-up.
 - **Connection pooling:** Phase 2 formalizes the cached Mongoose connection and can unify it with Better Auth's client.
 - **`lib/authGuard.js` / other JS auth files** are typed as `.ts` in the Phase 3 sweep.
 - The throwaway verification harness (seed / probe / verify) lives in the gitignored `.context/` and is a candidate to promote into Phase 5.
