@@ -12,6 +12,22 @@ export async function POST(request: Request) {
   // was locked down; POST stays unauthenticated intentionally.
   const { email, name, message } = await request.json();
 
+  // Graceful inert-state handling (issue #127, precursor to #116): APP_EMAIL /
+  // APP_PASSWORD default to "" while the Gmail integration is being retired (see
+  // lib/env.ts). With no credentials, nodemailer would throw a confusing auth
+  // error on EVERY send. Short-circuit before that and answer 503 so the client
+  // can show an honest "temporarily unavailable" message instead of a generic
+  // failure toast. Remove this branch once #116 restores a real send path.
+  if (!env.APP_EMAIL || !env.APP_PASSWORD) {
+    console.warn(
+      "[/api/email] Contact send skipped: APP_EMAIL/APP_PASSWORD are unset (inert Gmail window, tracked by #116).",
+    );
+    return NextResponse.json(
+      { error: "email-not-configured" },
+      { status: 503 },
+    );
+  }
+
   const transport = nodemailer.createTransport({
     service: "gmail",
     auth: {
