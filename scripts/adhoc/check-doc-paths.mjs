@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Fails if CLAUDE.md references a repo file that no longer exists.
+// Fails if any CLAUDE.md (the root one or a nested/waterfall one) references a
+// repo file that no longer exists.
 //
 // WHY: CLAUDE.md names key files as a map for agents (e.g. `lib/authGuard.ts`).
 // When those files are renamed/moved/deleted, the doc silently goes stale — the
@@ -18,7 +19,6 @@
 import fs from "node:fs";
 import { execSync } from "node:child_process";
 
-const DOCS = ["CLAUDE.md"];
 const FILE_EXT = /\.(tsx?|jsx?|mjs|cjs|json|md|css)$/;
 const NON_PATH = /[\s*()[\]]|\.\.\.|[→←]/; // globs / route groups / prose arrows
 const BARE_EXT = /^\.[a-z0-9]+$/i; // a token that is *only* an extension, e.g. `.ts`
@@ -29,6 +29,10 @@ const tracked = execSync("git ls-files", { encoding: "utf8" })
   .filter(Boolean);
 const paths = new Set(tracked);
 const basenames = new Set(tracked.map((p) => p.split("/").pop()));
+
+// Every tracked CLAUDE.md — the root one plus any nested (waterfall) docs.
+// Each names paths repo-root-relative, so they resolve the same way everywhere.
+const DOCS = tracked.filter((f) => f === "CLAUDE.md" || f.endsWith("/CLAUDE.md"));
 
 const missing = [];
 let checked = 0;
@@ -52,7 +56,7 @@ for (const doc of DOCS) {
 }
 
 if (missing.length) {
-  console.error("✗ CLAUDE.md references files that don't exist:\n");
+  console.error("✗ A CLAUDE.md references files that don't exist:\n");
   for (const { doc, token } of missing) {
     console.error(`  - \`${token}\`  (in ${doc})`);
   }
