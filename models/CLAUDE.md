@@ -1,7 +1,7 @@
 # models/ — Mongoose models
 
 Read before adding or editing a model. Domain data moves to Prisma/Postgres in a later
-phase (see `docs/migration/plan.md`); until then these Mongoose models are the domain
+phase (the data-layer migration tracked in epic #81); until then these Mongoose models are the domain
 layer.
 
 ## Files

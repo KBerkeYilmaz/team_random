@@ -41,4 +41,4 @@ Reads go through the Mongoose models in `models/` via `connectDB()`
 (`lib/database.ts`), using `.lean()`/`.select()`. Catch blocks log one
 `console.error("<fn> failed:", e)` — no debug `console.log`, and there is no logger
 abstraction (deliberately deferred). A later phase moves domain data to
-Prisma/Postgres (see `docs/migration/plan.md`); until then it is Mongoose.
+Prisma/Postgres (the data-layer migration tracked in epic #81); until then it is Mongoose.

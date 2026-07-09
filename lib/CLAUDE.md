@@ -31,4 +31,4 @@ runtime.)
 
 There is no logger module — logging is bare `console.error`. Better Auth and Mongoose
 open **separate pools against the same DB**; consolidation was deliberately deferred and
-a later phase moves everything to Prisma/Postgres (see `docs/migration/plan.md`).
+a later phase moves everything to Prisma/Postgres (the data-layer migration tracked in epic #81).
