@@ -1,0 +1,26 @@
+# Fails a PR if CLAUDE.md references a repo file that no longer exists — the doc
+# drift this repo kept hitting (see CLAUDE.md Mandatory rule 1). Runs on every PR
+# so a rename that forgets to update the doc is caught even when the PR doesn't
+# touch CLAUDE.md itself. This is a GitHub Actions job (Ubuntu runner, full
+# filesystem + git) — it is NOT part of the app and never runs on Vercel.
+name: docs-check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check-doc-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Zero-dependency script (node:fs + git ls-files) — no install needed.
+      - name: Verify CLAUDE.md file references exist
+        run: node scripts/check-doc-paths.mjs

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:docs": "node scripts/check-doc-paths.mjs"
   },
   "dependencies": {
     "@edgestore/react": "^0.1.6",
