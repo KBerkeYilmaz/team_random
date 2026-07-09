@@ -91,12 +91,12 @@ export async function createWork(formData) {
     revalidatePath("/dashboard/works");
     return {
       message: `Work "${validatedFields.data.workTitle}" created!`,
-    }; // Return the created member object
+    }; // Return the created work object
   } catch (error) {
     console.error("Failed to create work:", error);
     // Handle database errors, e.g., connection issues or constraints violations
     return {
-      error: `Failed to create the member due to ${error.message}`,
+      error: `Failed to create the work due to ${error.message}`,
     };
   }
 }
@@ -139,16 +139,16 @@ export async function updateWork(formData, id) {
   try {
     await requireAdmin();
     await connectDB();
-    const result = await Work.findByIdAndUpdate(id, updatedWork, { new: true });
+    await Work.findByIdAndUpdate(id, updatedWork, { new: true });
     revalidatePath("/dashboard/works");
     return {
       message: `Work updated successfully!`,
-    }; // Return the created member object
+    }; // Return the updated work object
   } catch (error) {
-    console.error("Failed to create work:", error);
+    console.error("Failed to update work:", error);
     // Handle database errors, e.g., connection issues or constraints violations
     return {
-      error: `Failed to create the member due to ${error.message}`,
+      error: `Failed to update the work due to ${error.message}`,
     };
   }
 }
@@ -156,7 +156,7 @@ export async function deleteWork(id) {
   try {
     await requireAdmin();
     await connectDB();
-    const result = await Work.findByIdAndDelete(id)
+    await Work.findByIdAndDelete(id)
     revalidatePath("/dashboard/works");
     return { message: "Work deleted Successfully" }
   } catch (error) {
