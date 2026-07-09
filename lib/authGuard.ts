@@ -1,4 +1,4 @@
-// lib/authGuard.js
+// lib/authGuard.ts
 // Server-side authorization boundary for mutating server actions.
 // Role is derived from the server session — never from client input.
 //

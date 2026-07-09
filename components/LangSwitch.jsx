@@ -1,5 +1,5 @@
 "use client";
-import { useRouter, usePathname } from "../navigation.js";
+import { useRouter, usePathname } from "@/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
