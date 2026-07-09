@@ -8,14 +8,14 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 
 - **Framework:** Next.js 14 (App Router), React 18. **TypeScript** (`.ts`/`.tsx`) as of Phase 3 — only the dead trio (`components/Counter.jsx`, `stores/counter-store.js`, `stores/mailStore.js`, deleted in Phase 6) and the `postcss`/`tailwind` configs remain `.js`.
 - **Data:** MongoDB via Mongoose (cached connection in `lib/database.ts`). Models in `models/`: `user`, `member`, `work`.
-- **Auth:** Better Auth (email/password over MongoDB; existing bcrypt hashes preserved from the legacy next-auth data). Role-based (`admin` / `user`) via the admin plugin. **Authorization is derived from the server session** — `lib/authGuard.js` → `requireAdmin()` and `auth.api.getSession()` (`lib/auth.ts`); never trust a client-supplied role. The dashboard is admin-only, enforced server-side in its layout. (Replaced next-auth v4 in Phase 1 — PR #88.)
-- **Uploads:** EdgeStore (`lib/edgestore.js`). **Email:** Gmail SMTP for the contact form + IMAP for the inbox, via `nodemailer` / `imapflow`.
-- **i18n:** next-intl (`config.ts`, `navigation.js`, `i18n.js`, `messages/en.json` + `tr.json`) — most strings are still hardcoded (addressed in Phase 6).
+- **Auth:** Better Auth (email/password over MongoDB; existing bcrypt hashes preserved from the legacy next-auth data). Role-based (`admin` / `user`) via the admin plugin. **Authorization is derived from the server session** — `lib/authGuard.ts` → `requireAdmin()` and `auth.api.getSession()` (`lib/auth.ts`); never trust a client-supplied role. The dashboard is admin-only, enforced server-side in its layout. (Replaced next-auth v4 in Phase 1 — PR #88.)
+- **Uploads:** EdgeStore (`lib/edgestore.ts`). **Email:** Gmail SMTP for the contact form + IMAP for the inbox, via `nodemailer` / `imapflow`.
+- **i18n:** next-intl (`config.ts`, `navigation.ts`, `i18n.ts`, `messages/en.json` + `tr.json`) — most strings are still hardcoded (addressed in Phase 6).
 - **State:** zustand + jotai (to be consolidated in Phase 6). **UI:** Tailwind + shadcn/ui (`components/ui/`) + Radix + Framer Motion.
 
 ### Layout
 - `actions/` — server actions (`"use server"`): `memberAction`, `workAction`, `userActions`, `emailAction`.
-- `app/[locale]/` — routes; the `(dashboard)/` route group is the admin area, gated server-side in its `layout.jsx`.
+- `app/[locale]/` — routes; the `(dashboard)/` route group is the admin area, gated server-side in its `layout.tsx`.
 - `app/api/` — route handlers: `auth/[...all]` (Better Auth), `user`, `email`, `email/count`, `edgestore/[...edgestore]`.
 - `components/` (+ `forms/`, `ui/`), `lib/`, `models/`, `middleware.ts`.
 
