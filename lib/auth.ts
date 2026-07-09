@@ -48,7 +48,7 @@ export const auth = betterAuth({
   },
   plugins: [
     // Server-side role enforcement. The legacy `role` is carried into Better
-    // Auth's `user.role` by scripts/migrate-to-better-auth.ts; the admin plugin
+    // Auth's `user.role` by scripts/migrations/migrate-to-better-auth.ts; the admin plugin
     // surfaces it and gates admin-only operations. Default new users to "user".
     admin({ defaultRole: "user", adminRoles: ["admin"] }),
     // nextCookies() MUST be last (Better Auth Next.js cookie handling).

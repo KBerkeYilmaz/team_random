@@ -18,6 +18,7 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 - `app/[locale]/` — routes; the `(dashboard)/` route group is the admin area, gated server-side in its `layout.tsx`.
 - `app/api/` — route handlers: `auth/[...all]` (Better Auth), `user`, `email`, `email/count`, `edgestore/[...edgestore]`.
 - `components/` (+ `forms/`, `ui/`), `lib/`, `models/`, `middleware.ts`.
+- `scripts/` — standalone build/CI/dev tooling, **never app code** (not bundled, never on Vercel): `adhoc/` (maintenance & CI helpers) + `migrations/` (one-time data migrations). See [`scripts/CLAUDE.md`](scripts/CLAUDE.md).
 
 ### Commands
 - `npm run dev` — dev server (needs env vars + a reachable MongoDB).
