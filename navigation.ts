@@ -1,50 +1,15 @@
-import { createLocalizedPathnamesNavigation } from 'next-intl/navigation';
-import type { ComponentProps } from 'react';
-import { locales, pathnames, localePrefix } from './config';
+import { createSharedPathnamesNavigation } from 'next-intl/navigation';
+import { locales, localePrefix } from './config';
 
-// Phase 3 (TypeScript) — navigation typing note.
+// The app does not use localized pathnames — every route is navigated to as a
+// plain string (/about, /login, /dashboard, /dashboard/works/[id], …). So we use
+// createSharedPathnamesNavigation, whose Link `href`, usePathname() and
+// router.push()/replace() are typed as `string` and accept all real routes.
 //
-// The `pathnames` map in config.ts only declares "/" and a vestigial, unused
-// "/pathnames" (there is no such route/page, and nothing links to it). Because
-// createLocalizedPathnamesNavigation derives its types from that map, it types
-// Link `href`, usePathname() and router.push()/replace() to the tiny union
-// "/" | "/pathnames" — which REJECTS every real route the app navigates to
-// (/about, /login, /dashboard, /dashboard/works/[id], …). Those routes are used
-// as plain strings throughout.
-//
-// The runtime navigation bindings are kept EXACTLY as-is (no behaviour change);
-// only their exported TYPES are widened to the plain-string shape the routes are
-// actually used as — the same shape createSharedPathnamesNavigation would give.
-// This is a type-only concession centralised in one file so no call site needs a
-// cast. A later phase should either complete the `pathnames` map or switch to
-// createSharedPathnamesNavigation and drop this widening. See
-// docs/migration/phase3/typescript-migration.md.
-const navigation = createLocalizedPathnamesNavigation({
-    locales,
-    pathnames,
-    localePrefix,
-});
-
-type NavLocale = (typeof locales)[number];
-
-export const Link = navigation.Link as unknown as (
-    props: Omit<ComponentProps<'a'>, 'href'> & {
-        href: string;
-        locale?: NavLocale;
-    },
-) => JSX.Element;
-
-export const redirect = navigation.redirect as unknown as (
-    href: string,
-) => never;
-
-export const usePathname = navigation.usePathname as unknown as () => string;
-
-export const useRouter = navigation.useRouter as unknown as () => {
-    push: (href: string, options?: { locale?: string }) => void;
-    replace: (href: string, options?: { locale?: string }) => void;
-    prefetch: (href: string, options?: { locale?: string }) => void;
-    back: () => void;
-    forward: () => void;
-    refresh: () => void;
-};
+// (Phase 3 history: config.ts once carried a vestigial, unused localized
+// `pathnames` map and navigation.ts used createLocalizedPathnamesNavigation,
+// which derived a "/" | "/pathnames" union that rejected every real route. That
+// forced a type-only widening cast in this file as a stopgap. Issue #104 removed
+// both by switching to the shared navigation — runtime behaviour is identical.)
+export const { Link, redirect, usePathname, useRouter } =
+    createSharedPathnamesNavigation({ locales, localePrefix });
