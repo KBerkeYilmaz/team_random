@@ -193,14 +193,7 @@ export default function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   onClick={() =>
-                    // next-intl's localized router (from @/navigation) types push()
-                    // to the *declared* `pathnames` only; these dynamic dashboard
-                    // routes aren't declared (the localized-pathnames config is
-                    // vestigial — see docs/migration/phase3). Cast to keep the exact
-                    // runtime path — a type-only concession, no behaviour change.
-                    router.push(
-                      `/dashboard/${tag}s/${row.getValue("id")}` as any
-                    )
+                    router.push(`/dashboard/${tag}s/${row.getValue("id")}`)
                   }
                   className="cursor-pointer"
                 >
