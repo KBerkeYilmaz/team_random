@@ -3,7 +3,7 @@
 import { formatFileSize } from '@edgestore/react/utils';
 import { UploadCloudIcon, X } from 'lucide-react';
 import * as React from 'react';
-import { useDropzone } from 'react-dropzone';
+import { useDropzone, type DropzoneOptions } from 'react-dropzone';
 import { twMerge } from 'tailwind-merge';
 
 const variants = {
@@ -17,15 +17,30 @@ const variants = {
   reject: 'border border-red-700 bg-red-700 bg-opacity-10',
 };
 
+// Shared across all three image dropzones and the forms that drive them.
+export type FileState = {
+  file: File | string;
+  key: string; // used to identify the file while uploading
+  progress: 'PENDING' | 'COMPLETE' | 'ERROR' | number;
+};
+
+type InputProps = {
+  className?: string;
+  value?: FileState[];
+  onChange?: (files: FileState[]) => void | Promise<void>;
+  onFilesAdded?: (addedFiles: FileState[]) => void | Promise<void>;
+  disabled?: boolean;
+  dropzoneOptions?: Omit<DropzoneOptions, 'disabled'>;
+};
 
 const ERROR_MESSAGES = {
-  fileTooLarge(maxSize) {
+  fileTooLarge(maxSize: number) {
     return `The file is too large. Max size is ${formatFileSize(maxSize)}.`;
   },
   fileInvalidType() {
     return 'Invalid file type.';
   },
-  tooManyFiles(maxFiles) {
+  tooManyFiles(maxFiles: number) {
     return `You can only add ${maxFiles} file(s).`;
   },
   fileNotSupported() {
@@ -33,12 +48,12 @@ const ERROR_MESSAGES = {
   },
 };
 
-const MultiImageDropzone = React.forwardRef(
+const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
   (
     { dropzoneOptions, value, className, disabled, onChange, onFilesAdded },
-    ref, gridCols
+    ref
   ) => {
-    const [customError, setCustomError] = React.useState();
+    const [customError, setCustomError] = React.useState<string>();
 
     const imageUrls = React.useMemo(() => {
       if (value) {
@@ -80,7 +95,7 @@ const MultiImageDropzone = React.forwardRef(
           const addedFiles = files.map((file) => ({
             file,
             key: Math.random().toString(36).slice(2),
-            progress: 'PENDING',
+            progress: 'PENDING' as const,
           }));
           void onFilesAdded?.(addedFiles);
           void onChange?.([...(value ?? []), ...addedFiles]);
@@ -197,7 +212,10 @@ const MultiImageDropzone = React.forwardRef(
 );
 MultiImageDropzone.displayName = 'MultiImageDropzone';
 
-const Button = React.forwardRef(({ className, ...props }, ref) => {
+const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ className, ...props }, ref) => {
   return (
     <button
       className={twMerge(
@@ -218,7 +236,7 @@ Button.displayName = 'Button';
 
 export { MultiImageDropzone };
 
-function CircleProgress({ progress }) {
+function CircleProgress({ progress }: { progress: number }) {
   const strokeWidth = 10;
   const radius = 50;
   const circumference = 2 * Math.PI * radius;

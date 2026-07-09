@@ -2,7 +2,7 @@
 
 import { UploadCloudIcon, X } from "lucide-react";
 import * as React from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, type DropzoneOptions } from "react-dropzone";
 import { twMerge } from "tailwind-merge";
 
 const variants = {
@@ -16,14 +16,24 @@ const variants = {
   reject: "border border-red-700 bg-red-700 bg-opacity-10",
 };
 
+type InputProps = {
+  width: number;
+  height: number;
+  className?: string;
+  value?: File | string;
+  onChange?: (file?: File) => void | Promise<void>;
+  disabled?: boolean;
+  dropzoneOptions?: Omit<DropzoneOptions, "disabled">;
+};
+
 const ERROR_MESSAGES = {
-  fileTooLarge(maxSize) {
+  fileTooLarge(maxSize: number) {
     return `The file is too large. Max size is ${formatFileSize(maxSize)}.`;
   },
   fileInvalidType() {
     return "Invalid file type.";
   },
-  tooManyFiles(maxFiles) {
+  tooManyFiles(maxFiles: number) {
     return `You can only add ${maxFiles} file(s).`;
   },
   fileNotSupported() {
@@ -31,7 +41,7 @@ const ERROR_MESSAGES = {
   },
 };
 
-const SingleImageDropzone = React.forwardRef(
+const SingleImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
   (
     { dropzoneOptions, width, height, value, className, disabled, onChange },
     ref
@@ -172,7 +182,10 @@ const SingleImageDropzone = React.forwardRef(
 );
 SingleImageDropzone.displayName = "SingleImageDropzone";
 
-const Button = React.forwardRef(({ className, ...props }, ref) => {
+const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ className, ...props }, ref) => {
   return (
     <button
       className={twMerge(
@@ -191,7 +204,7 @@ const Button = React.forwardRef(({ className, ...props }, ref) => {
 });
 Button.displayName = "Button";
 
-function formatFileSize(bytes) {
+function formatFileSize(bytes?: number) {
   if (!bytes) {
     return "0 Bytes";
   }
