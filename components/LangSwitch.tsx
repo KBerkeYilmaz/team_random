@@ -1,6 +1,6 @@
 "use client";
 import { useRouter, usePathname } from "@/navigation";
-import { useState, useTransition } from "react";
+import { useState, useTransition, type MouseEvent } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -20,9 +20,11 @@ function LangSwitch() {
 
   const t = useTranslations("LangSwitch");
 
-  const handleClose = (event) => {
-    console.log(event.target.value);
-    const nextLocale = event.target.value;
+  const handleClose = (event: MouseEvent<HTMLButtonElement>) => {
+    // `event.target` is typed as `EventTarget`; the clicked <Button> carries the locale in its
+    // `value` attribute, so narrow to HTMLButtonElement to read it (runtime behavior unchanged).
+    console.log((event.target as HTMLButtonElement).value);
+    const nextLocale = (event.target as HTMLButtonElement).value;
     startTransition(() => {
       router.replace(pathname, { locale: nextLocale });
     });
@@ -54,7 +56,9 @@ function LangSwitch() {
       </PopoverTrigger>
       <PopoverContent className="w-fit p-0">
         <div
-          onClick={(currentValue) => {
+          onClick={(currentValue: any) => {
+            // NOTE: this legacy handler param is actually the MouseEvent, not a value; typed as
+            // `any` to preserve the original runtime behavior (avoids a no-overlap comparison error).
             setValue(currentValue === value ? "" : currentValue);
             setOpen(false);
           }}

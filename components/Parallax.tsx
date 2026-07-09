@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useLayoutEffect } from "react";
+import { useState, useRef, useLayoutEffect, type ReactNode } from "react";
 import {
   motion,
   useScroll,
@@ -9,11 +9,17 @@ import {
   useReducedMotion,
 } from "framer-motion";
 
-const Parallax = ({ children, offset = 50 }) => {
+const Parallax = ({
+  children,
+  offset = 50,
+}: {
+  children: ReactNode;
+  offset?: number;
+}) => {
   const prefersReducedMotion = useReducedMotion();
   const [elementTop, setElementTop] = useState(0);
   const [clientHeight, setClientHeight] = useState(0);
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   const { scrollY } = useScroll();
 
@@ -27,7 +33,8 @@ const Parallax = ({ children, offset = 50 }) => {
     const element = ref.current;
     const onResize = () => {
       setElementTop(
-        element.getBoundingClientRect().top + window.scrollY ||
+        // `ref.current` is populated by the time this post-mount effect runs, so assert non-null.
+        element!.getBoundingClientRect().top + window.scrollY ||
           window.pageYOffset
       );
       setClientHeight(window.innerHeight);

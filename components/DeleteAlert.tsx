@@ -8,8 +8,17 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "./ui/button";
+import type { Dispatch, SetStateAction } from "react";
 
-export const DeleteAlert = ({ open, setOpen, handleDelete }) => {
+interface DeleteAlertProps {
+  open: boolean;
+  // Parent passes its `useState` setter straight through to Radix `onOpenChange`,
+  // so model it as the dispatch type (accepts both `setOpen(false)` and updaters).
+  setOpen: Dispatch<SetStateAction<boolean>>;
+  handleDelete: () => void;
+}
+
+export const DeleteAlert = ({ open, setOpen, handleDelete }: DeleteAlertProps) => {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>

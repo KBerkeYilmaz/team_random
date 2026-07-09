@@ -19,8 +19,9 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useSession } from "@/lib/auth-client";
+import type { WorkDetail } from "@/actions/types";
 
-export default function MemberDetails({ work }) {
+export default function MemberDetails({ work }: { work: WorkDetail }) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();

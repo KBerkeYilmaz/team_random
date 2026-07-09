@@ -7,8 +7,9 @@ import { Link } from "@/navigation";
 import DashboardSidebarNav from "./DashboardSidebarNav";
 import DashboardSidebarNavMobile from "./DashboardSidebarNavMobile";
 import { fetchUnseen } from "@/actions/emailAction";
+import type { ReactNode } from "react";
 
-const DashboardSidebar = async ({ children }) => {
+const DashboardSidebar = async ({ children }: { children: ReactNode }) => {
   const unReadMails = await fetchUnseen();
 
   return (

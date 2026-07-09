@@ -31,8 +31,11 @@ function MyAccount() {
                 User Image
               </div>
             ) : (
+              // better-auth types `user.image` as `string | null | undefined`, but
+              // the <img> `src` attribute only accepts `string | undefined`. Narrow
+              // away the possible `null` with a type-only assertion (no runtime change).
               <img
-                src={data?.user.image}
+                src={data?.user.image as string | undefined}
                 alt="User Picture"
                 className="md:w-[180px] w-[220px] sm:w-[250px] md:h-[180px] h-[220px] sm:h-[250px]"
               />

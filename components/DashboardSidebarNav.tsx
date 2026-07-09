@@ -5,7 +5,11 @@ import { Home, Package, Inbox, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SignOutButton } from "@/components/SignOutButton";
 
-export default function DashboardSidebarNav({ unReadMailsCount }) {
+export default function DashboardSidebarNav({
+  unReadMailsCount,
+}: {
+  unReadMailsCount: number | null;
+}) {
   const pathname = usePathname();
 
   return (

@@ -5,7 +5,7 @@ import { permanentMarker, pixelify } from "@/app/fonts";
 import { motion } from "framer-motion";
 import { TypewriterEffect } from "./ui/typewriter-effect";
 
-export function HeroWavy({ header, span }) {
+export function HeroWavy({ header, span }: { header: string; span: string }) {
   const [darkMode, setDarkMode] = useState(false);
   const wordsData = span.split(" ").map((word) => ({ text: word }));
 

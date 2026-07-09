@@ -22,7 +22,11 @@ export default function AccountMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="icon" className="rounded-full">
           <Avatar>
-            <AvatarImage src={data?.user?.image} />
+            {/* better-auth types `user.image` as `string | null | undefined`, but
+                AvatarImage's `src` (an <img> attribute) accepts only
+                `string | undefined`. Narrow away the possible `null` with a
+                type-only assertion (no runtime change). */}
+            <AvatarImage src={data?.user?.image as string | undefined} />
             {/* AUDIT #87 (Phase 1): guard nullish name/[0] — data is null until
                 the Better Auth session resolves (useSession is async). */}
             <AvatarFallback>{data?.user?.name?.[0]?.toUpperCase()}</AvatarFallback>

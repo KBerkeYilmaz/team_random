@@ -11,8 +11,9 @@ import { DeleteAlert } from "./DeleteAlert";
 import Image from "next/image";
 import { EditMemberForm } from "./forms/EditMemberForm";
 import { useSession } from "@/lib/auth-client";
+import type { MemberRow } from "@/actions/types";
 
-export default function MemberDetails({ member }) {
+export default function MemberDetails({ member }: { member: MemberRow }) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();

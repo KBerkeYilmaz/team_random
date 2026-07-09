@@ -29,7 +29,9 @@ export function ModeToggle() {
       </PopoverTrigger>
       <PopoverContent className="w-fit p-0">
         <div
-          onClick={(currentValue) => {
+          onClick={(currentValue: any) => {
+            // NOTE: this legacy handler param is actually the MouseEvent, not a value; typed as
+            // `any` to preserve the original runtime behavior (avoids a no-overlap comparison error).
             setValue(currentValue === value ? "" : currentValue);
             setOpen(false);
           }}
