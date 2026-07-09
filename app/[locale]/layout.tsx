@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { EdgeStoreProvider } from "@/lib/edgestore";
 import { inter } from "../fonts";
 import Footer from "@/components/Footer";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata = {
   title: "Team Random",
@@ -42,6 +43,7 @@ export default function LocaleLayout({
           </ThemeProvider>
         </EdgeStoreProvider>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );
