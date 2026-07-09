@@ -1,9 +1,9 @@
-// scripts/migrate-to-better-auth.ts
+// scripts/migrations/migrate-to-better-auth.ts
 // One-time migration: legacy next-auth `users` (Mongoose) -> Better Auth
 // `user` + `account`, PRESERVING existing bcrypt password hashes (no reset).
 //
 // Run MANUALLY against a COPY of the database first:
-//   node --env-file=.env.local --import tsx scripts/migrate-to-better-auth.ts
+//   node --env-file=.env.local --import tsx scripts/migrations/migrate-to-better-auth.ts
 //
 // Field mapping (verified against Better Auth's mongodbAdapter schema):
 //   legacy users.userMail     -> user.email
@@ -18,7 +18,7 @@
 import { MongoClient, ObjectId } from "mongodb";
 
 const uri = process.env.MONGO_URI;
-if (!uri) throw new Error("scripts/migrate-to-better-auth.ts: MONGO_URI is not set.");
+if (!uri) throw new Error("scripts/migrations/migrate-to-better-auth.ts: MONGO_URI is not set.");
 
 async function main() {
   const client = new MongoClient(uri!);
