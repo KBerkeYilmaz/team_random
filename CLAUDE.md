@@ -11,7 +11,7 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 - **Auth:** Better Auth (email/password over MongoDB; existing bcrypt hashes preserved from the legacy next-auth data). Role-based (`admin` / `user`) via the admin plugin. **Authorization is derived from the server session** — `lib/authGuard.ts` → `requireAdmin()` and `auth.api.getSession()` (`lib/auth.ts`); never trust a client-supplied role. The dashboard is admin-only, enforced server-side in its layout. (Replaced next-auth v4 in Phase 1 — PR #88.)
 - **Uploads:** EdgeStore (`lib/edgestore.ts`). **Email:** Gmail SMTP for the contact form + IMAP for the inbox, via `nodemailer` / `imapflow`.
 - **i18n:** next-intl (`config.ts`, `navigation.ts`, `i18n.ts`, `messages/en.json` + `messages/tr.json`) — most strings are still hardcoded (addressed in Phase 6).
-- **State:** zustand + jotai (to be consolidated in Phase 6). **UI:** Tailwind + shadcn/ui (`components/ui/`) + Radix + Framer Motion.
+- **State:** zustand + jotai (to be consolidated in Phase 6). **UI:** Tailwind + shadcn/ui (`components/ui/`) + Radix + Framer Motion. **Gotcha:** keep Tailwind's `content` globs in `tailwind.config.js` at `.{js,ts,jsx,tsx,mdx}` — the Phase 3 TS migration left them at `.{js,jsx}`, so Tailwind scanned none of the `.tsx` sources, generated no utilities, and the whole site rendered as unstyled HTML on a bare background (regression fixed in PR #120).
 
 ### Layout
 - `actions/` — server actions (`"use server"`): `memberAction`, `workAction`, `userActions`, `emailAction`.
