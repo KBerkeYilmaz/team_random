@@ -46,7 +46,10 @@
     /* --gradient: #0f2027; */
     --background: 110, 59%, 68%;
     /* --foreground: 110, 4.4%, 0.44%; */
-    --foreground: #0331BA;
+    /* HSL triplet form so `hsl(var(--foreground))` (tailwind.config.js) is valid.
+       A bare hex here produced `hsl(#0331BA)`, which is invalid CSS and dropped,
+       leaving body text at the browser default. 225,97%,37% == #0331BA. */
+    --foreground: 225, 97%, 37%;
     --muted: 110, 4.4%, 91.1%;
     --muted-foreground: 110, 2.2%, 41.1%;
     --popover: 110, 54.8%, 91.1%;
