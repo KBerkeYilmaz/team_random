@@ -1,30 +1,44 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import Member from "@/models/member";
+import Member, { type IMember } from "@/models/member";
 import connectDB from "@/lib/database";
 import { requireAdmin } from "@/lib/authGuard";
-import { z } from "zod";
+import {
+  memberSchema,
+  updateMemberSchema,
+  type MemberInput,
+  type UpdateMemberInput,
+} from "@/actions/schemas";
+import type { ActionState, MemberRow, Lean } from "@/actions/types";
 
 // AUDIT #83 (issue #82): every MUTATING action below (create/update/delete) is
 // gated by requireAdmin(), which derives the admin role from the server session.
 // Previously each took a `role` argument FROM THE CLIENT and checked
 // `if (role !== "admin")`, so a forged request passing role:"admin" bypassed
 // authorization. Read-only getters are intentionally left ungated.
-export async function getMembers({ skip = 0, limit = 0 } = {}) {
+//
+// Phase 3: getters return an honest union (Row | { error } | null); consuming
+// pages guard the DB-failure branch instead of it leaking into a render.
+export async function getMembers({
+  skip = 0,
+  limit = 0,
+}: { skip?: number; limit?: number } = {}): Promise<
+  MemberRow[] | { error: string }
+> {
   try {
     await connectDB();
     // .lean() returns plain objects (not hydrated Mongoose docs) that are safe to
     // pass across the RSC boundary; limit(0) means "no limit", so existing no-arg
     // callers are unchanged. Destructure _id/__v out so the raw ObjectId is never
     // spread into the payload, and emit the string `id` the tables/detail pages use.
-    const docs = await Member.find().skip(skip).limit(limit).lean();
+    const docs = await Member.find().skip(skip).limit(limit).lean<Lean<IMember>[]>();
     return docs.map(({ _id, __v, ...rest }) => ({ id: _id.toString(), ...rest }));
   } catch (error) {
     console.error("getMembers failed:", error);
     return { error: "Something went wrong" }
   }
 }
-export async function getMemberCount() {
+export async function getMemberCount(): Promise<number | { error: string }> {
   try {
     await connectDB();
     const result = await Member.countDocuments()
@@ -34,10 +48,12 @@ export async function getMemberCount() {
     return { error: "Something went wrong" }
   }
 }
-export async function getMember(id) {
+export async function getMember(
+  id: string,
+): Promise<MemberRow | { error: string } | null> {
   try {
     await connectDB();
-    const doc = await Member.findById(id).lean();
+    const doc = await Member.findById(id).lean<Lean<IMember>>();
     if (!doc) return null; // MemberDetails already renders a loader on null
     const { _id, __v, ...rest } = doc;
     return { id: _id.toString(), ...rest };
@@ -46,19 +62,8 @@ export async function getMember(id) {
     return { error: "Something went wrong" }
   }
 }
-export async function createMember(formData) {
-  const newMemberSchema = z.object({
-    memberName: z.string().min(3, "Member name must be at least 3 characters."),
-    memberLastName: z.string().min(3, "Last name must be at least 3 characters."),
-    memberTitle: z.string().min(3, "Title must be at least 3 characters."),
-    memberBio: z.string().optional(), // Optional field
-    memberPersonal: z.string().url().optional().or(z.literal("")), // Optional URL
-    memberGithub: z.string().url().optional().or(z.literal("")), // Optional URL
-    memberLinkedin: z.string().url().optional().or(z.literal("")), // Optional URL
-    memberImage: z.string().url().optional().or(z.literal("")), // Optional URL
-  });
-
-  const validatedFields = newMemberSchema.safeParse({
+export async function createMember(formData: MemberInput): Promise<ActionState> {
+  const validatedFields = memberSchema.safeParse({
     memberName: formData.memberName,
     memberLastName: formData.memberLastName,
     memberTitle: formData.memberTitle,
@@ -88,23 +93,15 @@ export async function createMember(formData) {
     console.error("Failed to create member:", error);
     // Handle database errors, e.g., connection issues or constraints violations
     return {
-      error: `Failed to create the member due to ${error.message}`,
+      error: `Failed to create the member due to ${(error as Error).message}`,
     };
   }
 }
-export async function updateMember(formData, id) {
-  const newMemberSchema = z.object({
-    memberName: z.string().min(3, "Member name must be at least 3 characters."),
-    memberLastName: z.string().min(3, "Last name must be at least 3 characters."),
-    memberTitle: z.string().min(3, "Title must be at least 3 characters."),
-    memberBio: z.string().optional(), // Optional field
-    memberPersonal: z.string().url().optional().or(z.literal("")), // Optional URL
-    memberGithub: z.string().url().optional().or(z.literal("")), // Optional URL
-    memberLinkedin: z.string().url().optional().or(z.literal("")), // Optional URL
-    // memberImage: z.string().url().optional().or(z.literal("")), // Optional URL
-  });
-
-  const validatedFields = newMemberSchema.safeParse({
+export async function updateMember(
+  formData: UpdateMemberInput,
+  id: string,
+): Promise<ActionState> {
+  const validatedFields = updateMemberSchema.safeParse({
     memberName: formData.memberName,
     memberLastName: formData.memberLastName,
     memberTitle: formData.memberTitle,
@@ -141,11 +138,14 @@ export async function updateMember(formData, id) {
     console.error("Failed to update member:", error);
     // Handle database errors, e.g., connection issues or constraints violations
     return {
-      error: `Failed to update the member due to ${error.message}`,
+      error: `Failed to update the member due to ${(error as Error).message}`,
     };
   }
 }
-export const updateMemberImage = async (imgUrl, id) => {
+export const updateMemberImage = async (
+  imgUrl: string,
+  id: string,
+): Promise<ActionState> => {
   try {
     await requireAdmin();
     await connectDB();
@@ -158,7 +158,7 @@ export const updateMemberImage = async (imgUrl, id) => {
   }
 
 }
-export async function deleteMember(id) {
+export async function deleteMember(id: string): Promise<ActionState> {
   try {
     await requireAdmin();
     await connectDB();

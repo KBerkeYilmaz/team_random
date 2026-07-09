@@ -3,6 +3,15 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { requireAdmin } from "@/lib/authGuard";
 import { z } from "zod";
+import type { ActionState } from "@/actions/types";
+
+// The current user's own-account edit payloads (the values each form submits).
+type UpdateUserInput = { name: string; email: string };
+type UpdateUserPasswordInput = {
+  currentPassword: string;
+  newPassword: string;
+  passwordConfirmation: string;
+};
 
 // AUDIT #83 (issue #82): every action below is gated by requireAdmin(), which
 // derives the admin role from the server session. Previously each took a `role`
@@ -20,7 +29,10 @@ import { z } from "zod";
 // Email change is intentionally deferred: Better Auth requires a verification
 // flow for it, which needs email-sending infrastructure not yet wired up. Rather
 // than silently drop an email edit, updateUser rejects it with a clear message.
-export const updateUser = async (formData, id) => {
+export const updateUser = async (
+    formData: UpdateUserInput,
+    id: string,
+): Promise<ActionState> => {
     const userSchema = z.object({
         fullName: z.string().min(3, "User name must be at least 3 characters."),
         userMail: z.string().email("Please enter a valid email."),
@@ -58,23 +70,29 @@ export const updateUser = async (formData, id) => {
 
         return {};
     } catch (error) {
-        console.error(error?.message ?? error);
+        console.error((error as Error)?.message ?? error);
         return { error: "Something went wrong" };
     }
 };
 
-export const updateUserImage = async (imgUrl, id) => {
+export const updateUserImage = async (
+    imgUrl: string,
+    id: string,
+): Promise<ActionState> => {
     try {
         await requireAdmin();
         await auth.api.updateUser({ body: { image: imgUrl }, headers: await headers() });
         return {};
     } catch (error) {
-        console.error(error?.message ?? error);
+        console.error((error as Error)?.message ?? error);
         return { error: "Something went wrong" };
     }
 };
 
-export const updateUserPassword = async (formData, id) => {
+export const updateUserPassword = async (
+    formData: UpdateUserPasswordInput,
+    id: string,
+): Promise<ActionState> => {
     const userSchema = z.object({
         currentPassword: z.string().min(3),
         // Better Auth enforces a minimum length server-side (default 8); align the
@@ -115,7 +133,7 @@ export const updateUserPassword = async (formData, id) => {
         return {};
     } catch (error) {
         // The dominant failure here is a wrong current password.
-        const message = String(error?.message ?? "").toLowerCase();
+        const message = String((error as Error)?.message ?? "").toLowerCase();
         if (message.includes("password")) {
             return { error: "Wrong Password" };
         }

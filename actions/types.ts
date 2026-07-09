@@ -23,3 +23,55 @@ export type ActionState = {
   error?: string; // thrown / DB failure surfaced to the user
   errors?: ActionFieldErrors; // zod validation failure (flatten().fieldErrors)
 };
+
+import type { Types } from "mongoose";
+import type { IMember } from "@/models/member";
+import type { IWork } from "@/models/work";
+
+// A Mongoose `.lean()` document carries `_id` and `__v` at runtime, but the
+// default lean typings omit `__v` — so the getters that destructure it out
+// (`{ _id, __v, ...rest }`) need this to model the real shape. Type-only import
+// of `Types`, so no Mongoose value crosses into any client bundle.
+export type Lean<T> = T & { _id: Types.ObjectId; __v: number };
+
+// ---------------------------------------------------------------------------
+// Getter row shapes — the plain, RSC-safe objects the read actions return (a
+// string `id` instead of the Mongoose ObjectId). These mirror what each getter
+// actually produces at runtime, so consuming pages can guard on the honest
+// union `Row | { error: string } | null` (see docs/migration/phase3).
+// The model interfaces are imported *as types only* (erased at build), so
+// bringing these into a client component never pulls Mongoose into that bundle.
+// ---------------------------------------------------------------------------
+
+// getMembers / getMember: the full member document (no `.select()`), with a
+// string id in place of `_id` (`__v` is dropped).
+export type MemberRow = { id: string } & IMember;
+
+// getWorks: only the `.select()`-ed scalar columns the dashboard table renders,
+// plus the string id — deliberately narrower than the full IWork.
+export type WorkListItem = {
+  id: string;
+  workTitle: string;
+  workGithubURL?: string;
+  workAppURL?: string;
+  workReadme: string;
+  workTechStack: string;
+};
+
+// getWork: the full record, with a string id and `workImages` guaranteed to be
+// an array ([] default) — WorkDetails reads `workImages.length` unconditionally.
+export type WorkDetail = { id: string } & Omit<IWork, "workImages"> & {
+  workImages: string[];
+};
+
+// One email as surfaced by fetchInbox (shaped by /api/email GET, then serialized
+// over fetch so Dates arrive as strings). Fields are optional because the inbox
+// UI reads them defensively.
+export type InboxEmail = {
+  uid: number;
+  from?: string;
+  subject?: string;
+  text?: string;
+  date?: string;
+  unseen?: boolean;
+};

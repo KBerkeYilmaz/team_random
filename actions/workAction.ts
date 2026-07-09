@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import Work from "@/models/work";
+import Work, { type IWork } from "@/models/work";
 import connectDB from "@/lib/database";
 import { requireAdmin } from "@/lib/authGuard";
-import { z } from "zod";
+import { workSchema, type WorkInput } from "@/actions/schemas";
+import type { ActionState, WorkListItem, WorkDetail, Lean } from "@/actions/types";
 
 
 // AUDIT #83 (issue #82): every MUTATING action below (create/update/delete) is
@@ -12,7 +13,16 @@ import { z } from "zod";
 // Previously each took a `role` argument FROM THE CLIENT and checked
 // `if (role !== "admin")`, so a forged request passing role:"admin" bypassed
 // authorization. Read-only getters are intentionally left ungated.
-export async function getWorks({ skip = 0, limit = 0 } = {}) {
+//
+// Phase 3: getters return an honest union (Row | { error } | null) so consuming
+// pages guard the DB-failure branch explicitly instead of the previous silent
+// `{ error }` object leaking into a `.map`/render.
+export async function getWorks({
+  skip = 0,
+  limit = 0,
+}: { skip?: number; limit?: number } = {}): Promise<
+  WorkListItem[] | { error: string }
+> {
   try {
     await connectDB();
     // .select() preserves the exact field set the table used before (it omits
@@ -29,7 +39,7 @@ export async function getWorks({ skip = 0, limit = 0 } = {}) {
     return { error: "Something went wrong" };
   }
 }
-export async function getWorkCount() {
+export async function getWorkCount(): Promise<number | { error: string }> {
   try {
     await connectDB();
     const result = await Work.countDocuments()
@@ -39,10 +49,12 @@ export async function getWorkCount() {
     return { error: "Something went wrong" }
   }
 }
-export async function getWork(id) {
+export async function getWork(
+  id: string,
+): Promise<WorkDetail | { error: string } | null> {
   try {
     await connectDB();
-    const doc = await Work.findById(id).lean();
+    const doc = await Work.findById(id).lean<Lean<IWork>>();
     if (!doc) return null;
     // Restore the string `id` (previously the Mongoose `id` virtual on the raw
     // doc this used to return) and default workImages to [] so WorkDetails'
@@ -54,20 +66,7 @@ export async function getWork(id) {
     return { error: "Something went wrong" };
   }
 }
-export async function createWork(formData) {
-  const workSchema = z.object({
-    workTitle: z.string().min(2, "Title must be at least 2 characters."),
-    workGithubURL: z.string().url().optional().or(z.literal("")),
-    workAppURL: z.string().url().optional().or(z.literal("")),
-    workReadme: z.string().min(2, "Readme must be at least 2 characters."),
-    workTechStack: z
-      .string()
-      .min(2, "Tech Stack must be at least 2 characters."),
-    workContributors: z.string().optional(), // Assuming contributors is an array of strings
-    // workImages: z.array().url().optional().or(z.literal("")),
-    workImages: z.array(z.string().url()).optional(),
-  });
-
+export async function createWork(formData: WorkInput): Promise<ActionState> {
   const validatedFields = workSchema.safeParse({
     workTitle: formData.workTitle,
     workGithubURL: formData.workGithubURL,
@@ -96,22 +95,14 @@ export async function createWork(formData) {
     console.error("Failed to create work:", error);
     // Handle database errors, e.g., connection issues or constraints violations
     return {
-      error: `Failed to create the work due to ${error.message}`,
+      error: `Failed to create the work due to ${(error as Error).message}`,
     };
   }
 }
-export async function updateWork(formData, id) {
-  const workSchema = z.object({
-    workTitle: z.string().min(2, "Title must be at least 2 characters."),
-    workGithubURL: z.string().url().optional().or(z.literal("")),
-    workAppURL: z.string().url().optional().or(z.literal("")),
-    workReadme: z.string().min(2, "Readme must be at least 2 characters."),
-    workTechStack: z.string().min(2, "Tech Stack must be at least 2 characters."),
-    workContributors: z.string().optional(), // Assuming contributors is an array of strings
-    // workImages: z.array().url().optional().or(z.literal("")),
-    workImages: z.array(z.string().url()).optional(),
-  });
-
+export async function updateWork(
+  formData: WorkInput,
+  id: string,
+): Promise<ActionState> {
   const validatedFields = workSchema.safeParse({
     workTitle: formData.workTitle,
     workGithubURL: formData.workGithubURL,
@@ -148,11 +139,11 @@ export async function updateWork(formData, id) {
     console.error("Failed to update work:", error);
     // Handle database errors, e.g., connection issues or constraints violations
     return {
-      error: `Failed to update the work due to ${error.message}`,
+      error: `Failed to update the work due to ${(error as Error).message}`,
     };
   }
 }
-export async function deleteWork(id) {
+export async function deleteWork(id: string): Promise<ActionState> {
   try {
     await requireAdmin();
     await connectDB();

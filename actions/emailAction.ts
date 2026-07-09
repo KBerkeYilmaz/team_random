@@ -2,8 +2,11 @@
 
 import { cookies } from "next/headers";
 import { env } from "@/lib/env";
+import type { InboxEmail } from "@/actions/types";
 
-export async function fetchInbox() {
+export async function fetchInbox(): Promise<
+  InboxEmail[] | { props: { emails: InboxEmail[] } }
+> {
   const baseUrl = env.NEXT_PUBLIC_API_BASE_URL; // validated + defaulted in lib/env.ts
   // AUDIT #83: /api/email is now admin-guarded. A server-to-server fetch does not
   // inherit the user's cookies automatically, so forward them — otherwise the
@@ -13,7 +16,7 @@ export async function fetchInbox() {
     headers: { Cookie: cookies().toString() },
   }); // Use the full URL to fetch, forwarding the caller's session cookie
   const data = await res.json(); // Convert the response to JSON
-  const emails = data || []; // Ensure emails is always an array
+  const emails: InboxEmail[] = data || []; // Ensure emails is always an array
 
   // Check if the fetch was successful
   if (!res.ok) {
@@ -24,7 +27,7 @@ export async function fetchInbox() {
   return emails; // Ensure emails is always an array
 }
 
-export async function fetchUnseen() {
+export async function fetchUnseen(): Promise<number | null> {
   const baseUrl = env.NEXT_PUBLIC_API_BASE_URL; // validated + defaulted in lib/env.ts
   // AUDIT #83: forward the session cookie (see fetchInbox) — /api/email/count is admin-guarded.
   const res = await fetch(`${baseUrl}/api/email/count`, {
@@ -37,6 +40,6 @@ export async function fetchUnseen() {
     return null; // Return null on failure
   }
   const data = await res.json(); // Convert the response to JSON
-  const unreadCount = data || 0; // Ensure that unreadCount is always a number
+  const unreadCount: number = data || 0; // Ensure that unreadCount is always a number
   return unreadCount; // Return the fetched unread email count
 }
