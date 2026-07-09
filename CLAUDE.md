@@ -10,7 +10,7 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 - **Data:** MongoDB via Mongoose (cached connection in `lib/database.ts`). Models in `models/`: `member`, `work` (the legacy `user` Mongoose model was dropped in Phase 1 — Better Auth now owns the `user`/`account` collections).
 - **Auth:** Better Auth (email/password over MongoDB; existing bcrypt hashes preserved from the legacy next-auth data). Role-based (`admin` / `user`) via the admin plugin. **Authorization is derived from the server session** — `lib/authGuard.ts` → `requireAdmin()` and `auth.api.getSession()` (`lib/auth.ts`); never trust a client-supplied role. The dashboard is admin-only, enforced server-side in its layout. (Replaced next-auth v4 in Phase 1 — PR #88.)
 - **Uploads:** EdgeStore (`lib/edgestore.ts`). **Email:** Gmail SMTP for the contact form + IMAP for the inbox, via `nodemailer` / `imapflow`.
-- **i18n:** next-intl (`config.ts`, `navigation.ts`, `i18n.ts`, `messages/en.json` + `tr.json`) — most strings are still hardcoded (addressed in Phase 6).
+- **i18n:** next-intl (`config.ts`, `navigation.ts`, `i18n.ts`, `messages/en.json` + `messages/tr.json`) — most strings are still hardcoded (addressed in Phase 6).
 - **State:** zustand + jotai (to be consolidated in Phase 6). **UI:** Tailwind + shadcn/ui (`components/ui/`) + Radix + Framer Motion.
 
 ### Layout
@@ -29,13 +29,7 @@ All env vars are validated once at boot in **`lib/env.ts`** (Zod, fail-fast, ser
 
 ## Modernization (the current effort)
 
-A 7-phase modernization is under way, tracked by epic **#81**. **`docs/migration/plan.md` is the source of truth** for scope and sequencing; each phase gets a folder under `docs/migration/`.
-
-- **Phase 0 — Security hotfix** — ✅ merged (PR #83). See `docs/migration/phase0/`.
-- **Phase 1 — Better Auth** (replaces next-auth v4) — ✅ shipped (PR #88). See `docs/migration/phase1/`.
-- **Phase 2 — DB/env hardening** — ✅ shipped (PR #97). See `docs/migration/phase2/`.
-- **Phase 3 — Full TypeScript migration** — ✅ shipped (PR #103). See `docs/migration/phase3/`.
-- **Phases 4–6** — pending: Next 16/React 19 → tooling/tests/CI → i18n + frontend polish.
+A phased modernization is under way, tracked by epic **#81**. **Phase status, scope, and the phase list are NOT duplicated here — read them at their source:** [`docs/migration/README.md`](docs/migration/README.md) (the phase index: status + PR links), [`docs/migration/plan.md`](docs/migration/plan.md) (the authoritative scope & sequencing), and each `docs/migration/phaseN/` write-up. Do not re-add a parallel status list to this file — that copy is what goes stale.
 
 ## Working conventions
 
@@ -58,6 +52,7 @@ If your work is part of the modernization plan (`docs/migration/plan.md`), you *
 - Update `docs/migration/plan.md` and the relevant `docs/migration/phaseN/` docs to reflect exactly what was done, and tick the phase in epic **#81**.
 - Keep each phase **contained**: its code, its verification, and its docs travel together. A fresh agent with no memory of the session must be able to read `docs/migration/` alone and know precisely what is done, what is in flight, and what is next.
 - Canonical state lives in **committed docs**, not in chat history or the gitignored `.context/` (which is workspace-local and ephemeral). Do not leave a phase half-documented or its status scattered.
+- **Keep this CLAUDE.md current too — prefer pointing over copying.** Any change that renames/moves/deletes a file this doc references, or changes phase scope, must update the affected Project-overview / Modernization / Layout lines in the **same** PR (or note them deferred). Before finishing, grep CLAUDE.md for any old path you changed. Don't reintroduce a duplicated phase-status list — link to `docs/migration/` instead (see Modernization above). `npm run check:docs` (and CI) verifies every file path named here still exists.
 
 ### 2. Self-correction rule
 If, while completing a task, you discover that your correct / working approach contradicts an instruction in this CLAUDE.md or in any skill prompt, **flag the discrepancy to the user in your final answer.** Then ask whether they would like you to open a PR to `main` that fixes or improves the incorrect instruction. Do not silently follow an instruction you have found to be wrong, and do not silently ignore it.
