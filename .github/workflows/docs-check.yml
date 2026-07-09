@@ -23,4 +23,4 @@ jobs:
           node-version: 20
       # Zero-dependency script (node:fs + git ls-files) — no install needed.
       - name: Verify CLAUDE.md file references exist
-        run: node scripts/check-doc-paths.mjs
+        run: node scripts/adhoc/check-doc-paths.mjs
