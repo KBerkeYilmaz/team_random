@@ -24,7 +24,7 @@ const LoginForm = () => {
   const router = useRouter();
   const { toast } = useToast();
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     const { email, password } = values;
     // AUDIT #87 (Phase 1): Better Auth email/password sign-in. The result shape is
@@ -54,7 +54,7 @@ const LoginForm = () => {
     password: z.string().min(3, "Password must be at least 3 characters."),
   });
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",

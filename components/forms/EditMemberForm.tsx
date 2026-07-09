@@ -21,27 +21,24 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { updateMember, updateMemberImage } from "@/actions/memberAction";
+import { updateMemberSchema } from "@/actions/schemas";
+import type { MemberRow } from "@/actions/types";
 
-const formSchema = z.object({
-  memberName: z.string().min(3, "Member name must be at least 3 characters."),
-  memberLastName: z.string().min(3, "Last name must be at least 3 characters."),
-  memberTitle: z.string().min(3, "Title must be at least 3 characters."),
-  memberBio: z.string().optional(),
-  memberPersonal: z.string().url().optional().or(z.literal("")),
-  memberGithub: z.string().url().optional().or(z.literal("")),
-  memberLinkedin: z.string().url().optional().or(z.literal("")),
-  //   memberImage: z.string().url().optional().or(z.literal("")),
-});
-
-export const EditMemberForm = ({ member, user }) => {
+export const EditMemberForm = ({
+  member,
+  user,
+}: {
+  member: MemberRow;
+  user: { role?: string | null };
+}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dropzoneWidth, setDropzoneWidth] = useState(400); // Default width
-  const [file, setFile] = useState();
+  const [file, setFile] = useState<File>();
   const { edgestore } = useEdgeStore();
   const { toast } = useToast();
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof updateMemberSchema>>({
+    resolver: zodResolver(updateMemberSchema),
     defaultValues: {
       memberName: member.memberName,
       memberLastName: member.memberLastName,
@@ -53,7 +50,7 @@ export const EditMemberForm = ({ member, user }) => {
     },
   });
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: z.infer<typeof updateMemberSchema>) => {
     // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
     // enforced server-side in the action (requireAdmin). Kept for a friendly toast.
     if (user.role !== "admin") {
@@ -104,7 +101,7 @@ export const EditMemberForm = ({ member, user }) => {
     }
   };
 
-  const handleUpdatePicture = async (imgUrl) => {
+  const handleUpdatePicture = async (imgUrl: string) => {
     const result = await updateMemberImage(imgUrl, member.id);
 
     // console.log("handlePicture: ", file);

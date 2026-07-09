@@ -31,12 +31,16 @@ const formSchema = z
 import { useToast } from "../ui/use-toast";
 import { updateUserPassword } from "@/actions/userActions";
 
-export const EditUserPasswordForm = ({ user }) => {
+export const EditUserPasswordForm = ({
+  user,
+}: {
+  user: { id: string; role?: string | null };
+}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   // console.log(user);
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       currentPassword: "",
@@ -44,7 +48,7 @@ export const EditUserPasswordForm = ({ user }) => {
       passwordConfirmation: "",
     },
   });
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log(values);
     // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
     // enforced server-side in the action (requireAdmin). Kept for a friendly toast.

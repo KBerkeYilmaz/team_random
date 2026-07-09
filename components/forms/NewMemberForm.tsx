@@ -29,28 +29,19 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "../ui/textarea";
 import { useSession } from "@/lib/auth-client";
-
-const formSchema = z.object({
-  memberName: z.string().min(3, "Member name must be at least 3 characters."),
-  memberLastName: z.string().min(3, "Last name must be at least 3 characters."),
-  memberTitle: z.string().min(3, "Title must be at least 3 characters."),
-  memberBio: z.string().optional(),
-  memberPersonal: z.string().url().optional().or(z.literal("")),
-  memberGithub: z.string().url().optional().or(z.literal("")),
-  memberLinkedin: z.string().url().optional().or(z.literal("")),
-});
+import { memberSchema } from "@/actions/schemas";
 
 const NewMemberForm = () => {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { edgestore } = useEdgeStore();
   const [pending, setPending] = useState(false);
-  const [file, setFile] = useState();
+  const [file, setFile] = useState<File>();
   const { toast } = useToast();
   const { data } = useSession();
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof memberSchema>>({
+    resolver: zodResolver(memberSchema),
     defaultValues: {
       memberName: "",
       memberLastName: "",
@@ -62,7 +53,7 @@ const NewMemberForm = () => {
       memberImage: "",
     },
   });
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: z.infer<typeof memberSchema>) => {
     // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
     // enforced server-side in the action (requireAdmin). Kept for a friendly toast.
     if (data?.user?.role !== "admin") {

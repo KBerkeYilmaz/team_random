@@ -28,34 +28,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useSession } from "@/lib/auth-client";
+import { workSchema } from "@/actions/schemas";
+import { type FileState } from "@/components/MultiImageDropzone";
 
 const NewWorkForm = () => {
   const { edgestore } = useEdgeStore();
   const [pending, setPending] = useState(false);
   const [open, setOpen] = useState(false);
-  const [fileStates, setFileStates] = useState([]);
+  const [fileStates, setFileStates] = useState<FileState[]>([]);
   const { toast } = useToast();
   const { data } = useSession();
 
-  const newWorkSchema = z.object({
-    workTitle: z.string().min(2, {
-      message: "Title must be at least 2 characters.",
-    }),
-    workGithubURL: z.string().url().optional().or(z.literal("")),
-    workAppURL: z.string().url().optional().or(z.literal("")),
-    workReadme: z.string().min(2, {
-      message: "Readme must be at least 2 characters.",
-    }),
-    workTechStack: z.string().min(2, {
-      message: "Tech Stack must be at least 2 characters.",
-    }),
-    workContributors: z.string().optional(),
-    // workImages: z.array().url().optional().or(z.literal("")),
-    workImages: z.array(z.string().url()).optional(),
-  });
-
-  const form = useForm({
-    resolver: zodResolver(newWorkSchema),
+  const form = useForm<z.infer<typeof workSchema>>({
+    resolver: zodResolver(workSchema),
     defaultValues: {
       workTitle: "",
       workGithubURL: "",
@@ -67,7 +52,7 @@ const NewWorkForm = () => {
     },
   });
 
-  async function newWork(formData) {
+  async function newWork(formData: z.infer<typeof workSchema>) {
     // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
     // enforced server-side in the action (requireAdmin). Kept for a friendly toast.
     if (data?.user?.role !== "admin") {
@@ -85,7 +70,9 @@ const NewWorkForm = () => {
       // First, handle the image uploads.
       const uploadPromises = fileStates.map((addedFileState) =>
         edgestore.publicFiles
-          .upload({ file: addedFileState.file })
+          // fileStates here only ever hold freshly-dropped Files (never the
+          // string-URL variant of FileState), so this cast is safe.
+          .upload({ file: addedFileState.file as File })
           .then((res) => res.url)
       );
 
@@ -115,7 +102,7 @@ const NewWorkForm = () => {
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
-        description: `Error creating work: ${error.message || error}`,
+        description: `Error creating work: ${(error as Error).message || error}`,
       });
     } finally {
       setPending(false);

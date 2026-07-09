@@ -22,26 +22,24 @@ import { z } from "zod";
 import { MultiImageDropzone } from "../MultiImageDropzone";
 import { updateWork } from "@/actions/workAction";
 import { Textarea } from "../ui/textarea";
+import { workSchema } from "@/actions/schemas";
+import { type FileState } from "@/components/MultiImageDropzone";
+import type { WorkDetail } from "@/actions/types";
 
-const formSchema = z.object({
-  workTitle: z.string().min(2, "Title must be at least 2 characters."),
-  workGithubURL: z.string().url().optional().or(z.literal("")),
-  workAppURL: z.string().url().optional().or(z.literal("")),
-  workReadme: z.string().min(2, "Readme must be at least 2 characters."),
-  workTechStack: z.string().min(2, "Tech Stack must be at least 2 characters."),
-  workContributors: z.string().optional(), // Assuming contributors is an array of strings
-  // workImages: z.array().url().optional().or(z.literal("")),
-  workImages: z.array(z.string().url()).optional(),
-});
-
-export const EditWorkForm = ({ work, user }) => {
+export const EditWorkForm = ({
+  work,
+  user,
+}: {
+  work: WorkDetail;
+  user: { role?: string | null };
+}) => {
   const [pending, setPending] = useState(false);
   const [dropzoneWidth, setDropzoneWidth] = useState(400); // Default width
-  const [fileStates, setFileStates] = useState([]);
+  const [fileStates, setFileStates] = useState<FileState[]>([]);
   const { edgestore } = useEdgeStore();
   const { toast } = useToast();
-  const form = useForm({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof workSchema>>({
+    resolver: zodResolver(workSchema),
     defaultValues: {
       workTitle: work.workTitle,
       workGithubURL: work.workGithubURL,
@@ -53,7 +51,7 @@ export const EditWorkForm = ({ work, user }) => {
     },
   });
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: z.infer<typeof workSchema>) => {
     // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
     // enforced server-side in the action (requireAdmin). Kept for a friendly toast.
     if (user.role !== "admin") {
@@ -69,7 +67,9 @@ export const EditWorkForm = ({ work, user }) => {
       // First, handle the image uploads.
       const uploadPromises = fileStates.map((addedFileState) =>
         edgestore.publicFiles
-          .upload({ file: addedFileState.file })
+          // fileStates here only ever hold freshly-dropped Files (never the
+          // string-URL variant of FileState), so this cast is safe.
+          .upload({ file: addedFileState.file as File })
           .then((res) => res.url)
       );
       // Wait for all uploads to finish.
@@ -95,7 +95,7 @@ export const EditWorkForm = ({ work, user }) => {
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
-        description: `Error creating work: ${error.message || error}`,
+        description: `Error creating work: ${(error as Error).message || error}`,
       });
     } finally {
       setPending(false);
@@ -138,7 +138,6 @@ export const EditWorkForm = ({ work, user }) => {
               <div className="flex w-full justify-center sm:justify-start">
                 <MultiImageDropzone
                   value={fileStates}
-                  width={dropzoneWidth}
                   dropzoneOptions={{
                     maxFiles: 6,
                   }}

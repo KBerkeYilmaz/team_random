@@ -29,7 +29,7 @@ export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -38,7 +38,7 @@ export default function ContactForm() {
     },
   });
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     const result = await sendEmail(values);
 
@@ -72,7 +72,7 @@ export default function ContactForm() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className>Full Name</FormLabel>
+                      <FormLabel className="">Full Name</FormLabel>
                       <FormControl>
                         <Input placeholder="Your Name" {...field} />
                       </FormControl>
@@ -85,7 +85,7 @@ export default function ContactForm() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className>Email</FormLabel>
+                      <FormLabel className="">Email</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="yourmail@teamrandom.com"
@@ -101,7 +101,7 @@ export default function ContactForm() {
                   name="message"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className>Your message</FormLabel>
+                      <FormLabel className="">Your message</FormLabel>
                       <FormControl>
                         <Textarea placeholder="Your message.." {...field} />
                       </FormControl>

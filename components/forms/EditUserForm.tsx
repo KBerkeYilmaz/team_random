@@ -27,15 +27,19 @@ const formSchema = z.object({
 import { updateUser, updateUserImage } from "@/actions/userActions";
 import { useToast } from "../ui/use-toast";
 
-export const EditUserForm = ({ user }) => {
+export const EditUserForm = ({
+  user,
+}: {
+  user: { id: string; name: string; email: string; role?: string | null };
+}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dropzoneWidth, setDropzoneWidth] = useState(400); // Default width
 
-  const [file, setFile] = useState();
+  const [file, setFile] = useState<File>();
   const { edgestore } = useEdgeStore();
   const { toast } = useToast();
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: user.name,
@@ -62,7 +66,7 @@ export const EditUserForm = ({ user }) => {
     return () => window.removeEventListener("resize", updateDropzoneWidth);
   }, []);
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
     // enforced server-side in the action (requireAdmin). Kept for a friendly toast.
     if (user.role !== "admin") {
@@ -111,7 +115,7 @@ export const EditUserForm = ({ user }) => {
     }
   };
 
-  const handleUpdatePicture = async (imgUrl) => {
+  const handleUpdatePicture = async (imgUrl: string) => {
     const result = await updateUserImage(imgUrl, user.id);
 
     // console.log("handlePicture: ", file);
