@@ -20,6 +20,8 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 - `components/` (+ `forms/`, `ui/`), `lib/`, `models/`, `middleware.ts`.
 - `scripts/` — standalone build/CI/dev tooling, **never app code** (not bundled, never on Vercel): `adhoc/` (maintenance & CI helpers) + `migrations/` (one-time data migrations). See [`scripts/CLAUDE.md`](scripts/CLAUDE.md).
 
+**Per-folder `CLAUDE.md` (the waterfall).** Most top-level source folders carry their own `CLAUDE.md` with folder-local conventions and gotchas — general project context lives here, folder-specific context lives in-folder and is auto-surfaced when you work in that subtree. Read a folder's doc before editing it: [`actions/CLAUDE.md`](actions/CLAUDE.md), [`app/CLAUDE.md`](app/CLAUDE.md) (+ [`app/api/CLAUDE.md`](app/api/CLAUDE.md)), [`components/CLAUDE.md`](components/CLAUDE.md) (+ [`components/ui/CLAUDE.md`](components/ui/CLAUDE.md), [`components/forms/CLAUDE.md`](components/forms/CLAUDE.md)), [`lib/CLAUDE.md`](lib/CLAUDE.md), [`models/CLAUDE.md`](models/CLAUDE.md), and [`messages/CLAUDE.md`](messages/CLAUDE.md). Each follows the same keep-current rule as this file — `npm run check:docs` validates the file paths every `CLAUDE.md` names.
+
 ### Commands
 - `npm run dev` — dev server (needs env vars + a reachable MongoDB).
 - `npm run build` — production build (to fully complete it also needs EdgeStore keys + a DB).
