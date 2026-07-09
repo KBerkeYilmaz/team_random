@@ -12,7 +12,13 @@ export const metadata = {
   description: "Coding your digital future",
 };
 
-export default function LocaleLayout({ children, params: { locale } }) {
+export default function LocaleLayout({
+  children,
+  params: { locale },
+}: {
+  children: React.ReactNode;
+  params: { locale: string };
+}) {
   const messages = useMessages();
   return (
     <html suppressHydrationWarning lang={locale} className={inter.className}>

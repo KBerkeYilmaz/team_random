@@ -24,13 +24,13 @@ import { updateWork } from "@/actions/workAction";
 import { Textarea } from "../ui/textarea";
 import { workSchema } from "@/actions/schemas";
 import { type FileState } from "@/components/MultiImageDropzone";
-import type { WorkDetail } from "@/actions/types";
+import type { WorkFormData } from "@/actions/types";
 
 export const EditWorkForm = ({
   work,
   user,
 }: {
-  work: WorkDetail;
+  work: WorkFormData;
   user: { role?: string | null };
 }) => {
   const [pending, setPending] = useState(false);

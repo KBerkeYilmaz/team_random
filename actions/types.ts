@@ -64,6 +64,12 @@ export type WorkDetail = { id: string } & Omit<IWork, "workImages"> & {
   workImages: string[];
 };
 
+// What the work detail page hands to WorkDetails / EditWorkForm: the full work
+// minus the RSC timestamps. `works/[id]/page` builds exactly this subset (and it
+// omits workContributors, which is optional here — that's why the edit form's
+// Contributors field starts empty, matching the pre-Phase-3 behaviour).
+export type WorkFormData = Omit<WorkDetail, "createdAt" | "updatedAt">;
+
 // One email as surfaced by fetchInbox (shaped by /api/email GET, then serialized
 // over fetch so Dates arrive as strings). Fields are optional because the inbox
 // UI reads them defensively.

@@ -8,7 +8,9 @@ import { Loader2 } from "lucide-react";
 const Works = async () => {
   const res = await getWorks();
 
-  if (!res) {
+  // Getter union guard (Phase 3): render the existing loader fallback if getWorks
+  // returned its { error } shape (or nothing) instead of the works array.
+  if (!res || "error" in res) {
     return (
       <div className="flex w-full justify-center mt-10">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

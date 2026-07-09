@@ -1,6 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import type { WorkListItem } from "@/actions/types";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export const columns = [
+export const columns: ColumnDef<WorkListItem>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -40,18 +41,9 @@ export const columns = [
   },
   {
     accessorKey: "workTitle",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Title
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-
+    // Phase 3 (TS1117 fix): this column had a duplicate `header` key — an unused
+    // sort-button render fn followed by `header: "Title"`. In JS the string won;
+    // the dead sort-button block is removed so only `header: "Title"` remains.
     header: "Title",
   },
   {

@@ -1,5 +1,7 @@
 "use client";
 
+import { ColumnDef } from "@tanstack/react-table";
+import type { MemberRow } from "@/actions/types";
 import { MoreHorizontal } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -14,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link, useRouter } from "@/navigation";
 
-export const columns = [
+export const columns: ColumnDef<MemberRow>[] = [
   {
     id: "select",
     header: ({ table }) => (

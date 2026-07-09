@@ -192,6 +192,11 @@ export const mails = [
   ]
   
   
+  // Phase 3: the shape of a single mail row (inferred from the mock `mails`
+  // above). Consumed by MailList / MailDisplay. NOTE: the *fetched* inbox mails
+  // (mail.tsx) don't fully match this — see the cast there.
+  export type Mail = (typeof mails)[number];
+
   export const accounts = [
     {
       label: "Alicia Koch",

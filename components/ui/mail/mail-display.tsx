@@ -1,7 +1,8 @@
-import addDays from "date-fns/addDays";
-import addHours from "date-fns/addHours";
-import format from "date-fns/format";
-import nextSaturday from "date-fns/nextSaturday";
+// date-fns v3 dropped default exports from its submodules — use named imports.
+import { addDays } from "date-fns/addDays";
+import { addHours } from "date-fns/addHours";
+import { format } from "date-fns/format";
+import { nextSaturday } from "date-fns/nextSaturday";
 import FormattedLinks from "./formattedlinks";
 import {
   Archive,
@@ -37,9 +38,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Mail } from "@/app/[locale]/(dashboard)/dashboard/inbox/data";
+import { type Mail } from "@/app/[locale]/(dashboard)/dashboard/inbox/data";
 
-export function MailDisplay({ mail }) {
+export function MailDisplay({ mail }: { mail: Mail | null }) {
   const today = new Date();
 
   return (

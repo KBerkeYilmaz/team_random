@@ -4,6 +4,9 @@ import { BriefcaseBusiness, LucideGithub, LucideLinkedin } from "lucide-react";
 
 async function Page() {
   const members = await getMembers();
+  // Getter union guard (Phase 3): fall back to an empty list if getMembers
+  // returned its { error } shape — previously `members?.map` would throw on it.
+  const memberList = !members || "error" in members ? [] : members;
   return (
     <div className="flex flex-col justify-start items-center w-full pt-[72px] animate-fadeIn">
       <div className="w-full flex flex-col items-center py-10 px-4  sm:p-20 gap-10">
@@ -26,7 +29,7 @@ async function Page() {
         </p>
       </div>
       <div className="flex flex-col w-full pb-20 gap-6 md:gap-12">
-        {members?.map((member, i) => {
+        {memberList.map((member, i) => {
           if (i % 2 === 0) {
             return (
               <div

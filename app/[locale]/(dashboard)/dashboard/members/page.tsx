@@ -7,7 +7,9 @@ import DataTable from "@/components/ui/data-table";
 const Members = async () => {
   const data = await getMembers();
 
-  if (!data) {
+  // Getter union guard (Phase 3): render the existing loader fallback if
+  // getMembers returned its { error } shape (or nothing) instead of the array.
+  if (!data || "error" in data) {
     return (
       <div className="flex w-full justify-center mt-10">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

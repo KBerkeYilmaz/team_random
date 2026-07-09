@@ -41,7 +41,9 @@ const Dashboard = async () => {
           </CardHeader>
           <CardContent className="text-center">
             <h3 className="text-5xl font-bold">
-              <CounterNumber num={workCount} />
+              <CounterNumber
+                num={typeof workCount === "number" ? workCount : 0}
+              />
             </h3>
           </CardContent>
           <CardFooter className="text-center">
@@ -59,7 +61,9 @@ const Dashboard = async () => {
           </CardHeader>
           <CardContent className="text-center">
             <h3 className="text-5xl font-bold">
-              <CounterNumber num={memberCount} />
+              <CounterNumber
+                num={typeof memberCount === "number" ? memberCount : 0}
+              />
             </h3>
           </CardContent>
           <CardFooter className="text-center">

@@ -1,15 +1,16 @@
 import { ComponentProps } from "react"
-import formatDistanceToNow from "date-fns/formatDistanceToNow"
+// date-fns v3 dropped default exports from its submodules — use the named import.
+import { formatDistanceToNow } from "date-fns/formatDistanceToNow"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 // import { Separator } from "@/components/ui/separator"
-import { Mail } from "@/app/[locale]/(dashboard)/dashboard/inbox/data"
+import { type Mail } from "@/app/[locale]/(dashboard)/dashboard/inbox/data"
 import { useMail } from "@/app/[locale]/(dashboard)/dashboard/inbox/use-mail"
 import { Loader2 } from "lucide-react";
 
-export function MailList({ items }) {
+export function MailList({ items }: { items: Mail[] }) {
   const [mail, setMail] = useMail()
 
   if (!items.length) {
@@ -80,7 +81,7 @@ export function MailList({ items }) {
 }
 
 function getBadgeVariantFromLabel(
-  label
+  label: string
 ){
   if (["work"].includes(label.toLowerCase())) {
     return "default"

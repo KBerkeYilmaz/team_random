@@ -30,13 +30,21 @@ import { MailList } from "./mail-list";
 // import useMailStore from "@/stores/mailStore"
 import { useMail } from "@/app/[locale]/(dashboard)/dashboard/inbox/use-mail";
 import { fetchInbox } from "@/actions/emailAction";
+import { type Mail as MailItem } from "@/app/[locale]/(dashboard)/dashboard/inbox/data";
 
 
 export function Mail({
   defaultLayout = [265, 440, 655],
   defaultCollapsed = false,
+}: {
+  defaultLayout?: number[];
+  defaultCollapsed?: boolean;
+  // The inbox page also passes `accounts` and `navCollapsedSize`, which this
+  // component ignores — accept them so the JSX usage type-checks.
+  accounts?: unknown;
+  navCollapsedSize?: number;
 }) {
-    const [mails, setMails] = useState([]); // State to hold the fetched mails
+    const [mails, setMails] = useState<MailItem[]>([]); // State to hold the fetched mails
     const [loading, setLoading] = useState(true); // State to manage loading status
   
     useEffect(() => {
@@ -44,7 +52,13 @@ export function Mail({
         try {
           const fetchedData = await fetchInbox(); // Assume this fetches raw email data
           console.log(fetchedData)
-          const formattedMails = fetchedData.map(email => ({
+          // fetchInbox returns InboxEmail[] on success, or { props: { emails: [] } }
+          // on failure — normalise to the array before mapping (behaviour-preserving:
+          // the failure branch yields the empty list it always did).
+          const list = Array.isArray(fetchedData)
+            ? fetchedData
+            : fetchedData.props.emails;
+          const formattedMails = list.map(email => ({
             id: email.uid, // Assumed to be unique identifier
             name: email.from, // Assumed 'from' is a string; might need parsing
             email: email.from, // Same as above, adjust if structure is different
@@ -54,7 +68,10 @@ export function Mail({
             read: !email.unseen, // Convert unseen to read; adjust logic as needed
             labels: ["work"], // Default to ["work"] or derive from email data
           }));
-          setMails(formattedMails);
+          // The fetched shape (numeric uid id, optional fields) doesn't match the
+          // mock `Mail` type MailList/MailDisplay consume; the pre-Phase-3 code
+          // already passed these through as-is, so cast to keep runtime identical.
+          setMails(formattedMails as unknown as MailItem[]);
           setLoading(false);
         } catch (error) {
           console.error("Failed to fetch emails:", error);

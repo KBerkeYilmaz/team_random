@@ -6,7 +6,7 @@ import {
 
 // TODO: Not complete yet, links include https and "<" and ">" characters. Need to update regex function.
 
-function FormattedLinks(text) {
+function FormattedLinks(text: string) {
   const urlRegex =
     /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/gi;
   return text.split(urlRegex).map((part, index) => {
