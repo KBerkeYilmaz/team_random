@@ -86,13 +86,15 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 
 ## Phase 3 — Full TypeScript migration (P1) · ~3–5 days
 
+**Status: ✅ Shipped** (PR #103, closes #102) — see [phase3/typescript-migration.md](phase3/typescript-migration.md) for the full write-up, deviations, and forced edits. Notes: `tsconfig.json` was already pulled forward in Phase 1 (so this phase only added the `typecheck` script + `components.json "tsx": true`); the shared **`ActionResult<T>` discriminated union below was replaced with a permissive `ActionState`** (no action returns `{ data }`; forms truthy-check `.error`/`.message`) — the discriminated union is deferred to Phase 5/6.
+
 - `jsconfig.json` → `tsconfig.json` (keep `strict`, `paths`, `moduleResolution:"bundler"`); set `components.json` `"tsx": true`; add a `typecheck` script (`tsc --noEmit`).
 - **Models** → `.ts` with interfaces + typed schemas (`Schema<IMember>`, `models.X as Model<IX>`). Flag `work.workContributors` (String vs the commented-out ObjectId ref).
 - **Actions** → `.ts` with a shared discriminated-union `ActionResult<T> = { data:T } | { error:string } | { errors:FieldErrors }`, making the `result.error`/`result.errors` form checks type-safe. Share Zod schemas via `z.infer` between action and form. **Fold in the Phase 2-surfaced cleanups** (see `phase2/db-env-hardening.md` → "Observed but out of scope"): `workAction`'s `createWork`/`updateWork` catch logs and error returns say "work"/"member" inconsistently (copy-pasted from `memberAction` — the error string reads "…the member…" inside work actions), and `updateWork`/`deleteWork` carry unused `const result` bindings that `noUnusedLocals` will flag.
 - **Components/pages/forms** → `.tsx`, leaf-up (shadcn `ui/` first — CLI can re-emit as TSX — then shared components, forms, pages). The `forwardRef`+generic image dropzones are the fiddliest.
 - Migrate `lib/*`, `navigation.js`, `i18n.js`, `app/fonts.js` → `.ts` (`config.ts` already TS).
 
-`allowJs:true` keeps the app green throughout; do it in small PRs. **Verify:** `tsc --noEmit` clean, `npm run build`, smoke-test every route — type-only, no behavior change.
+`allowJs:true` keeps the app green throughout; ship it as **small atomic commits within the single phase PR** (one PR per phase — CLAUDE.md). **Verify:** `tsc --noEmit` clean, `npm run build`, smoke-test every route — type-only, no behavior change.
 
 ---
 

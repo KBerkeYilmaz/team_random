@@ -10,7 +10,7 @@ Per-phase documentation for the **team-random** modernization to 2026 best pract
 | 0 — Security hotfix | [phase0/security-hotfix.md](phase0/security-hotfix.md) | ✅ Shipped — PR #83 |
 | 1 — Better Auth (replaces next-auth v4) | [phase1/better-auth.md](phase1/better-auth.md) | ✅ Shipped — PR #88 |
 | 2 — Database & env hardening | [phase2/db-env-hardening.md](phase2/db-env-hardening.md) | ✅ Shipped — PR #97 |
-| 3 — Full TypeScript migration | _tbd_ | Not started |
+| 3 — Full TypeScript migration | [phase3/typescript-migration.md](phase3/typescript-migration.md) | ✅ Shipped — PR #103 |
 | 4 — Next 16 / React 19 | _tbd_ | Not started |
 | 5 — Tooling, tests, CI | _tbd_ | Not started |
 | 6 — i18n completion + frontend polish | _tbd_ | Not started |

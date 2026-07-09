@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@edgestore/react": "^0.1.6",
@@ -66,8 +67,12 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/imapflow": "^1.0.23",
+    "@types/mailparser": "^3.4.6",
     "@types/node": "20.12.4",
+    "@types/nodemailer": "^8.0.1",
     "@types/react": "18.2.74",
+    "@types/react-dom": "^18.3.7",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.1.4",
