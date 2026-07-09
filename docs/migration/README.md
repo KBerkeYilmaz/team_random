@@ -3,7 +3,7 @@
 Per-phase documentation for the **team-random** modernization to 2026 best practices
 (tracking epic [#81](https://github.com/KBerkeYilmaz/team_random/issues/81)). One folder per phase.
 
-**Full plan:** [plan.md](plan.md) — the complete 7-phase modernization plan (context, sequencing rationale, per-phase scope, effort, and critical files).
+**Full plan:** [plan.md](plan.md) — the complete 8-phase modernization plan (context, sequencing rationale, per-phase scope, effort, and critical files).
 
 | Phase | Doc | Status |
 |---|---|---|
@@ -14,6 +14,7 @@ Per-phase documentation for the **team-random** modernization to 2026 best pract
 | 4 — Next 16 / React 19 | _tbd_ | Not started |
 | 5 — Tooling, tests, CI | _tbd_ | Not started |
 | 6 — i18n completion + frontend polish | _tbd_ | Not started |
+| 7 — Migrate npm → pnpm (final step) | _tbd_ | Not started |
 
 Each phase ships as its own PR off `main` and closes its phase issue. See the full plan at
 [plan.md](plan.md).

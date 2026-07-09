@@ -29,13 +29,13 @@ All env vars are validated once at boot in **`lib/env.ts`** (Zod, fail-fast, ser
 
 ## Modernization (the current effort)
 
-A 7-phase modernization is under way, tracked by epic **#81**. **`docs/migration/plan.md` is the source of truth** for scope and sequencing; each phase gets a folder under `docs/migration/`.
+An 8-phase modernization (Phases 0–7) is under way, tracked by epic **#81**. **`docs/migration/plan.md` is the source of truth** for scope and sequencing; each phase gets a folder under `docs/migration/`.
 
 - **Phase 0 — Security hotfix** — ✅ merged (PR #83). See `docs/migration/phase0/`.
 - **Phase 1 — Better Auth** (replaces next-auth v4) — ✅ shipped (PR #88). See `docs/migration/phase1/`.
 - **Phase 2 — DB/env hardening** — ✅ shipped (PR #97). See `docs/migration/phase2/`.
 - **Phase 3 — Full TypeScript migration** — ✅ shipped (PR #103). See `docs/migration/phase3/`.
-- **Phases 4–6** — pending: Next 16/React 19 → tooling/tests/CI → i18n + frontend polish.
+- **Phases 4–7** — pending: Next 16/React 19 → tooling/tests/CI → i18n + frontend polish → npm → pnpm (final step).
 
 ## Working conventions
 
