@@ -40,8 +40,20 @@ const envSchema = z.object({
   MONGO_URI: z.string().min(1),
   BETTER_AUTH_SECRET: z.string().min(1),
   BETTER_AUTH_URL: z.string().url(),
-  APP_EMAIL: z.string().min(1),
-  APP_PASSWORD: z.string().min(1),
+  // AUDIT #117 (interim, precursor to #116): APP_EMAIL / APP_PASSWORD were
+  // required (.min(1)) because the contact form (Gmail SMTP send) and the
+  // dashboard inbox (Gmail IMAP read) authenticate with them. Issue #116 replaces
+  // that Gmail integration with Resend + a Mongo-backed inbox and drops these
+  // vars entirely. Until then they are relaxed to an optional empty-string
+  // default so the modernized app can deploy to production WITHOUT a Gmail App
+  // Password (which we no longer have and intend to remove). While unset, the
+  // contact-form send and inbox read are inert — Gmail auth fails at call time —
+  // an accepted, temporary state tracked by #116. `default("")` (not
+  // `.optional()`) is deliberate: it keeps the inferred type `string`, so the
+  // existing nodemailer/imapflow call sites still typecheck with no churn. Do not
+  // re-tighten this without first restoring real Gmail credentials.
+  APP_EMAIL: z.string().default(""),
+  APP_PASSWORD: z.string().default(""),
   EDGE_STORE_ACCESS_KEY: z.string().min(1),
   EDGE_STORE_SECRET_KEY: z.string().min(1),
   // Optional-with-defaults: each default reproduces the exact hardcoded fallback
