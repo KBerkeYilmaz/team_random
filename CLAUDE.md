@@ -7,7 +7,7 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 **team-random** is a Next.js 14 (App Router) portfolio / agency site: a public marketing site plus an admin-only dashboard for managing works, team members, and a contact inbox. Built May 2024; being modernized to 2026 standards (see **Modernization** below).
 
 - **Framework:** Next.js 14 (App Router), React 18. **TypeScript** (`.ts`/`.tsx`) as of Phase 3 — only the dead trio (`components/Counter.jsx`, `stores/counter-store.js`, `stores/mailStore.js`, deleted in Phase 6) and the `postcss`/`tailwind` configs remain `.js`.
-- **Data:** MongoDB via Mongoose (cached connection in `lib/database.ts`). Models in `models/`: `user`, `member`, `work`.
+- **Data:** MongoDB via Mongoose (cached connection in `lib/database.ts`). Models in `models/`: `member`, `work` (the legacy `user` Mongoose model was dropped in Phase 1 — Better Auth now owns the `user`/`account` collections).
 - **Auth:** Better Auth (email/password over MongoDB; existing bcrypt hashes preserved from the legacy next-auth data). Role-based (`admin` / `user`) via the admin plugin. **Authorization is derived from the server session** — `lib/authGuard.ts` → `requireAdmin()` and `auth.api.getSession()` (`lib/auth.ts`); never trust a client-supplied role. The dashboard is admin-only, enforced server-side in its layout. (Replaced next-auth v4 in Phase 1 — PR #88.)
 - **Uploads:** EdgeStore (`lib/edgestore.ts`). **Email:** Gmail SMTP for the contact form + IMAP for the inbox, via `nodemailer` / `imapflow`.
 - **i18n:** next-intl (`config.ts`, `navigation.ts`, `i18n.ts`, `messages/en.json` + `tr.json`) — most strings are still hardcoded (addressed in Phase 6).
