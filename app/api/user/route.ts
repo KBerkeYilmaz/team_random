@@ -13,7 +13,7 @@ import { auth } from "@/lib/auth";
 // accounts land in Better Auth's `user`/`account` collections and can actually
 // sign in. The admin plugin authorizes the caller (must be an admin); role is
 // still forced to "user" server-side and never read from the request body.
-export async function POST(req) {
+export async function POST(req: Request) {
   const body = await req.json();
 
   try {
@@ -34,11 +34,12 @@ export async function POST(req) {
   } catch (error) {
     // Better Auth throws an APIError carrying an HTTP status (401/403 for a
     // non-admin caller, 422 for a duplicate email, etc.).
+    const err = error as { statusCode?: number; status?: number };
     const status =
-      typeof error?.statusCode === "number"
-        ? error.statusCode
-        : typeof error?.status === "number"
-          ? error.status
+      typeof err?.statusCode === "number"
+        ? err.statusCode
+        : typeof err?.status === "number"
+          ? err.status
           : 400;
     return NextResponse.json({ error: "User creation failed" }, { status });
   }

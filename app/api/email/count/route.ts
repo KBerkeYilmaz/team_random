@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { env } from "@/lib/env";
 
-export async function GET(req) {
+export async function GET(req: Request) {
   // AUDIT #83 (issue #82): the unread-count endpoint was world-readable — it
   // connected to Gmail IMAP with no auth. Now admin-only.
   // AUDIT #87 (Phase 1): admin session now from Better Auth (auth.api.getSession).

@@ -67,6 +67,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/imapflow": "^1.0.23",
     "@types/mailparser": "^3.4.6",
     "@types/node": "20.12.4",
     "@types/nodemailer": "^8.0.1",
