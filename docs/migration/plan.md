@@ -33,7 +33,7 @@ Plus: DB connection isn't pooled (`lib/database.js` does `mongoose.connect()` pe
 - **Better Auth before the full TS migration** (Phase 1 before Phase 3). Better Auth is TS-first; write *only the new auth surface* in TS as a beachhead (`allowJs` already lets `.ts` and `.jsx` coexist). Migrating everything to TS first would type the *old* next-auth session shape, then throw it away. Auth files get written in TS exactly once.
 - **Next 16 / React 19 after the TS sweep, via the official codemod** (Phase 4). Async `params`/`searchParams`/`headers()`/`cookies()` (introduced in Next 15, carried into 16) are pervasive across every page/layout and the Better Auth `getSession` calls; Next 16 additionally renames the middleware convention to **`proxy`** (`middleware.ts` → `proxy.ts`). Running `@next/codemod` on already-typed files lands both changes cleanly with compiler backup.
 
-**Order:** Phase 0 (security hotfix) → 1 (Better Auth) → 2 (DB/env) → 3 (TypeScript) → 4 (Next 16/React 19) → 5 (tooling/tests/CI) → 6 (i18n + frontend polish). Each phase is independently shippable.
+**Order:** Phase 0 (security hotfix) → 1 (Better Auth) → 2 (DB/env) → 3 (TypeScript) → 4 (Next 16/React 19) → 5 (tooling/tests/CI) → 6 (i18n + frontend polish) → 7 (npm → pnpm). Each phase is independently shippable.
 
 ---
 
@@ -137,6 +137,22 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 
 ---
 
+## Phase 7 — Migrate npm → pnpm (P2, final step) · ~0.5 day
+
+Swap the package manager from npm to **pnpm** once the dependency tree has fully settled. Placed **last, after Phase 6**, deliberately: Phases 1/4/5/6 each mutate `package.json` + the lockfile (Better Auth swap, Next 16/React 19 bump, test/lint tooling, jotai removal). Converting after they land means **one** lockfile migration and **one** CI repoint instead of repeated npm↔pnpm churn or cross-phase lockfile conflicts. Independently shippable and fully revertible (restore `package-lock.json`, delete `pnpm-lock.yaml`).
+
+- **Pin the toolchain**: `corepack enable`; add `"packageManager": "pnpm@10.x"` to `package.json` (exact version+hash pinned by corepack) so every environment — local, CI, and Vercel — resolves the same pnpm.
+- **Convert the lockfile losslessly**: `pnpm import` (reads `package-lock.json` → seeds `pnpm-lock.yaml`, preserving resolved versions), then delete `package-lock.json` and run `pnpm install` to finalize. Commit `pnpm-lock.yaml`.
+- **Handle strict linking (phantom deps)**: pnpm's non-flat `node_modules` surfaces any undeclared/phantom dependency (candidates: EdgeStore, Radix, next-intl transitives). **Fix by declaring the real dependency**, not by masking it. Add `.npmrc` with `shamefully-hoist=true` only as a documented last resort if a dep genuinely can't resolve under strict linking.
+- **Repoint Phase 5 CI** (`.github/workflows/ci.yml`): add `pnpm/action-setup`, switch `actions/setup-node` cache to `pnpm`, replace `npm ci` → `pnpm install --frozen-lockfile` (fails on a lockfile/`package.json` mismatch — the reproducibility guarantee) and `npm run <x>` → `pnpm <x>`. Local dev keeps plain `pnpm install`, which is allowed to update the lockfile.
+- **Repoint husky/lint-staged** (Phase 5) and any script that shells out to `npm`.
+- **Vercel deploy**: no config change needed — Vercel auto-detects pnpm from the committed `pnpm-lock.yaml` + `packageManager` field and installs with frozen-lockfile semantics by default. Verify the first post-migration deploy build resolves under pnpm's strict linking (same phantom-dep check as CI); if a dep only breaks on Vercel, the fix is the same (declare the real dep, `.npmrc` hoist as last resort).
+- **Update docs**: CLAUDE.md **Commands** section (`pnpm dev`/`pnpm build`/`pnpm lint`), README, and the `.env.example` generation command — all npm invocations → pnpm.
+
+**Verify:** fresh `pnpm install --frozen-lockfile` clean from a wiped `node_modules`; `pnpm build`, `pnpm typecheck`, `pnpm test`, `pnpm lint` all green; GitHub Actions CI green on pnpm; the Vercel preview deploy builds green under pnpm; `git status` shows `pnpm-lock.yaml` committed and no `package-lock.json`; grep the repo for stray `npm run` / `npm ci` invocations.
+
+---
+
 ## Effort roll-up
 
 | Phase | Scope | Effort |
@@ -148,9 +164,10 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 | 4 | Next 16 / React 19 | 2–3 d |
 | 5 | Tooling / tests / CI | 2–3 d |
 | 6 | i18n + frontend polish | 3–5 d |
-| **Total** | | **~15.5–23.5 days** |
+| 7 | Migrate npm → pnpm | 0.5 d |
+| **Total** | | **~16–24 days** |
 
-**Dependencies:** Phase 1 depends on Phase 0's server-side role derivation (so the swap doesn't reintroduce the vuln) and Phase 2's cached connection (pull forward for the `Db`). Phase 3 depends on Phase 1 (type against final auth). Phase 4's codemod runs after Phase 3. Phases 5–6 want the final TS/Next-16 shape (except Phase 5's lint/format config, which can move earlier).
+**Dependencies:** Phase 1 depends on Phase 0's server-side role derivation (so the swap doesn't reintroduce the vuln) and Phase 2's cached connection (pull forward for the `Db`). Phase 3 depends on Phase 1 (type against final auth). Phase 4's codemod runs after Phase 3. Phases 5–6 want the final TS/Next-16 shape (except Phase 5's lint/format config, which can move earlier). Phase 7 (pnpm) is strictly last: it repoints Phase 5's CI/husky commands and needs the dependency tree fully settled, so it lands after every dep-mutating phase; it is independently revertible.
 
 ## Critical files
 
@@ -161,6 +178,7 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 - `middleware.js` → `middleware.ts` — next-auth+next-intl → Better Auth (optimistic) + next-intl
 - `lib/database.js` — cached connection + source of the native `Db` for Better Auth
 - `lib/env.ts`, `lib/authGuard.js`→`.ts`, `scripts/migrate-to-better-auth.ts` — new
+- `package.json` (`packageManager` field), `package-lock.json` → `pnpm-lock.yaml`, `.npmrc` (new, conditional), `.github/workflows/ci.yml` (repoint) — Phase 7 pnpm migration
 
 ## Better Auth references (verified July 2026)
 
