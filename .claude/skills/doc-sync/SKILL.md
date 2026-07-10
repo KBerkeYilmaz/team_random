@@ -28,6 +28,39 @@ A doc node is in sync when nothing in your change contradicts what it asserts:
   epic checkboxes, "X is done / Y is next" lines.
 - **No duplicated fact** silently disagrees with its copy elsewhere.
 
+## Adjudicating drift — which doc wins
+
+When two docs already disagree and no change of yours caused it, don't pick the
+better-written one. Split it into two questions, answered in order.
+
+**1. Which is *true right now*?** A doc is a claim *about* an artifact, never the
+artifact itself — so resolve toward the artifact. Which artifact depends on the fact's
+type:
+
+- **State** (what *is*: "Phase 3 shipped", "env lives in `lib/env.ts`") → the **code /
+  git / merged PRs / closed issues**. Immutable, timestamped, can't drift from itself.
+- **Intent** (what we *plan*: "Phase 4 = tooling") → the **latest deliberate
+  decision** (the thing doesn't exist yet, so code can't judge). A doc that
+  self-declares supersession ("reshaped 2026-07-09; others to follow") is announcing
+  it's the newer authority — believe it.
+- **Rationale** (*why*: "we deferred Prisma because…") → the **human / decision
+  record**; if unclear, ask.
+
+Recency alone is not authority: a newer doc that merely *copies* is not more true than
+the source it copied.
+
+**2. Which should *own* the fact going forward?** Seat each fact in exactly one home —
+the doc **closest to where it changes** (phase status → the migration README; env vars
+→ `lib/env.ts`; layout → root `CLAUDE.md`). Make that owner correct, then turn every
+other copy into a **pointer**, not a second assertion. Prefer to **generate or
+mechanically check** a derived copy (that is what `check:docs` does) so it can't drift
+again — and note that anything a mechanical check *can't* reach (a GitHub issue/PR
+body) is the highest drift risk, so it should carry the least duplicated content.
+
+**If no artifact can arbitrate** — two pure-intent claims, equally fresh, no decision
+record — **do not guess; surface it.** Guessing launders an open question into false
+certainty (root `CLAUDE.md` → "surface new concerns; don't smuggle them in").
+
 ## Procedure
 
 ### 1. Map the change surface
@@ -64,7 +97,9 @@ climbing once the change no longer reaches the next level up.
 
 ### 3. Prefer single-source over reconcile
 
-If the same fact lives in two places and they disagree, don't just fix both copies —
+Use **Adjudicating drift** (above) to decide which copy is true and which should own
+the fact — then act on it. If the same fact lives in two places and they disagree,
+don't just fix both copies —
 make one canonical and have the other **point** at it (e.g. an epic links
 `docs/migration/README.md` for status instead of re-listing phases). Every duplicated
 fact is future drift. If a safe de-dup is bigger than this change should carry,
