@@ -1,5 +1,6 @@
 "use client";
 import { useRouter, usePathname } from "@/navigation";
+import { locales } from "@/config";
 import { useState, useTransition, type MouseEvent } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +25,14 @@ function LangSwitch() {
     // `event.target` is typed as `EventTarget`; the clicked <Button> carries the locale in its
     // `value` attribute, so narrow to HTMLButtonElement to read it (runtime behavior unchanged).
     console.log((event.target as HTMLButtonElement).value);
-    const nextLocale = (event.target as HTMLButtonElement).value;
+    // `event.target.value` is a plain `string`, but since PR #129 switched
+    // @/navigation to createSharedPathnamesNavigation, router.replace()'s `locale`
+    // is typed as the `locales` union ("en" | "tr"). The <Button> `value`s below are
+    // only ever those exact locales, so narrow to that union to satisfy the typed
+    // router — a type-only change, runtime behavior is unchanged. (Fixes #135, the
+    // production build break the #129 navigation retype left behind.)
+    const nextLocale = (event.target as HTMLButtonElement)
+      .value as (typeof locales)[number];
     startTransition(() => {
       router.replace(pathname, { locale: nextLocale });
     });
