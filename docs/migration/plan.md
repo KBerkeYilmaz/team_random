@@ -1,5 +1,13 @@
 # Modernization Plan — Team Random (Next.js Portfolio/Agency Site)
 
+> ⚠️ **Sequencing reshaped 2026-07-09 (epic #81) — the per-phase sections below still use
+> the pre-reshape 0–7 numbering.** The canonical phase index + current status is
+> [`docs/migration/README.md`](README.md) (Phases 0–9). Renumbering these detailed sections
+> to 0–9 — tooling/CI ahead of the Next 16 bump, un-defer the Prisma-on-Postgres + tRPC
+> data layer, split i18n / frontend polish, pnpm → Phase 9 — is tracked in
+> [#142](https://github.com/KBerkeYilmaz/team_random/issues/142). Until then read the phase
+> **numbers** below as historical; the **scope** of each is still accurate.
+
 ## Context
 
 `team-random` is a Next.js 14 App Router portfolio/agency site (public site + admin dashboard) built in **May 2024, pre-AI-tooling**, and dormant since. It's all JavaScript (`.jsx`), on MongoDB/Mongoose, next-auth v4, EdgeStore, and IMAP/SMTP email. The user wants to modernize it to 2026 best practices and make it a showcase-quality project.
