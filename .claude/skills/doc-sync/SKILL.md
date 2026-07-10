@@ -91,9 +91,20 @@ climbing once the change no longer reaches the next level up.
    index (README), the authoritative scope (`plan.md`), and the per-phase write-up
    mutually consistent.
 4. **Other READMEs / docs** the change touches.
-5. **Tracking issue + PR body + epic** — only the ones *this* change touches.
-   Reconcile: acceptance criteria met, `Closes #N` correct, epic box ticked, phase
-   status line accurate. Do **not** audit the whole tracker.
+5. **Tracking issue + PR body + epic** — only the ones *this* change touches. Fetch
+   each with the `gh` CLI (already authenticated in this repo — no GitHub MCP or extra
+   tooling needed): `gh issue view <n> --json title,body,state,closed`, `gh pr view <n>
+   --json body,state`. Then check each against the actual work and the docs you just
+   touched, and fix in place with `gh issue edit` / `gh pr edit`:
+   - **Does the issue's description / acceptance criteria still match what the work
+     did?** If the work legitimately did more, less, or different than the issue
+     framed, update the issue body / checklist — or, if it's a genuine scope change,
+     flag it rather than silently rewriting the issue.
+   - **`Closes #N`** in the PR body is present and points at the right issue.
+   - **Epic checkbox / phase-status line** reflects reality (ticked once shipped).
+   - **Doc or file references inside the issue/PR** still resolve — e.g. a path the
+     issue cites that this change renamed, or a linked doc it now contradicts.
+   Do **not** audit the whole tracker — only the items this change touches.
 
 ### 3. Prefer single-source over reconcile
 
