@@ -1,0 +1,45 @@
+# Fails a PR (and any push to main) if the app does not type-check or does not
+# produce a production build — the exact gate that was missing, which let a
+# non-compiling `main` reach Vercel and fail the prod deploy. This runs the SAME
+# `next build` Vercel runs, so a build break is caught in the PR instead of in
+# production. GitHub Actions job (Ubuntu runner) — NOT app code, never runs on Vercel.
+#
+# No real secrets are needed: the build is exercised with throwaway env values that
+# only satisfy lib/env.ts's Zod validation. The DB is intentionally unreachable —
+# the read getters catch the connection error and degrade to empty data, so the
+# build still compiles every route and surfaces type/import/compile errors just as
+# Vercel would. `npm run lint` is deliberately NOT run here: the ESLint config is
+# known-broken (next/babel) and is fixed in Phase 5 — add a lint step then.
+name: build-check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck-and-build:
+    runs-on: ubuntu-latest
+    # Placeholder env: valid-enough to pass lib/env.ts (Zod) but pointing nowhere.
+    # Never put real credentials here — this job must stay secret-free.
+    env:
+      MONGO_URI: mongodb://127.0.0.1:27017/ci_placeholder
+      BETTER_AUTH_SECRET: ci_dummy_secret_ci_dummy_secret_32b
+      BETTER_AUTH_URL: http://localhost:3000
+      EDGE_STORE_ACCESS_KEY: ci_dummy_access_key
+      EDGE_STORE_SECRET_KEY: ci_dummy_secret_key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Type-check (tsc --noEmit)
+        run: npm run typecheck
+      - name: Production build (next build)
+        run: npm run build
