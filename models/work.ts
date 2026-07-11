@@ -39,10 +39,12 @@ const workSchema = new Schema<IWork>(
       type: String,
       required: true,
     },
-    workImages: [{
-      type: String,
-      required: true,
-    }],
+    workImages: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
     workTechStack: {
       type: String,
       required: true,
@@ -57,7 +59,7 @@ const workSchema = new Schema<IWork>(
       required: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Work = (models.Work as Model<IWork>) || model<IWork>("Work", workSchema);

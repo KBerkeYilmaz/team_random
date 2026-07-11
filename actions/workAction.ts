@@ -5,8 +5,12 @@ import Work, { type IWork } from "@/models/work";
 import connectDB from "@/lib/database";
 import { requireAdmin } from "@/lib/authGuard";
 import { workSchema, type WorkInput } from "@/actions/schemas";
-import type { ActionState, WorkListItem, WorkDetail, Lean } from "@/actions/types";
-
+import type {
+  ActionState,
+  WorkListItem,
+  WorkDetail,
+  Lean,
+} from "@/actions/types";
 
 // AUDIT #83 (issue #82): every MUTATING action below (create/update/delete) is
 // gated by requireAdmin(), which derives the admin role from the server session.
@@ -42,11 +46,11 @@ export async function getWorks({
 export async function getWorkCount(): Promise<number | { error: string }> {
   try {
     await connectDB();
-    const result = await Work.countDocuments()
-    return result
+    const result = await Work.countDocuments();
+    return result;
   } catch (error) {
     console.error("getWorkCount failed:", error);
-    return { error: "Something went wrong" }
+    return { error: "Something went wrong" };
   }
 }
 export async function getWork(
@@ -126,7 +130,7 @@ export async function updateWork(
     workImages: formData.workImages,
     workTechStack: formData.workTechStack,
     workContributors: formData.workContributors,
-  }
+  };
   try {
     await requireAdmin();
     await connectDB();
@@ -147,11 +151,11 @@ export async function deleteWork(id: string): Promise<ActionState> {
   try {
     await requireAdmin();
     await connectDB();
-    await Work.findByIdAndDelete(id)
+    await Work.findByIdAndDelete(id);
     revalidatePath("/dashboard/works");
-    return { message: "Work deleted Successfully" }
+    return { message: "Work deleted Successfully" };
   } catch (error) {
     console.error("deleteWork failed:", error);
-    return { error: "Something went wrong" }
+    return { error: "Something went wrong" };
   }
 }

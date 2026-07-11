@@ -14,17 +14,17 @@ export default function DashboardSidebarNavMobile({
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col h-full px-2 text-sm font-medium w-full justify-between py-4">
-      <div className="w-full flex flex-col gap-2">
+    <nav className="flex h-full w-full flex-col justify-between px-2 py-4 text-sm font-medium">
+      <div className="flex w-full flex-col gap-2">
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Package2 className="h-6 w-6 m-2" />
+          <Package2 className="m-2 h-6 w-6" />
           <span className="sr-only">Acme Inc</span>
         </Link>
         <Separator />
         <SheetClose asChild>
           <Link
             href="/dashboard"
-            className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
+            className={` flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground transition-all duration-200 ease-in-out hover:text-foreground ${
               pathname === "/dashboard" && "bg-muted"
             } `}
           >
@@ -35,7 +35,7 @@ export default function DashboardSidebarNavMobile({
         <SheetClose asChild>
           <Link
             href="/dashboard/inbox"
-            className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
+            className={` flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground transition-all duration-200 ease-in-out hover:text-foreground ${
               pathname.includes("/dashboard/inbox") && "bg-muted"
             } `}
           >
@@ -49,7 +49,7 @@ export default function DashboardSidebarNavMobile({
         <SheetClose asChild>
           <Link
             href="/dashboard/members"
-            className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
+            className={` flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground transition-all duration-200 ease-in-out hover:text-foreground ${
               pathname.includes("/dashboard/members") && "bg-muted"
             } `}
           >
@@ -60,7 +60,7 @@ export default function DashboardSidebarNavMobile({
         <SheetClose asChild>
           <Link
             href="/dashboard/works"
-            className={` transition-all ease-in-out duration-200 flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground ${
+            className={` flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground transition-all duration-200 ease-in-out hover:text-foreground ${
               pathname.includes("/dashboard/works") && "bg-muted"
             } `}
           >

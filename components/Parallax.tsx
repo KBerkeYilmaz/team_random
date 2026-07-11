@@ -35,7 +35,7 @@ const Parallax = ({
       setElementTop(
         // `ref.current` is populated by the time this post-mount effect runs, so assert non-null.
         element!.getBoundingClientRect().top + window.scrollY ||
-          window.pageYOffset
+          window.pageYOffset,
       );
       setClientHeight(window.innerHeight);
     };

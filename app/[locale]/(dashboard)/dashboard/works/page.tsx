@@ -12,19 +12,19 @@ const Works = async () => {
   // returned its { error } shape (or nothing) instead of the works array.
   if (!res || "error" in res) {
     return (
-      <div className="flex w-full justify-center mt-10">
+      <div className="mt-10 flex w-full justify-center">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full p-10 animate-fadeIn">
-      <h1 className="text-4xl font-semibold md:text-start text-center  w-full">
+    <div className="h-full w-full animate-fadeIn p-10">
+      <h1 className="w-full text-center text-4xl font-semibold  md:text-start">
         Works
       </h1>
       <Separator className="my-4" />
-      <div className="flex flex-col gap-4 py-4 w-full">
+      <div className="flex w-full flex-col gap-4 py-4">
         <DataTable
           columns={columns}
           data={res}

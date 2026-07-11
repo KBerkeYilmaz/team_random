@@ -80,12 +80,12 @@ export const EditUserPasswordForm = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <h2 className="text-3xl font-semibold md:text-start text-center">
+    <div className="flex w-full flex-col gap-4">
+      <h2 className="text-center text-3xl font-semibold md:text-start">
         Change Password
       </h2>
       <Separator />
-      <div className="flex flex-col gap-2 max-w-2xl">
+      <div className="flex max-w-2xl flex-col gap-2">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="">
             <div className="grid  gap-2">
@@ -134,11 +134,11 @@ export const EditUserPasswordForm = ({
               />
             </div>
             {!isSubmitting ? (
-              <Button className="w-full mt-2" type="submit">
+              <Button className="mt-2 w-full" type="submit">
                 Submit
               </Button>
             ) : (
-              <Button className="w-full mt-2" disabled>
+              <Button className="mt-2 w-full" disabled>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Please wait
               </Button>

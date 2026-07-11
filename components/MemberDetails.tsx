@@ -22,7 +22,7 @@ export default function MemberDetails({ member }: { member: MemberRow }) {
   // rendering, since data.user is read below and useSession resolves async.
   if (!member || !data) {
     return (
-      <div className="flex w-full justify-center mt-10">
+      <div className="mt-10 flex w-full justify-center">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       </div>
     );
@@ -54,72 +54,72 @@ export default function MemberDetails({ member }: { member: MemberRow }) {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col gap-4 justify-start items-center md:items-start pb-28 p-10 animate-fadeIn overflow-y-scroll no-scrollbar">
-      <h2 className="text-4xl font-semibold sm:text-start text-center">
+    <div className="no-scrollbar flex h-screen w-full animate-fadeIn flex-col items-center justify-start gap-4 overflow-y-scroll p-10 pb-28 md:items-start">
+      <h2 className="text-center text-4xl font-semibold sm:text-start">
         Member Details
       </h2>
       <Separator />
-      <div className="flex gap-4 w-full max-w-5xl flex-col lg:flex-row">
-        <div className="flex flex-col sm:flex-row gap-6 w-full">
-          <div className="flex sm:flex-row justify-center md:justify-start min-w-fit">
+      <div className="flex w-full max-w-5xl flex-col gap-4 lg:flex-row">
+        <div className="flex w-full flex-col gap-6 sm:flex-row">
+          <div className="flex min-w-fit justify-center sm:flex-row md:justify-start">
             {member.memberImage === undefined || member.memberImage === "" ? (
-              <div className=" w-[180px] aspect-square bg-gray-800 text-white flex justify-center items-center rounded">
+              <div className=" flex aspect-square w-[180px] items-center justify-center rounded bg-gray-800 text-white">
                 Image
               </div>
             ) : (
               <img
                 src={member.memberImage}
                 alt="User Picture"
-                className="md:w-[180px] w-[220px] sm:w-[250px] md:h-[180px] h-[220px] sm:h-[250px]"
+                className="h-[220px] w-[220px] sm:h-[250px] sm:w-[250px] md:h-[180px] md:w-[180px]"
               />
             )}
           </div>
-          <div className="flex flex-col w-full gap-2">
+          <div className="flex w-full flex-col gap-2">
             <div className="grid grid-cols-2 gap-2 md:grid-cols-1">
-              <div className="flex gap-1 w-full flex-col md:flex-row">
+              <div className="flex w-full flex-col gap-1 md:flex-row">
                 <Label className="text-md font-bold dark:text-primary ">
                   Full Name:{" "}
                 </Label>
-                <p className="break-all sm:text-start text-justify">
+                <p className="break-all text-justify sm:text-start">
                   {member.memberName} {member.memberLastName}
                 </p>
               </div>
-              <div className="flex gap-1 w-full flex-col md:flex-row">
+              <div className="flex w-full flex-col gap-1 md:flex-row">
                 <Label className="text-md font-bold">Title: </Label>
-                <p className="break-all sm:text-start text-justify">
+                <p className="break-all text-justify sm:text-start">
                   {member.memberTitle}
                 </p>
               </div>
               {member.memberPersonal && (
-                <div className="flex gap-1 w-full flex-col md:flex-row">
+                <div className="flex w-full flex-col gap-1 md:flex-row">
                   <Label className="text-md font-bold">Personal: </Label>
-                  <p className="break-all sm:text-start text-justify">
+                  <p className="break-all text-justify sm:text-start">
                     {" "}
                     <a href={member.memberPersonal}> {member.memberPersonal}</a>
                   </p>
                 </div>
               )}
               {member.memberLinkedin && (
-                <div className="flex gap-1 w-full flex-col md:flex-row">
+                <div className="flex w-full flex-col gap-1 md:flex-row">
                   <Label className="text-md font-bold">Linkedin: </Label>
-                  <p className="break-all sm:text-start text-justify">
+                  <p className="break-all text-justify sm:text-start">
                     {" "}
                     <a href={member.memberLinkedin}> {member.memberLinkedin}</a>
                   </p>
                 </div>
               )}
               {member.memberGithub && (
-                <div className="flex gap-1 w-full flex-col md:flex-row">
+                <div className="flex w-full flex-col gap-1 md:flex-row">
                   <Label className="text-md font-bold">Github: </Label>
-                  <p className="break-all sm:text-start text-justify">
+                  <p className="break-all text-justify sm:text-start">
                     <a href={member.memberGithub}> {member.memberGithub}</a>
                   </p>
                 </div>
               )}
             </div>
-            <div className="flex gap-1 w-full flex-col md:flex-row">
+            <div className="flex w-full flex-col gap-1 md:flex-row">
               <Label className="text-md font-bold">Bio: </Label>
-              <p className="break-all sm:text-start text-justify">
+              <p className="break-all text-justify sm:text-start">
                 {member.memberBio}
               </p>
             </div>

@@ -32,7 +32,9 @@ const basenames = new Set(tracked.map((p) => p.split("/").pop()));
 
 // Every tracked CLAUDE.md — the root one plus any nested (waterfall) docs.
 // Each names paths repo-root-relative, so they resolve the same way everywhere.
-const DOCS = tracked.filter((f) => f === "CLAUDE.md" || f.endsWith("/CLAUDE.md"));
+const DOCS = tracked.filter(
+  (f) => f === "CLAUDE.md" || f.endsWith("/CLAUDE.md"),
+);
 
 const missing = [];
 let checked = 0;

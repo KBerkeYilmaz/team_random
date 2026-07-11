@@ -138,18 +138,18 @@ export const EditMemberForm = ({
 
   //   console.log(file);
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <h2 className="text-3xl font-semibold md:text-start text-center">
+    <div className="flex w-full flex-col gap-4">
+      <h2 className="text-center text-3xl font-semibold md:text-start">
         Edit Member Info
       </h2>
       <Separator />
-      <div className="flex flex-col w-full gap-2 max-w-5xl">
-        <div className="flex-col flex gap-3 w-full">
+      <div className="flex w-full max-w-5xl flex-col gap-2">
+        <div className="flex w-full flex-col gap-3">
           <Label className="text-lg" htmlFor="fullName">
             Member Image
           </Label>
           <div className="flex items-center justify-center gap-4">
-            <div className="flex flex-col justify-between w-full gap-2">
+            <div className="flex w-full flex-col justify-between gap-2">
               <div className="flex w-full justify-center md:justify-start">
                 <SingleImageDropzone
                   width={dropzoneWidth}
@@ -177,7 +177,7 @@ export const EditMemberForm = ({
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
-            <div className="grid md:grid-cols-2 gap-2">
+            <div className="grid gap-2 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="memberName"
@@ -273,11 +273,11 @@ export const EditMemberForm = ({
             </div>
 
             {!isSubmitting ? (
-              <Button className="w-full mt-2" type="submit">
+              <Button className="mt-2 w-full" type="submit">
                 Submit
               </Button>
             ) : (
-              <Button className="w-full mt-2" disabled>
+              <Button className="mt-2 w-full" disabled>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Please wait
               </Button>

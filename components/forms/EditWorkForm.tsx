@@ -70,7 +70,7 @@ export const EditWorkForm = ({
           // fileStates here only ever hold freshly-dropped Files (never the
           // string-URL variant of FileState), so this cast is safe.
           .upload({ file: addedFileState.file as File })
-          .then((res) => res.url)
+          .then((res) => res.url),
       );
       // Wait for all uploads to finish.
       const imageURLs = await Promise.all(uploadPromises);

@@ -61,8 +61,8 @@ export type WorkListItem = {
 // getWork: the full record, with a string id and `workImages` guaranteed to be
 // an array ([] default) — WorkDetails reads `workImages.length` unconditionally.
 export type WorkDetail = { id: string } & Omit<IWork, "workImages"> & {
-  workImages: string[];
-};
+    workImages: string[];
+  };
 
 // What the work detail page hands to WorkDetails / EditWorkForm: the full work
 // minus the RSC timestamps. `works/[id]/page` builds exactly this subset (and it

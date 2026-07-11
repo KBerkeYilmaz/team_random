@@ -13,7 +13,7 @@ async function page() {
   console.log("here is data:", data);
   if (!mails) {
     return (
-      <div className="flex w-full justify-center mt-10">
+      <div className="mt-10 flex w-full justify-center">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       </div>
     );
@@ -30,8 +30,8 @@ async function page() {
     : false;
 
   return (
-    <div className="h-full w-full p-10 animate-fadeIn">
-      <div className="flex-col md:flex max-w-screen-xl">
+    <div className="h-full w-full animate-fadeIn p-10">
+      <div className="max-w-screen-xl flex-col md:flex">
         <Mail
           accounts={accounts}
           // mails={mails}

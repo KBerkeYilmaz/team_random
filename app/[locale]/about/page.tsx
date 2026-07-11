@@ -8,15 +8,15 @@ async function Page() {
   // returned its { error } shape — previously `members?.map` would throw on it.
   const memberList = !members || "error" in members ? [] : members;
   return (
-    <div className="flex flex-col justify-start items-center w-full pt-[72px] animate-fadeIn">
-      <div className="w-full flex flex-col items-center py-10 px-4  sm:p-20 gap-10">
+    <div className="flex w-full animate-fadeIn flex-col items-center justify-start pt-[72px]">
+      <div className="flex w-full flex-col items-center gap-10 px-4  py-10 sm:p-20">
         <h1
-          className={`${permanentMarker.className} dark:text-primary text-4xl md:text-7xl`}
+          className={`${permanentMarker.className} text-4xl dark:text-primary md:text-7xl`}
         >
           Meet Our Team
         </h1>
         <p
-          className={`  max-w-7xl text-sm md:text-md md:text-lg text-justify md:text-center px-2 md:px-10`}
+          className={`  md:text-md max-w-7xl px-2 text-justify text-sm md:px-10 md:text-center md:text-lg`}
         >
           We are a dynamic team of web developers united by our passion for
           crafting innovative digital experiences. With a diverse range of
@@ -28,59 +28,59 @@ async function Page() {
           success in every project we undertake!
         </p>
       </div>
-      <div className="flex flex-col w-full pb-20 gap-6 md:gap-12">
+      <div className="flex w-full flex-col gap-6 pb-20 md:gap-12">
         {memberList.map((member, i) => {
           if (i % 2 === 0) {
             return (
               <div
                 key={i}
-                className="w-full md:grid md:grid-cols-5  md:pr-2 lg:pr-28 md:gap-4 "
+                className="w-full md:grid md:grid-cols-5  md:gap-4 md:pr-2 lg:pr-28 "
               >
-                <div className="h-fit md:col-span-2 pl-38 md:pl-72 bg-gradient-to-r from-background dark:to-primary/80 to-[#3a557c] flex justify-end">
+                <div className="pl-38 flex h-fit justify-end bg-gradient-to-r from-background to-[#3a557c] dark:to-primary/80 md:col-span-2 md:pl-72">
                   <img
                     src={`${member.memberImage}`}
                     alt="Profile Picture"
-                    className="max-w-[120px] md:max-w-[180px] aspect-square"
+                    className="aspect-square max-w-[120px] md:max-w-[180px]"
                   />
                 </div>
-                <div className=" md:col-span-3 pl-4 md:pl-0 flex flex-col justify-between">
+                <div className=" flex flex-col justify-between pl-4 md:col-span-3 md:pl-0">
                   <div className="flex h-fit gap-4">
                     <h2
-                      className={`text-lg md:text-3xl dark:text-primary ${permanentMarker.className}`}
+                      className={`text-lg dark:text-primary md:text-3xl ${permanentMarker.className}`}
                     >
                       {member.memberName} {member.memberLastName}
                     </h2>
                     <div className="flex flex-col justify-end">
                       <p
-                        className={` dark:text-primary/60 font-bold text-sm md:text-lg `}
+                        className={` text-sm font-bold dark:text-primary/60 md:text-lg `}
                       >
                         {member.memberTitle}
                       </p>
                     </div>
                   </div>
                   <div>
-                    <p className="leading-5 text-sm md:text-md">
+                    <p className="md:text-md text-sm leading-5">
                       {member.memberBio}
                     </p>
                   </div>
                   <div className="flex justify-end gap-4 p-4">
                     <a
                       target="_blank"
-                      className=" hover:text-primary transition-all duration-300"
+                      className=" transition-all duration-300 hover:text-primary"
                       href={`${member.memberPersonal}`}
                     >
                       <BriefcaseBusiness size={20} />
                     </a>
                     <a
                       target="_blank"
-                      className=" hover:text-primary transition-all duration-300"
+                      className=" transition-all duration-300 hover:text-primary"
                       href={`${member.memberGithub}`}
                     >
                       <LucideGithub size={20} />
                     </a>
                     <a
                       target="_blank"
-                      className=" hover:text-primary transition-all duration-300"
+                      className=" transition-all duration-300 hover:text-primary"
                       href={`${member.memberLinkedin}`}
                     >
                       <LucideLinkedin size={20} />
@@ -93,39 +93,39 @@ async function Page() {
             return (
               <div
                 key={i}
-                className="w-full grid md:grid-cols-5  md:pl-28 md:gap-4 "
+                className="grid w-full md:grid-cols-5  md:gap-4 md:pl-28 "
               >
-                <div className="md:col-span-3 pr-4 md:pr-0 flex flex-col justify-between">
-                  <div className="flex h-fit gap-4 justify-end">
+                <div className="flex flex-col justify-between pr-4 md:col-span-3 md:pr-0">
+                  <div className="flex h-fit justify-end gap-4">
                     <div className="flex flex-col justify-end">
                       <p
-                        className={` dark:text-primary/60 font-bold text-sm md:text-lg `}
+                        className={` text-sm font-bold dark:text-primary/60 md:text-lg `}
                       >
                         {member.memberTitle}
                       </p>
                     </div>
                     <h2
-                      className={`text-lg md:text-3xl dark:text-primary  ${permanentMarker.className}`}
+                      className={`text-lg dark:text-primary md:text-3xl  ${permanentMarker.className}`}
                     >
                       {member.memberName} {member.memberLastName}
                     </h2>
                   </div>
                   <div>
-                    <p className="text-end leading-5 text-sm md:text-md">
+                    <p className="md:text-md text-end text-sm leading-5">
                       {member.memberBio}
                     </p>
                   </div>
                   <div className="flex justify-start gap-4 p-4">
                     <a
                       target="_blank"
-                      className=" hover:text-primary transition-all duration-300"
+                      className=" transition-all duration-300 hover:text-primary"
                       href={`${member.memberPersonal}`}
                     >
                       <BriefcaseBusiness size={20} />
                     </a>
                     <a
                       target="_blank"
-                      className=" hover:text-primary transition-all duration-300"
+                      className=" transition-all duration-300 hover:text-primary"
                       href={`${member.memberGithub}`}
                     >
                       <LucideGithub size={20} />
@@ -135,11 +135,11 @@ async function Page() {
                     </a>
                   </div>
                 </div>
-                <div className="h-fit order-first md:order-last md:col-span-2 pr-38 md:pr-72 bg-gradient-to-l from-background dark:to-primary/80 to-[#3a557c] flex justify-start ">
+                <div className="pr-38 order-first flex h-fit justify-start bg-gradient-to-l from-background to-[#3a557c] dark:to-primary/80 md:order-last md:col-span-2 md:pr-72 ">
                   <img
                     src={`${member.memberImage}`}
                     alt="Profile Picture"
-                    className="max-w-[120px] md:max-w-[180px] aspect-square"
+                    className="aspect-square max-w-[120px] md:max-w-[180px]"
                   />
                 </div>
               </div>

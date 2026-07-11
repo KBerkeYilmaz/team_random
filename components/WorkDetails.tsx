@@ -30,7 +30,7 @@ export default function MemberDetails({ work }: { work: WorkFormData }) {
   // rendering, since data.user is read below and useSession resolves async.
   if (!work || !data) {
     return (
-      <div className="flex w-full justify-center mt-10">
+      <div className="mt-10 flex w-full justify-center">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       </div>
     );
@@ -61,16 +61,16 @@ export default function MemberDetails({ work }: { work: WorkFormData }) {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col gap-4 justify-start items-center md:items-start pb-28 p-10 animate-fadeIn overflow-y-scroll no-scrollbar">
-      <h2 className="text-4xl font-semibold sm:text-start text-center">
+    <div className="no-scrollbar flex h-screen w-full animate-fadeIn flex-col items-center justify-start gap-4 overflow-y-scroll p-10 pb-28 md:items-start">
+      <h2 className="text-center text-4xl font-semibold sm:text-start">
         Work Details
       </h2>
       <Separator />
-      <div className="flex gap-4 w-full max-w-5xl flex-col lg:flex-row">
-        <div className="flex flex-col sm:flex-row gap-6 w-full">
-          <div className="flex justify-center w-full">
+      <div className="flex w-full max-w-5xl flex-col gap-4 lg:flex-row">
+        <div className="flex w-full flex-col gap-6 sm:flex-row">
+          <div className="flex w-full justify-center">
             {work.workImages.length === 0 ? (
-              <div className=" w-60 aspect-square bg-gray-800 text-white flex justify-center items-center rounded">
+              <div className=" flex aspect-square w-60 items-center justify-center rounded bg-gray-800 text-white">
                 No Image
               </div>
             ) : (
@@ -79,14 +79,14 @@ export default function MemberDetails({ work }: { work: WorkFormData }) {
                   <CarouselContent>
                     {work.workImages.map((workImage, index) => (
                       <CarouselItem key={index}>
-                        <div className="flex justify-center w-full md:max-w-md">
+                        <div className="flex w-full justify-center md:max-w-md">
                           <Card>
                             <CardContent className="flex aspect-square items-center justify-center p-6">
                               <span className="text-4xl font-semibold">
                                 <img
                                   src={workImage}
                                   alt="Work Image"
-                                  className="w-40 h-40 object-fill max-h-40"
+                                  className="h-40 max-h-40 w-40 object-fill"
                                 />
                               </span>
                             </CardContent>
@@ -101,25 +101,25 @@ export default function MemberDetails({ work }: { work: WorkFormData }) {
               </div>
             )}
           </div>
-          <div className="flex flex-col w-full ml-">
-            <div className="flex items-center gap-1 w-full">
+          <div className="ml- flex w-full flex-col">
+            <div className="flex w-full items-center gap-1">
               <Label className="text-md">Title: </Label>
               <p className="break-all">{work.workTitle}</p>
             </div>
             {work.workReadme && (
-              <div className="flex items-center gap-1 w-full">
+              <div className="flex w-full items-center gap-1">
                 <Label className="text-md">Readme: </Label>
                 <p className="break-all">{work.workReadme}</p>
               </div>
             )}
             {work.workTechStack && (
-              <div className="flex items-center gap-1 w-full">
+              <div className="flex w-full items-center gap-1">
                 <Label className="text-md">TechStack: </Label>
                 <p className="break-all">{work.workTechStack}</p>
               </div>
             )}
             {work.workAppURL && (
-              <div className="flex items-center gap-1 w-full">
+              <div className="flex w-full items-center gap-1">
                 <Label className="text-md">App URL: </Label>
                 <p className="break-all">{work.workAppURL}</p>
               </div>

@@ -12,9 +12,7 @@ import { z } from "zod";
 // createMember validates all fields incl. the (optional) memberImage URL.
 export const memberSchema = z.object({
   memberName: z.string().min(3, "Member name must be at least 3 characters."),
-  memberLastName: z
-    .string()
-    .min(3, "Last name must be at least 3 characters."),
+  memberLastName: z.string().min(3, "Last name must be at least 3 characters."),
   memberTitle: z.string().min(3, "Title must be at least 3 characters."),
   memberBio: z.string().optional(),
   memberPersonal: z.string().url().optional().or(z.literal("")),

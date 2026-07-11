@@ -68,7 +68,7 @@ export const Navbar = () => {
             {/* <span className="absolute -bottom-4 left-20 hidden text-base font-bold tracking-wider lg:block">
               TEAM RANDOM
             </span> */}
-            <span className="font-bold text-sm sm:text-md">TEAM RANDOM</span>
+            <span className="sm:text-md text-sm font-bold">TEAM RANDOM</span>
           </Link>
         </div>
         <div
@@ -79,13 +79,13 @@ export const Navbar = () => {
           gap-4 
           md:flex 
           ${permanentMarker.className} 
+          3xl:text-3xl 
           relative 
           text-lg 
-          lg:text-2xl 
-          3xl:text-3xl
           transition-all
-          duration-300
           delay-75
+          duration-300
+          lg:text-2xl
           `}
         >
           <Link

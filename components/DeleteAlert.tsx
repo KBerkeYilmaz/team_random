@@ -18,7 +18,11 @@ interface DeleteAlertProps {
   handleDelete: () => void;
 }
 
-export const DeleteAlert = ({ open, setOpen, handleDelete }: DeleteAlertProps) => {
+export const DeleteAlert = ({
+  open,
+  setOpen,
+  handleDelete,
+}: DeleteAlertProps) => {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>

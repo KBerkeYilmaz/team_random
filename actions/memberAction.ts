@@ -31,21 +31,27 @@ export async function getMembers({
     // pass across the RSC boundary; limit(0) means "no limit", so existing no-arg
     // callers are unchanged. Destructure _id/__v out so the raw ObjectId is never
     // spread into the payload, and emit the string `id` the tables/detail pages use.
-    const docs = await Member.find().skip(skip).limit(limit).lean<Lean<IMember>[]>();
-    return docs.map(({ _id, __v, ...rest }) => ({ id: _id.toString(), ...rest }));
+    const docs = await Member.find()
+      .skip(skip)
+      .limit(limit)
+      .lean<Lean<IMember>[]>();
+    return docs.map(({ _id, __v, ...rest }) => ({
+      id: _id.toString(),
+      ...rest,
+    }));
   } catch (error) {
     console.error("getMembers failed:", error);
-    return { error: "Something went wrong" }
+    return { error: "Something went wrong" };
   }
 }
 export async function getMemberCount(): Promise<number | { error: string }> {
   try {
     await connectDB();
-    const result = await Member.countDocuments()
-    return result
+    const result = await Member.countDocuments();
+    return result;
   } catch (error) {
     console.error("getMemberCount failed:", error);
-    return { error: "Something went wrong" }
+    return { error: "Something went wrong" };
   }
 }
 export async function getMember(
@@ -59,10 +65,12 @@ export async function getMember(
     return { id: _id.toString(), ...rest };
   } catch (error) {
     console.error("getMember failed:", error);
-    return { error: "Something went wrong" }
+    return { error: "Something went wrong" };
   }
 }
-export async function createMember(formData: MemberInput): Promise<ActionState> {
+export async function createMember(
+  formData: MemberInput,
+): Promise<ActionState> {
   const validatedFields = memberSchema.safeParse({
     memberName: formData.memberName,
     memberLastName: formData.memberLastName,
@@ -128,12 +136,11 @@ export async function updateMember(
       memberPersonal: formData.memberPersonal,
       memberGithub: formData.memberGithub,
       memberLinkedin: formData.memberLinkedin,
-    }
+    };
     await connectDB();
-    await Member.findByIdAndUpdate(id, updatedMember, { new: true })
+    await Member.findByIdAndUpdate(id, updatedMember, { new: true });
     revalidatePath("/");
-    return {}
-
+    return {};
   } catch (error) {
     console.error("Failed to update member:", error);
     // Handle database errors, e.g., connection issues or constraints violations
@@ -149,24 +156,23 @@ export const updateMemberImage = async (
   try {
     await requireAdmin();
     await connectDB();
-    await Member.findByIdAndUpdate(id, { memberImage: imgUrl }, { new: true })
+    await Member.findByIdAndUpdate(id, { memberImage: imgUrl }, { new: true });
     revalidatePath("/dashboard/members");
-    return {}
+    return {};
   } catch (error) {
     console.error("updateMemberImage failed:", error);
-    return { error: "Something went wrong" }
+    return { error: "Something went wrong" };
   }
-
-}
+};
 export async function deleteMember(id: string): Promise<ActionState> {
   try {
     await requireAdmin();
     await connectDB();
-    await Member.findByIdAndDelete(id)
+    await Member.findByIdAndDelete(id);
     revalidatePath("/dashboard/members");
-    return { message: "Member deleted Successfully" }
+    return { message: "Member deleted Successfully" };
   } catch (error) {
     console.error("deleteMember failed:", error);
-    return { error: "Something went wrong" }
+    return { error: "Something went wrong" };
   }
 }

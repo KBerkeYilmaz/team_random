@@ -18,7 +18,10 @@
 import { MongoClient, ObjectId } from "mongodb";
 
 const uri = process.env.MONGO_URI;
-if (!uri) throw new Error("scripts/migrations/migrate-to-better-auth.ts: MONGO_URI is not set.");
+if (!uri)
+  throw new Error(
+    "scripts/migrations/migrate-to-better-auth.ts: MONGO_URI is not set.",
+  );
 
 async function main() {
   const client = new MongoClient(uri!);
