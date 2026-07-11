@@ -29,6 +29,10 @@ yarn-error.log*
 .env*.local
 .env 
 
+# conductor (the shared .conductor/settings.toml IS committed; ignore only the
+# per-machine personal override so it is never committed)
+.conductor/settings.local.toml
+
 # vercel
 .vercel
 

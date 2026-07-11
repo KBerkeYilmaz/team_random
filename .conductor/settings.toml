@@ -1,0 +1,37 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+# Conductor repository settings (SHARED / committed).
+# This provisions every new Conductor workspace for the team. It takes effect only
+# once merged to origin/main; for instant local effect a maintainer keeps an
+# identical (but gitignored) .conductor/settings.local.toml, which overrides this.
+
+[scripts]
+# Runs once at workspace CREATION, in the background, OFF the agent's critical path —
+# so a freshly created workspace already has node_modules and the first command an
+# agent runs no longer dies with "eslint: command not found" or triggers a mid-task
+# `npm install`. `npm ci` = a clean, reproducible install straight from
+# package-lock.json, reusing the shared global ~/.npm cache. It needs NO .env.local
+# (only `next dev` / `next build` read env via lib/env.ts).
+setup = "npm ci"
+
+# Each workspace is assigned its own $CONDUCTOR_PORT, so several workspaces can run
+# their own dev server simultaneously (the multiple-live-previews workflow).
+run_mode = "concurrent"
+
+[scripts.run.dev]
+# `next dev` on THIS workspace's own port. Two env vars, pinned to :3000 in
+# .env.local, are re-pointed per-port so requests land on this workspace, not :3000:
+#   * BETTER_AUTH_URL          -> server-side base Better Auth uses to build callback
+#                                 and cookie URLs (lib/auth.ts / lib/env.ts).
+#   * NEXT_PUBLIC_API_BASE_URL -> the admin inbox's SERVER-TO-SERVER fetch in
+#                                 actions/emailAction.ts, which calls the absolute
+#                                 `${base}/api/email` (+ /count). Without this it would
+#                                 fetch from :3000 instead of this workspace.
+# Two other request paths need NO override and are already correct:
+#   * the Better Auth BROWSER client (lib/auth-client.ts sets no baseURL) defaults to
+#     window.location.origin, so login auto-targets the serving port;
+#   * the public contact POST (lib/sendMail.ts) uses a RELATIVE `/api/email`.
+# Shell env overrides .env.local under `next dev`, so no file edit is needed.
+command = "BETTER_AUTH_URL=http://localhost:$CONDUCTOR_PORT NEXT_PUBLIC_API_BASE_URL=http://localhost:$CONDUCTOR_PORT npm run dev -- -p $CONDUCTOR_PORT"
+default = true
+icon = "play"
