@@ -175,8 +175,10 @@ is low-ROI and largely redundant with the schema tests (see Flags).
 
 ### The harness (`vitest.config.ts` / `vitest.setup.ts`)
 
-- **`@/*` alias via Vitest's built-in `resolve.alias`** (a precise `^@/` regex) — **not** the
-  `vite-tsconfig-paths` plugin the plan sketched (see the load-bearing deviation below).
+- **Path aliases via Vitest's built-in `resolve.alias`, derived from tsconfig `paths`** (each
+  mapping → a precise `^prefix` regex) — **not** the `vite-tsconfig-paths` plugin the plan sketched
+  (see the load-bearing deviation below). _(4b shipped this as a single hard-coded `@/` alias;
+  refined in #160 to read tsconfig at config-load so the two auto-sync.)_
 - **`esbuild: { jsx: "automatic" }`** — required because tsconfig is `jsx: "preserve"` (Next's
   SWC/Babel transforms JSX at build time); without it esbuild would emit un-executable JSX.
 - **`test.environment: "node"`** (the fast default); the single RTL file opts into jsdom via a
@@ -223,6 +225,8 @@ it ships inside 4b (user-approved, not unrelated churn):
    `tsc --noEmit`**. Resolving `@/` with Vitest's built-in alias (a precise `^@/` regex that never
    clobbers scoped `@testing-library/*` packages) needs no external plugin, no second vite, and no
    version pinning — net **two fewer dev deps** than the plan (`vite`, `vite-tsconfig-paths`).
+   _(Follow-up #160 keeps the plugin's auto-sync benefit by deriving the aliases from tsconfig
+   `paths` at config-load via the TypeScript compiler API — still no new dependency.)_
 2. **One user-visible behaviour change.** `EditUserForm`'s name-too-short message becomes the
    canonical **"User name must be at least 3 characters."** (was a copy-pasted "Member name…").
    Safe: `EditUserForm` reads only `result.error`, never the field-level `errors` map, so
