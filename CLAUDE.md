@@ -50,6 +50,15 @@ A phased modernization is under way, tracked by epic **#81**. **Phase status, sc
 ### Verify empirically
 Do not assert that something works — show it (a build, tests, or a real run). Prefer additive diffs; do not churn working code.
 
+### The `.claude` harness
+The repo ships a small, **committed, team-shared** Claude Code harness so every teammate and CI agent inherits the same guardrails (like the already-committed `doc-sync` skill). Improve it here rather than in a per-developer, gitignored settings.local.json. Each piece encodes a rule already written down elsewhere in these docs; the verbose rationale lives in the files themselves.
+
+- **`.claude/settings.json`** — a permissions allowlist that auto-approves safe, high-frequency commands (read-only git, the `npm run lint` / `typecheck` / `build` / `check:docs` gates, `gh pr view` / `gh issue view`, and file edits) while leaving destructive/outward-facing operations (`git commit` / `push`, network, `gh pr create` / `merge`) to prompt — plus the two hooks below and the `.mcp.json` pre-approval.
+- **`.claude/hooks/guard-main.sh`** (PreToolUse / Bash) — refuses `git commit` / `git push` while on `main`/`master`, turning the "Never commit to `main`" rule above into a deterministic local block. Fail-open safety net; GitHub branch protection + CI stay the hard gate.
+- **`.claude/hooks/check-docs-on-claudemd.sh`** (PostToolUse / Write|Edit) — after any `CLAUDE.md` edit, runs `npm run check:docs` locally, mirroring the `docs-check` CI gate so path drift is caught before the PR.
+- **`.claude/agents/security-reviewer.md`** and **`.claude/agents/convention-reviewer.md`** — read-only, dispatchable subagents that audit a diff against the documented auth invariants and the documented conventions, respectively (each file carries its own checklist).
+- **`.mcp.json`** — pins the `context7` (live dependency docs) and `shadcn` (registry) MCP servers so they work without per-developer wiring. The **vercel** MCP server is intentionally left per-developer (HTTP + individual OAuth) — authorize it with `/mcp` in an interactive session rather than committing it.
+
 ## Mandatory rules
 
 ### 1. Keep the plan and phase state current — work must be self-contained, with no leakage
