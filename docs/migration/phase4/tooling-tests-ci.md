@@ -7,8 +7,8 @@ user: a phase this large ships as focused PRs under an umbrella issue rather tha
 
 | Slice | Concern | Issue | Status |
 |---|---|---|---|
-| **4a** | Tooling guardrails — ESLint 9 flat config, Prettier, husky + lint-staged | [#145](https://github.com/KBerkeYilmaz/team_random/issues/145) | ✅ this PR |
-| 4b | Unit tests — Vitest + RTL (`requireAdmin` forged-role, Zod schemas, forms) | _tbd_ | Not started |
+| **4a** | Tooling guardrails — ESLint 9 flat config, Prettier, husky + lint-staged | [#145](https://github.com/KBerkeYilmaz/team_random/issues/145) | ✅ Shipped — PR [#146](https://github.com/KBerkeYilmaz/team_random/pull/146) |
+| **4b** | Unit tests — Vitest + RTL (`requireAdmin` forged-role, Zod schemas, `ContactForm`) | [#153](https://github.com/KBerkeYilmaz/team_random/issues/153) | ✅ this PR |
 | 4c | E2E — Playwright (login, role enforcement, CRUD, contact) + `mongodb-memory-server` | _tbd_ | Not started |
 | 4d | CI + docs — wire lint/vitest/playwright into CI; real README; generated `.env.example` | _tbd_ | Not started |
 
@@ -22,7 +22,7 @@ exist as a regression net for that upgrade. This doc is extended in 4b–4d.
 
 ---
 
-## Slice 4a — Tooling guardrails (this PR)
+## Slice 4a — Tooling guardrails (shipped, PR #146)
 
 ### Problem it addresses
 
@@ -148,12 +148,118 @@ Composed with `typescript-eslint`'s `config()` helper:
 
 ---
 
-## Slices 4b–4d (sketched — own issues/PRs later)
+## Slice 4b — Unit tests (this PR)
 
-- **4b (unit tests):** Vitest + `@testing-library/react` + jsdom. Prime target: `lib/authGuard.ts`
-  `requireAdmin()` — mock `auth.api.getSession` and assert it throws for no-session **and** for a
-  forged `role:"user"` session (the regression test the plan calls for). Plus the shared Zod schemas
-  and form validation. Add `test`/`test:watch` scripts.
+### Problem it addresses
+
+4a gave the repo a tooling floor but **still zero tests** — no Vitest/RTL/jsdom, no `test` script,
+nothing to catch a regression in the security-critical `requireAdmin()` guard or in the shared Zod
+schemas. 4b adds the first automated tests, establishing the harness and patterns that 4c
+(Playwright E2E) and 4d (CI wiring) build on.
+
+### Approach — B (pure-logic tests + one RTL smoke test)
+
+Most targets are pure logic and are tested by direct calls in Vitest's node environment. Exactly
+**one** React Testing Library test renders a real form (`ContactForm`) in jsdom — a deliberate,
+spec-noted reading of the issue's literal "Vitest + RTL". We do **not** RTL-render every form; that
+is low-ROI and largely redundant with the schema tests (see Flags).
+
+### What shipped (per commit)
+
+| Commit | Scope |
+|---|---|
+| `build(vitest): add Vitest + Testing Library harness and test scripts` | Vitest 3 + jsdom + Testing Library (react/dom/jest-dom/user-event) dev deps; `vitest.config.ts` + `vitest.setup.ts`; `test` / `test:watch` scripts. |
+| `refactor(schemas): extract contact/login/edit-user schemas into actions/schemas.ts` | Move the last inline form schemas into the shared `actions/schemas.ts`; rewire ContactForm/LoginForm/EditUserForm; single-source the EditUser/updateUser pair. |
+| `test: add unit tests for requireAdmin, shared Zod schemas, and ContactForm` | The three suites (23 tests). |
+| `docs(migration): document Phase 4b …` | This section + README/CLAUDE reconciliation. |
+
+### The harness (`vitest.config.ts` / `vitest.setup.ts`)
+
+- **`@/*` alias via Vitest's built-in `resolve.alias`** (a precise `^@/` regex) — **not** the
+  `vite-tsconfig-paths` plugin the plan sketched (see the load-bearing deviation below).
+- **`esbuild: { jsx: "automatic" }`** — required because tsconfig is `jsx: "preserve"` (Next's
+  SWC/Babel transforms JSX at build time); without it esbuild would emit un-executable JSX.
+- **`test.environment: "node"`** (the fast default); the single RTL file opts into jsdom via a
+  first-line `// @vitest-environment jsdom` docblock (no deprecated `environmentMatchGlobs`).
+- **`test.globals: false`** — every test imports `describe/it/expect/vi` explicitly, so **no**
+  `eslint.config.mjs` or tsconfig `types` change is needed.
+- **`vitest.setup.ts`** imports `@testing-library/jest-dom/vitest` once, registering the DOM
+  matchers and making their type augmentation visible to the whole-project `tsc`.
+
+### The three suites (colocated with source)
+
+- **`lib/authGuard.test.ts` — the crown jewel.** `vi.hoisted` + `vi.mock("@/lib/auth", …)` (so the
+  real Better Auth `MongoClient` / fail-fast `@/lib/env` never load) + `vi.mock("next/headers", …)`.
+  Asserts `requireAdmin()` rejects a no-session request **and** a forged `role:"user"` session, and
+  returns the session unchanged for `role:"admin"`. This is the regression net for AUDIT #83.
+- **`actions/schemas.test.ts`.** Table-driven valid/invalid for every shared schema
+  (member/updateMember/work, `updatePasswordSchema`'s min(8) boundary + `.refine`, and the newly
+  extracted contact/login/editUser). Also asserts `updateMemberSchema` omits `memberImage` via
+  `.shape` and that `editUserSchema` emits the canonical "User name…" message. Messages are read from
+  `error.issues` (no `flatten().fieldErrors` index-signature friction). Zero mocks.
+- **`components/forms/ContactForm.test.tsx`.** The one RTL smoke test: mounts the form in jsdom and
+  proves empty-submit Zod messages surface as DOM text through the shadcn `<Form>`/`<FormMessage>`.
+
+### Schema extraction + consolidation (the rider)
+
+Extracting the inline schemas is the **prerequisite** for testing form validation as pure logic, so
+it ships inside 4b (user-approved, not unrelated churn):
+
+- New `contactSchema` / `loginSchema` / `editUserSchema` (+ inferred input types) in
+  `actions/schemas.ts`, messages copied verbatim from the former inline definitions.
+- `ContactForm` / `LoginForm` / `EditUserForm` consume the shared schemas; the now-unused
+  `import { z }` is deleted from each.
+- **EditUser/updateUser single-sourced** (mirrors the #126 password fix): `updateUser` drops its
+  inline `userSchema` with the `{fullName,userMail}` remap and validates
+  `editUserSchema.safeParse({name,email})`, typed `EditUserInput`. The `safeParse`-before-
+  `requireAdmin()` ordering and the three baselined unused `id` params are preserved.
+
+### Key decisions & deviations from the plan (flagged per the self-correction rule)
+
+1. **`@/` alias via `resolve.alias`, NOT `vite-tsconfig-paths` — the load-bearing deviation.** That
+   plugin declares `vite` as a **peer dependency**, and the only vite that installs cleanly against
+   this repo's pinned `@types/node@20.12.4` is vite 6, while Vitest 3 bundles vite 7. The resulting
+   split tree type-checks as two incompatible `Plugin` types and **fails the pre-commit
+   `tsc --noEmit`**. Resolving `@/` with Vitest's built-in alias (a precise `^@/` regex that never
+   clobbers scoped `@testing-library/*` packages) needs no external plugin, no second vite, and no
+   version pinning — net **two fewer dev deps** than the plan (`vite`, `vite-tsconfig-paths`).
+2. **One user-visible behaviour change.** `EditUserForm`'s name-too-short message becomes the
+   canonical **"User name must be at least 3 characters."** (was a copy-pasted "Member name…").
+   Safe: `EditUserForm` reads only `result.error`, never the field-level `errors` map, so
+   consolidating `updateUser`'s error keys onto `{name,email}` has no UI effect.
+3. **RTL renders exactly one form (`ContactForm`), not all** — by design (Approach B).
+4. **Coverage tooling (`@vitest/coverage-v8`) deferred to 4d** — no consumer until CI lands.
+5. **A refactor (schema extraction) rides inside a testing slice** — the prerequisite for pure-logic
+   form-validation tests, user-approved.
+
+### Verification (empirical — CLAUDE.md)
+
+1. **`npm install`** — clean, no `--legacy-peer-deps`. Resolved `vitest@3.2.7`, `jsdom@26.1.0`,
+   `@testing-library/{react@16.3.2,dom@10.4.1,jest-dom@6.9.1,user-event@14.6.1}`.
+2. **`npm run test`** — **green, 23/23** across the three suites. Proof it bites: temporarily
+   weakening `requireAdmin`'s role check (dropping `role !== "admin"`) makes the forged-role test
+   **fail** ("promise resolved … instead of rejecting"); restoring it goes green again.
+3. **`npm run typecheck`** — clean (config + test files are in the program).
+4. **`npm run lint`** + **`npm run format:check`** — clean. `eslint-suppressions.json` counts are
+   **unchanged**: `userActions.ts` keeps its 3 `no-unused-vars` (the `id` params), `EditUserForm.tsx`
+   its 1 `no-empty`; `ContactForm.tsx`/`LoginForm.tsx` are not baselined and stay lint-clean.
+5. **`npm run build`** — green, 7/7 static pages (verified locally with a temporary dummy
+   `.env.local`, since this workspace has no committed env; the app build is unaffected by 4b).
+6. **`npm run check:docs`** — passes (the new 4b doc paths resolve).
+
+### Files touched (4b)
+
+- New: `vitest.config.ts`, `vitest.setup.ts`, `lib/authGuard.test.ts`, `actions/schemas.test.ts`,
+  `components/forms/ContactForm.test.tsx`.
+- Edited (code): `package.json` (+`package-lock.json`) dev deps & scripts; `actions/schemas.ts`
+  (+3 schemas); `actions/userActions.ts` (`updateUser` → shared schema);
+  `components/forms/{ContactForm,LoginForm,EditUserForm}.tsx` (consume shared schemas).
+- Docs reconciled: this doc, `docs/migration/README.md`, `components/forms/CLAUDE.md`,
+  `actions/CLAUDE.md`.
+
+---
+
+## Slices 4c–4d (sketched — own issues/PRs later)
 - **4c (e2e):** Playwright with `mongodb-memory-server` + a seeded admin. Flows: login, dashboard
   redirect when logged-out/non-admin, member/work CRUD, contact form. EdgeStore + Gmail SMTP/IMAP
   stubbed (no creds in CI).

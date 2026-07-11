@@ -27,16 +27,15 @@ Match this; don't invent a per-action shape.
   `{ message }`, and forms compensate with hardcoded toast text. If you touch one,
   prefer returning a `message`.
 
-## Validation — two regimes (don't over-generalize)
-- `memberSchema` / `updateMemberSchema` / `workSchema` live in `actions/schemas.ts`
-  and are **shared** with the forms via `z.infer` — edit the schema once, both sides
-  follow.
-- **Partial exception:** `updateUserPassword` now shares `updatePasswordSchema` from
-  `actions/schemas.ts` with `EditUserPasswordForm` (issue #126 — this closed the old
-  client `min(3)` vs server `min(8)` drift). The rest of `userActions.ts` still defines
-  its Zod schemas **inline per function**, and the user/contact/login forms carry their
-  own local schemas — so most user-account validation is still duplicated. Do not assume
-  "all forms share schemas."
+## Validation — one shared regime (as of Phase 4b / #153)
+Every Zod schema lives in `actions/schemas.ts` and is **shared** with the forms via
+`z.infer` — `memberSchema` / `updateMemberSchema` / `workSchema`, `updatePasswordSchema`
+(`updateUserPassword` ⇄ `EditUserPasswordForm`, #126), and `editUserSchema`
+(`updateUser` ⇄ `EditUserForm`, extracted in 4b), plus `contactSchema` / `loginSchema`
+for the two non-action forms (`ContactForm`, `LoginForm`). Edit a schema once and both
+the action's `safeParse` and the form's `zodResolver` follow — no action or form carries
+an inline schema anymore. (This replaced the earlier split regime, where `userActions.ts`
+defined its schemas inline per function and the user/contact/login forms held local copies.)
 
 ## Data access & logging
 Reads go through the Mongoose models in `models/` via `connectDB()`
