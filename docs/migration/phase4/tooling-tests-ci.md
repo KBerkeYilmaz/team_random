@@ -43,6 +43,8 @@ The repo had **no regression net** at the tooling layer:
 | `style: format the codebase with Prettier (one-time, mechanical)` | Isolated `prettier --write .` over 97 source files (76 tsx / 16 ts / 2 mjs / 2 js / 1 json). No logic change. |
 | `build(husky): add husky + lint-staged pre-commit guardrail` | husky v9 + lint-staged; `prepare: husky`; `.husky/pre-commit` = lint-staged then whole-project `tsc --noEmit`. |
 | `docs(migration): document Phase 4a …` | This doc + README/plan/CLAUDE reconciliation. |
+| `fix(eslint): fix the auto-fixable findings instead of baselining them` | Review follow-up: `prefer-const`/`no-var` fixed in source + pruned from the baseline (decision 3). |
+| `build(eslint): lint .jsx and all pre-commit extensions; drop redundant globs` | Review follow-up: `.jsx` linted, pre-commit eslint covers `.js/.mjs/.cjs`, redundant CommonJS globs trimmed. |
 
 ### The ESLint flat config (`eslint.config.mjs`)
 
@@ -56,8 +58,11 @@ Composed with `typescript-eslint`'s `config()` helper:
    with Next's curated rules).
 5. Full `jsx-a11y` recommended + `import/order` (warning) **layered onto** the plugins registered
    in (4) — flat config forbids re-declaring a plugin name.
+   - Plus a `**/*.jsx` registration with JSX parsing — the default flat set is js/cjs/mjs and
+     (2)–(4) add ts/tsx, so a plain `.jsx` file (e.g. `components/Counter.jsx`) would otherwise be
+     **silently unlinted**.
 6. A CommonJS-config override: `require()` is legitimate in `tailwind.config.js` / `postcss.config.js`,
-   so `@typescript-eslint/no-require-imports` is off for those files.
+   so `@typescript-eslint/no-require-imports` is off for those files (matched by `*.config.js`).
 
 ### Key decisions & deviations from the plan (flagged per the self-correction rule)
 
@@ -82,13 +87,17 @@ Composed with `typescript-eslint`'s `config()` helper:
    config gives equivalent TS coverage on Next 14.
 
 3. **`eslint-suppressions.json` baseline instead of a mega-cleanup.** The first-ever lint of a
-   never-linted tree found **94 pre-existing errors** (64 `no-unused-vars`, plus `no-explicit-any`,
-   `prefer-const`, `no-empty`, `no-var`, and a handful of `jsx-a11y` findings). Rather than churn
-   ~40 files in a *tooling* PR, they are captured in a committed baseline generated with ESLint 9's
-   native `eslint --suppress-all`. **Rules stay strict (errors are errors)** — any NEW violation
-   still fails lint (verified) — while `npm run lint` is green today. Later phases burn the baseline
-   down (dead-code/`any` cleanup — the phase3 doc already deferred these here; a11y in the
-   frontend-polish phase). Regenerate after a cleanup batch with `npm run lint -- --suppress-all`.
+   never-linted tree found ~94 pre-existing errors. The **auto-fixable** ones (`prefer-const` ×5,
+   `no-var` ×1) are **fixed in source, not baselined** — otherwise the pre-commit `eslint --fix`
+   would rewrite the suppressed line, make the suppression unused, and fail the *next* lint (ESLint
+   exits non-zero on stale suppressions). The remaining **89 non-auto-fixable findings** (64
+   `no-unused-vars`, plus `no-explicit-any`, `no-empty`, and a handful of `jsx-a11y` — including the
+   one in `components/Counter.jsx`, now that `.jsx` is linted) are captured in a committed baseline
+   generated with ESLint 9's native `eslint --suppress-all`. **Rules stay strict (errors are
+   errors)** — any NEW violation still fails lint (verified) — while `npm run lint` is green today.
+   Later phases burn the baseline down (dead-code/`any` cleanup — the phase3 doc already deferred
+   these here; a11y in the frontend-polish phase). Regenerate after a cleanup batch with
+   `npm run lint -- --suppress-all`, or drop a single fixed finding with `--prune-suppressions`.
 
 4. **Prettier scope: code yes, Markdown no.** The plan expected a "modest" format diff; in reality
    **97 source files** differed (chain re-wrapping + Tailwind class sorting). The one-time
@@ -103,8 +112,10 @@ Composed with `typescript-eslint`'s `config()` helper:
    `core.hooksPath=.husky/_` in the shared repo config and the relative path resolves per-worktree.
    Verified: the hook fires and blocks a bad commit here.
 
-6. **lint-staged Markdown glob dropped.** Since Markdown is Prettier-ignored (decision 4), it is not
-   in the lint-staged prettier glob (`*.{js,mjs,cjs,json,css}`), keeping the two consistent.
+6. **lint-staged covers every linted extension; Markdown stays out.** `eslint --fix` + `prettier`
+   run on staged `*.{ts,tsx,js,mjs,cjs,jsx}` (matching what `eslint .` lints), and `prettier` alone
+   on `*.{json,css}`. Markdown is Prettier-ignored (decision 4), so it is in neither glob — keeping
+   the two consistent.
 
 ### Verification (empirical — CLAUDE.md)
 
