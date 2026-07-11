@@ -30,6 +30,15 @@ caveats that apply to app code do **not** apply to these scripts.
   install step.
 - **Migrations are manual + idempotent**: guard against double-application, and
   document the exact run command in the script header + the relevant phase doc.
+- **Prod-affecting scripts are dry-run by default; writes require `--apply`.** Any
+  script that can mutate **production** data must default to a **dry run** — read and
+  print exactly what it *would* change, touching nothing — and perform writes only
+  when passed an explicit `--apply` flag. Print which mode is active and (for DB
+  scripts) the resolved `db.databaseName`, so an operator sees the target before
+  committing. Rationale: the `team_random_webApp` prod-DB gotcha (a missing URI path
+  segment silently points at the empty `test` db) makes a blind write dangerous; a
+  mandatory dry run surfaces the wrong target first. Reference: issue #159 Part B3.
+  `scripts/migrations/migrate-to-better-auth.ts` is the reference implementation.
 - If you add/rename/move a script, update its references (docs, `package.json`,
   workflows, and the examples above) in the **same** PR — same rule as the root
   `CLAUDE.md`.
