@@ -1,8 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+
+import { contactSchema, type ContactInput } from "@/actions/schemas";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,24 +16,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { sendEmail } from "@/lib/sendMail";
+
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
-import { sendEmail } from "@/lib/sendMail";
-import { Loader2 } from "lucide-react";
-
-const formSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters."),
-  email: z.string().email("Please enter a valid email."),
-  message: z.string().min(3, "Message must be at least 3 characters."),
-});
 
 export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ContactInput>({
+    resolver: zodResolver(contactSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -38,7 +34,7 @@ export default function ContactForm() {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: ContactInput) => {
     setIsSubmitting(true);
     const result = await sendEmail(values);
 

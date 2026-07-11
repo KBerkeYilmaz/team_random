@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
-import { signIn } from "@/lib/auth-client";
-import { useRouter } from "@/navigation";
-import { Button } from "../ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useToast } from "../ui/use-toast";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+
+import { loginSchema, type LoginInput } from "@/actions/schemas";
 import {
   Form,
   FormControl,
@@ -13,18 +13,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Separator } from "../ui/separator";
+import { signIn } from "@/lib/auth-client";
+import { useRouter } from "@/navigation";
+
+import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { Separator } from "../ui/separator";
+import { useToast } from "../ui/use-toast";
 
 const LoginForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: LoginInput) => {
     setIsSubmitting(true);
     const { email, password } = values;
     // AUDIT #87 (Phase 1): Better Auth email/password sign-in. The result shape is
@@ -49,13 +51,8 @@ const LoginForm = () => {
     }
   };
 
-  const formSchema = z.object({
-    email: z.string().email("Please enter a valid email."),
-    password: z.string().min(3, "Password must be at least 3 characters."),
-  });
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
