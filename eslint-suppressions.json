@@ -1,0 +1,249 @@
+{
+  "actions/memberAction.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    }
+  },
+  "actions/userActions.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    }
+  },
+  "actions/workAction.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "app/[locale]/(dashboard)/dashboard/inbox/page.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "app/[locale]/(dashboard)/dashboard/members/columns.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "jsx-a11y/img-redundant-alt": {
+      "count": 1
+    }
+  },
+  "app/[locale]/(dashboard)/dashboard/page.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    }
+  },
+  "app/[locale]/(dashboard)/dashboard/works/columns.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    }
+  },
+  "app/[locale]/(dashboard)/dashboard/works/page.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "app/[locale]/(dashboard)/layout.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "app/[locale]/about/page.tsx": {
+    "jsx-a11y/img-redundant-alt": {
+      "count": 2
+    }
+  },
+  "app/[locale]/page.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    }
+  },
+  "app/api/email/count/route.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "prefer-const": {
+      "count": 2
+    }
+  },
+  "app/api/email/route.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "prefer-const": {
+      "count": 3
+    }
+  },
+  "components/CounterNumber.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "components/DashboardSidebar.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    }
+  },
+  "components/DashboardSidebarNav.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "components/LangSwitch.tsx": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "jsx-a11y/click-events-have-key-events": {
+      "count": 1
+    },
+    "jsx-a11y/no-static-element-interactions": {
+      "count": 1
+    }
+  },
+  "components/MemberDetails.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "jsx-a11y/img-redundant-alt": {
+      "count": 1
+    }
+  },
+  "components/ModeToggle.tsx": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    },
+    "jsx-a11y/click-events-have-key-events": {
+      "count": 1
+    },
+    "jsx-a11y/no-static-element-interactions": {
+      "count": 1
+    }
+  },
+  "components/MultiImageDropzone.tsx": {
+    "jsx-a11y/click-events-have-key-events": {
+      "count": 1
+    },
+    "jsx-a11y/no-static-element-interactions": {
+      "count": 1
+    }
+  },
+  "components/MultiImageDropzoneColumn.tsx": {
+    "jsx-a11y/click-events-have-key-events": {
+      "count": 1
+    },
+    "jsx-a11y/no-static-element-interactions": {
+      "count": 1
+    }
+  },
+  "components/MyAccount.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "jsx-a11y/img-redundant-alt": {
+      "count": 1
+    }
+  },
+  "components/Navbar.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "components/SingleImageDropzone.tsx": {
+    "jsx-a11y/click-events-have-key-events": {
+      "count": 1
+    },
+    "jsx-a11y/no-static-element-interactions": {
+      "count": 1
+    }
+  },
+  "components/WorkDetails.tsx": {
+    "jsx-a11y/img-redundant-alt": {
+      "count": 1
+    }
+  },
+  "components/forms/EditMemberForm.tsx": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "components/forms/EditUserForm.tsx": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "components/forms/EditWorkForm.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "components/forms/NewMemberForm.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    }
+  },
+  "components/ui/calendar.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "components/ui/card.tsx": {
+    "jsx-a11y/heading-has-content": {
+      "count": 1
+    }
+  },
+  "components/ui/mail/mail-list.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "components/ui/mail/mail.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 14
+    }
+  },
+  "components/ui/sparkles.tsx": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 2
+    }
+  },
+  "components/ui/tracing-beam.tsx": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "components/ui/use-toast.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "components/ui/wavy-background.tsx": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    },
+    "no-var": {
+      "count": 1
+    }
+  },
+  "models/member.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "models/work.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "stores/mailStore.js": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "tailwind.config.js": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  }
+}
