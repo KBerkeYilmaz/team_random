@@ -2,8 +2,21 @@
 // One-time migration: legacy next-auth `users` (Mongoose) -> Better Auth
 // `user` + `account`, PRESERVING existing bcrypt password hashes (no reset).
 //
-// Run MANUALLY against a COPY of the database first:
-//   node --env-file=.env.local --import tsx scripts/migrations/migrate-to-better-auth.ts
+// SAFETY: this script affects data, so it is DRY-RUN BY DEFAULT — it prints
+// exactly what it WOULD write and touches nothing. It actualizes writes only
+// when passed `--apply`. This is the dry-run/`--apply` convention for any
+// prod-affecting script (issue #159 Part B3; documented in scripts/CLAUDE.md),
+// retrofitted here first because it is the migration that motivated the policy.
+//
+//   Dry-run (default, no writes):
+//     node --env-file=.env.local --import tsx scripts/migrations/migrate-to-better-auth.ts
+//   Apply (writes user + account docs):
+//     node --env-file=.env.local --import tsx scripts/migrations/migrate-to-better-auth.ts --apply
+//
+// IMPORTANT: `MONGO_URI` must include the database path segment
+// (…mongodb.net/team_random_webApp?…) or the driver silently falls back to the
+// empty `test` db — the same trap that hid this bug. `client.db()` reads that
+// path segment; there is no name passed here.
 //
 // Field mapping (verified against Better Auth's mongodbAdapter schema):
 //   legacy users.userMail     -> user.email
@@ -23,10 +36,19 @@ if (!uri)
     "scripts/migrations/migrate-to-better-auth.ts: MONGO_URI is not set.",
   );
 
+// Writes happen ONLY with --apply. Absent the flag, this is a no-op dry run.
+const APPLY = process.argv.includes("--apply");
+
 async function main() {
   const client = new MongoClient(uri!);
   await client.connect();
   const db = client.db();
+
+  console.log(
+    APPLY
+      ? `APPLY mode — writing to database "${db.databaseName}".`
+      : `DRY RUN — no writes. Re-run with --apply to migrate. Target db "${db.databaseName}".`,
+  );
 
   const legacyUsers = await db.collection("users").find({}).toArray();
   console.log(`Found ${legacyUsers.length} legacy user(s) to migrate.`);
@@ -49,6 +71,16 @@ async function main() {
     if (exists) {
       console.log(`- SKIP (already migrated): ${email}`);
       skipped++;
+      continue;
+    }
+
+    if (!APPLY) {
+      // Dry run: report the write we would make, then move on without touching
+      // the database. Counted as "migrated" so the summary previews the effect.
+      console.log(
+        `- WOULD migrate: ${email} (role=${legacy.role ?? "user"})`,
+      );
+      migrated++;
       continue;
     }
 
@@ -80,7 +112,10 @@ async function main() {
     migrated++;
   }
 
-  console.log(`\nDone. migrated=${migrated} skipped=${skipped}`);
+  const verb = APPLY ? "migrated" : "would migrate";
+  console.log(`\nDone (${APPLY ? "APPLY" : "DRY RUN"}). ${verb}=${migrated} skipped=${skipped}`);
+  if (!APPLY && migrated > 0)
+    console.log("Re-run with --apply to perform these writes.");
   await client.close();
   process.exit(0);
 }
