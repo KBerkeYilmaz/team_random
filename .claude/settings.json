@@ -1,4 +1,5 @@
 {
+  "enabledMcpjsonServers": ["context7", "shadcn"],
   "permissions": {
     "allow": [
       "Read",
