@@ -28,6 +28,19 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-docs-on-claudemd.sh\"",
+            "timeout": 30,
+            "statusMessage": "Validating CLAUDE.md paths…"
+          }
+        ]
+      }
     ]
   }
 }
