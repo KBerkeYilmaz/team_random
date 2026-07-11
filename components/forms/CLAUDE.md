@@ -27,5 +27,6 @@ and a `Loader2` spinner while submitting.
     copy-pasted "Member name…").
 - The client `role !== "admin"` bail-out is a **UX hint only** — the action's
   `requireAdmin()` is the real boundary.
-- `ContactForm`'s `if (result.error)` branch is effectively dead (`sendMail` never
-  returns `{ error }`), so a failed send still shows a non-destructive toast.
+- `ContactForm`'s `if (result.error)` branch is **live**: `sendMail` honours `response.ok`
+  (issue #127) and returns `{ error }` on a failed send, so a failure shows the
+  **destructive** toast (a 503 surfaces an `"email-not-configured"` hint).

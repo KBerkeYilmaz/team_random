@@ -25,8 +25,10 @@ runtime.)
 - `edgestore.ts` — `"use client"` EdgeStore provider/hook (`EdgeStoreProvider`,
   `useEdgeStore`).
 - `sendMail.ts` — `sendEmail()`, a plain `fetch` wrapper POSTing to the contact API.
-  **Not** a server action. Gotcha: it returns `{ message }` on both success *and*
-  failure (it ignores `response.ok`), so a caller's `.error` branch is effectively dead.
+  **Not** a server action. It **honours `response.ok`** (issue #127): a failed send returns
+  `{ error, message }` (a 503 → an `"email-not-configured"` hint; other non-ok responses /
+  a network throw → a generic `"send-failed"`), while success returns `{ message }`. So a
+  caller's `.error` branch is **live** — `ContactForm` shows a destructive toast on failure.
 - `utils.ts` — `cn()` (clsx + tailwind-merge), the shadcn helper.
 
 There is no logger module — logging is bare `console.error`. Better Auth and Mongoose
