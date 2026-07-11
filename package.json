@@ -97,10 +97,10 @@
     "typescript-eslint": "^8"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "*.{ts,tsx,js,mjs,cjs,jsx}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{js,mjs,cjs,json,css}": "prettier --write"
+    "*.{json,css}": "prettier --write"
   }
 }

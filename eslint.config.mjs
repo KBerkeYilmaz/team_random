@@ -35,15 +35,21 @@
 //   5. extra rules on the already-registered plugins: the FULL jsx-a11y recommended
 //      ruleset (Next only enables a curated a11y subset) + an auto-fixable
 //      `import/order` (kept a warning so it never blocks a commit; `--fix` sorts).
+//   5b. .jsx registration — ESLint's default flat set is js/cjs/mjs and the TS/Next
+//      layers add ts/tsx, so a plain `.jsx` file would otherwise be silently unlinted.
 //   6. CommonJS config-file override (tailwind/postcss legitimately use require()).
 //
 // PASSING ON A NEVER-LINTED TREE: rules stay at recommended severity (errors are
 // errors — an unused import fails lint, which is the regression the guardrail
-// catches). The ~99 pre-existing findings are captured in a committed
+// catches). The ~89 pre-existing findings are captured in a committed
 // `eslint-suppressions.json` baseline (generated with `eslint --suppress-all`), so
-// `npm run lint` is green today while any NEW violation still fails. Later phases
-// burn the baseline down (dead-code/`any` cleanup; a11y in the frontend-polish
-// phase); regenerate it with `npm run lint -- --suppress-all` after a batch.
+// `npm run lint` is green today while any NEW violation still fails. The baseline
+// holds only NON-auto-fixable findings: the auto-fixable ones (`prefer-const` /
+// `no-var`) were fixed in source instead, so `eslint --fix` (the pre-commit hook,
+// `lint:fix`) can never prune a baselined line out from under the baseline and fail
+// the next lint. Later phases burn the rest down (dead-code/`any` cleanup; a11y in
+// the frontend-polish phase); regenerate with `npm run lint -- --suppress-all` (or
+// `--prune-suppressions`) after a batch.
 
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -107,10 +113,21 @@ export default tseslint.config(
     },
   },
 
+  // 5b. Plain .jsx sources. ESLint's default flat-config file set is js/cjs/mjs
+  //     only, and the TS/Next layers above add ts/tsx — so a .jsx file would
+  //     otherwise be SILENTLY skipped (never linted). Register the extension and
+  //     enable JSX parsing so the core + jsx-a11y rules above actually run on it.
+  {
+    files: ["**/*.jsx"],
+    languageOptions: {
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+  },
+
   // 6. CommonJS config files legitimately use require() — the TS rule forbidding it
   //    does not apply to them (they are not ESM/TS source).
   {
-    files: ["*.config.js", "postcss.config.js", "tailwind.config.js"],
+    files: ["*.config.js"],
     rules: {
       "@typescript-eslint/no-require-imports": "off",
     },

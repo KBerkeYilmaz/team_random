@@ -67,6 +67,11 @@
       "count": 2
     }
   },
+  "components/Counter.jsx": {
+    "jsx-a11y/label-has-associated-control": {
+      "count": 1
+    }
+  },
   "components/CounterNumber.tsx": {
     "@typescript-eslint/no-unused-vars": {
       "count": 1
