@@ -9,9 +9,7 @@ Per-phase documentation for the **team-random** modernization to 2026 best pract
 > **reshaped 2026-07-09** (epic [#81](https://github.com/KBerkeYilmaz/team_random/issues/81)):
 > tests/CI pulled ahead of the Next 16 bump, a Prisma-on-Postgres + tRPC data layer
 > un-deferred, and the old "i18n + frontend polish" phase split in two. `plan.md`'s
-> **detailed per-phase sections still use the pre-reshape 0–7 numbering** — renumbering
-> them to match this table is tracked in
-> [#142](https://github.com/KBerkeYilmaz/team_random/issues/142).
+> detailed per-phase sections are numbered to match this table.
 
 | Phase | Doc | Status |
 |---|---|---|
@@ -19,7 +17,7 @@ Per-phase documentation for the **team-random** modernization to 2026 best pract
 | 1 — Better Auth (replaces next-auth v4) | [phase1/better-auth.md](phase1/better-auth.md) | ✅ Shipped — PR #88 |
 | 2 — Database & env hardening | [phase2/db-env-hardening.md](phase2/db-env-hardening.md) | ✅ Shipped — PR #97 |
 | 3 — Full TypeScript migration | [phase3/typescript-migration.md](phase3/typescript-migration.md) | ✅ Shipped — PR #103 |
-| 4 — Tooling, tests, CI | [phase4/tooling-tests-ci.md](phase4/tooling-tests-ci.md) | 🚧 In progress — **4a** shipped (PR [#146](https://github.com/KBerkeYilmaz/team_random/pull/146)); slice **4b** (unit tests) shipping ([#153](https://github.com/KBerkeYilmaz/team_random/issues/153)); umbrella [#144](https://github.com/KBerkeYilmaz/team_random/issues/144) |
+| 4 — Tooling, tests, CI | [phase4/tooling-tests-ci.md](phase4/tooling-tests-ci.md) | 🚧 In progress — **4a** shipped (PR [#146](https://github.com/KBerkeYilmaz/team_random/pull/146)); **4b** (unit tests) shipped (PR [#154](https://github.com/KBerkeYilmaz/team_random/pull/154)); 4c (e2e) / 4d (CI) to follow; umbrella [#144](https://github.com/KBerkeYilmaz/team_random/issues/144) |
 | 5 — Next 16 / React 19 | _tbd_ | Not started |
 | 6 — Data layer: Prisma on Postgres + tRPC | _tbd_ | Not started |
 | 7 — i18n completion | _tbd_ | Not started |
