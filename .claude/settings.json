@@ -2,9 +2,9 @@
   "enabledMcpjsonServers": ["context7", "shadcn"],
   "permissions": {
     "allow": [
-      "Read",
-      "Edit",
-      "Write",
+      "Read(./**)",
+      "Edit(./**)",
+      "Write(./**)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
