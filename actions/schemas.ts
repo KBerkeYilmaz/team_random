@@ -39,3 +39,31 @@ export const workSchema = z.object({
   workImages: z.array(z.string().url()).optional(),
 });
 export type WorkInput = z.infer<typeof workSchema>;
+
+// Password change for the current user's own account. Single-sourced here (issue
+// #126) so the client form (zodResolver) and the server action (safeParse) share
+// ONE definition and can never drift again: the two used to disagree — the client
+// validated newPassword with min(3) while the server enforced min(8), so a 3–7
+// character password passed client validation and then failed server-side,
+// surfacing as a generic error instead of an inline field message.
+//
+// All three fields require at least 8 characters (Better Auth's server-side
+// minimum for a stored password is 8, so the current password is necessarily 8+
+// too), and the confirmation must match the new password.
+export const updatePasswordSchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .min(8, "Current password must be at least 8 characters."),
+    newPassword: z
+      .string()
+      .min(8, "New password must be at least 8 characters."),
+    passwordConfirmation: z
+      .string()
+      .min(8, "Password confirmation must be at least 8 characters."),
+  })
+  .refine((data) => data.newPassword === data.passwordConfirmation, {
+    message: "Passwords don't match",
+    path: ["passwordConfirmation"], // attach the mismatch error to the confirm field
+  });
+export type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>;

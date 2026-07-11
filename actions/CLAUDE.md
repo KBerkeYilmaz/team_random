@@ -31,10 +31,12 @@ Match this; don't invent a per-action shape.
 - `memberSchema` / `updateMemberSchema` / `workSchema` live in `actions/schemas.ts`
   and are **shared** with the forms via `z.infer` — edit the schema once, both sides
   follow.
-- **Exception:** `userActions.ts` defines its Zod schemas **inline per function**, and
-  the user/contact/login forms carry their own local schemas — so user-account
-  validation is duplicated and has already drifted (client vs server password length).
-  Do not assume "all forms share schemas."
+- **Partial exception:** `updateUserPassword` now shares `updatePasswordSchema` from
+  `actions/schemas.ts` with `EditUserPasswordForm` (issue #126 — this closed the old
+  client `min(3)` vs server `min(8)` drift). The rest of `userActions.ts` still defines
+  its Zod schemas **inline per function**, and the user/contact/login forms carry their
+  own local schemas — so most user-account validation is still duplicated. Do not assume
+  "all forms share schemas."
 
 ## Data access & logging
 Reads go through the Mongoose models in `models/` via `connectDB()`
