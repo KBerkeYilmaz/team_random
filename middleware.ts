@@ -12,7 +12,7 @@ import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
 
 const locales = ["en", "tr"];
-const publicPages = ["/", "/login", "/works", "/contact", "/about"];
+const publicPages = ["/", "/login", "/works", "/about"];
 
 const intlMiddleware = createIntlMiddleware({
   locales,
