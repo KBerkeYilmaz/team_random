@@ -68,16 +68,16 @@ Previously the dashboard was reachable by **any logged-in user**, because the on
 
 ### Test accounts
 
-The `admin@teamrandom.com` / `user@teamrandom.com` accounts used above were seeded into a **throwaway local Docker MongoDB** and **deleted at teardown**. They never touched any real database — this workspace has no `.env` and no DB credentials, so the real/hosted data was never reachable. The reusable harness lives at `.context/e2e/` (gitignored) and is a candidate to promote into Phase 5.
+The `admin@teamrandom.com` / `user@teamrandom.com` accounts used above were seeded into a **throwaway local Docker MongoDB** and **deleted at teardown**. They never touched any real database — this workspace has no `.env` and no DB credentials, so the real/hosted data was never reachable. The reusable harness lives at `.context/e2e/` (gitignored) and is a candidate to promote into Phase 4.
 
 ## Deferred / Follow-ups
 
-- **Forged server-action replay** (a POST with a tampered `Next-Action` payload) is best expressed as a Phase 5 unit test that mocks `getServerSession` and asserts the action returns an error and does not mutate. Test 8 already proves server-side role enforcement for an authenticated non-admin.
+- **Forged server-action replay** (a POST with a tampered `Next-Action` payload) is best expressed as a Phase 4 unit test that mocks `getServerSession` and asserts the action returns an error and does not mutate. Test 8 already proves server-side role enforcement for an authenticated non-admin.
 - `lib/authOptions.js` is a **throwaway** — Phase 1 removes it when Better Auth lands.
-- The repo's ESLint config is pre-existingly broken (`Failed to load config "next/babel"`); Phase 5 replaces it with flat config.
+- The repo's ESLint config is pre-existingly broken (`Failed to load config "next/babel"`); Phase 4 replaces it with flat config.
 
 ## References
 
 - Modernization plan: [docs/migration/plan.md](../plan.md)
 - PR [#83](https://github.com/KBerkeYilmaz/team_random/pull/83) · Issue [#82](https://github.com/KBerkeYilmaz/team_random/issues/82) · Epic [#81](https://github.com/KBerkeYilmaz/team_random/issues/81)
-- Phase 0 e2e harness (Playwright): `seed.mjs`, `playwright.config.ts`, `security.spec.ts`, `README.md` — workspace-local and gitignored (it lived under `.context/e2e/`), so it is **not committed**; to be promoted into the repo in Phase 5 (see that phase's Tests item).
+- Phase 0 e2e harness (Playwright): `seed.mjs`, `playwright.config.ts`, `security.spec.ts`, `README.md` — workspace-local and gitignored (it lived under `.context/e2e/`), so it is **not committed**; to be promoted into the repo in Phase 4 (see that phase's Tests item).

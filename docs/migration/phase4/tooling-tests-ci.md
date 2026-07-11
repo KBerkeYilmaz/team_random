@@ -15,11 +15,6 @@ user: a phase this large ships as focused PRs under an umbrella issue rather tha
 Phase 4 was pulled **ahead of the Next 16 bump** (Phase 5) by the 2026-07-09 reshape so the tests
 exist as a regression net for that upgrade. This doc is extended in 4b–4d.
 
-> **Numbering note.** `plan.md`'s detailed section for this work is still titled **"Phase 5 —
-> Tooling, tests, CI"** (pre-reshape 0–7 numbering; renumber tracked in
-> [#142](https://github.com/KBerkeYilmaz/team_random/issues/142)). `README.md` (Phases 0–9) is
-> canonical; this is **reshaped Phase 4**.
-
 ---
 
 ## Slice 4a — Tooling guardrails (shipped, PR #146)
@@ -137,7 +132,8 @@ Composed with `typescript-eslint`'s `config()` helper:
   (should maybe be `^5.x`). `npm install` resolves it to a genuine published **6.0.3**, and
   `typecheck`/`build` are green — so **no separate issue is needed**; it stands.
 - **`.github/workflows/build-check.yml` comment updated.** Its comment claimed the ESLint config is
-  "known-broken (next/babel)" and would be fixed in "Phase 5". Lint is now fixed, so the comment was
+  "known-broken (next/babel)" and would be fixed in "Phase 5" (the pre-reshape number for this
+  tooling work — now Phase 4). Lint is now fixed, so the comment was
   factually wrong; it is corrected to point at flat config and note the **CI lint step lands in
   slice 4d** (workflow behaviour unchanged — 4a does not touch CI).
 - **CI stays lint-free until 4d.** `build-check.yml` still runs only `typecheck` + `next build`;

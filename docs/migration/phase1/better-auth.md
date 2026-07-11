@@ -39,7 +39,7 @@ The auth engine moves from **next-auth v4** (EOL; Credentials provider + JWT ses
 
 ## Deviations from the original plan (flagged per CLAUDE.md rule 2)
 
-1. **Better Auth uses a dedicated `MongoClient`, not Mongoose's pool.** The plan/#87 brief specified sourcing the native `Db` from `mongoose.connection` to avoid a second connection. That requires a **top-level `await`** (Mongoose's `connection.db` is undefined until the connection resolves), which **breaks CJS tooling** — `esbuild`/`tsx` (used to run the migration script and, in Phase 5, tests) cannot compile top-level await, and it is fragile in the build. `lib/auth.ts` now opens a dedicated native `MongoClient` on the **same `MONGO_URI`** (the driver connects lazily on first use → no top-level await, tooling-safe). Cost: a second pool to the same database (one credential set). **Phase 2 (DB/env hardening) can consolidate pooling.**
+1. **Better Auth uses a dedicated `MongoClient`, not Mongoose's pool.** The plan/#87 brief specified sourcing the native `Db` from `mongoose.connection` to avoid a second connection. That requires a **top-level `await`** (Mongoose's `connection.db` is undefined until the connection resolves), which **breaks CJS tooling** — `esbuild`/`tsx` (used to run the migration script and, in Phase 4, tests) cannot compile top-level await, and it is fragile in the build. `lib/auth.ts` now opens a dedicated native `MongoClient` on the **same `MONGO_URI`** (the driver connects lazily on first use → no top-level await, tooling-safe). Cost: a second pool to the same database (one credential set). **Phase 2 (DB/env hardening) can consolidate pooling.**
 2. **`jsconfig.json` → `tsconfig.json` was pulled forward from Phase 3.** Introducing the first `.ts` files (the auth beachhead) requires a `tsconfig.json` for Next + `tsc`. The config already carried TS-appropriate options; Phase 3 still owns the full TS sweep.
 
 ## Environment
@@ -82,11 +82,11 @@ Verified **empirically** against a throwaway Dockerized MongoDB (single-node rep
 
 ## Deferred / follow-ups
 
-- **Full Playwright e2e** (login form UI, non-admin bounce, forged-action replay) is best expressed in the Phase 5 test harness; the HTTP smoke test above already proves the gate, the sign-in endpoint, and the inbox guard.
+- **Full Playwright e2e** (login form UI, non-admin bounce, forged-action replay) is best expressed in the Phase 4 test harness; the HTTP smoke test above already proves the gate, the sign-in endpoint, and the inbox guard.
 - **Email change** in account settings is deferred: Better Auth requires a verification-email flow for it, which needs email-sending infrastructure not yet wired for Better Auth. `updateUser` updates name/image and rejects email edits with a clear message; wiring change-email verification is a follow-up.
 - **Connection pooling:** Phase 2 formalizes the cached Mongoose connection and can unify it with Better Auth's client.
 - **`lib/authGuard.js` / other JS auth files** are typed as `.ts` in the Phase 3 sweep.
-- The throwaway verification harness (seed / probe / verify) lives in the gitignored `.context/` and is a candidate to promote into Phase 5.
+- The throwaway verification harness (seed / probe / verify) lives in the gitignored `.context/` and is a candidate to promote into Phase 4.
 
 ## References
 

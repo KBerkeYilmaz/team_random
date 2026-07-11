@@ -45,18 +45,18 @@ Global-cached-**promise** pattern: `cached.conn`/`cached.promise` live on `globa
 **Contract preserved:** DataTables and the detail pages depend on the string `id`; `WorkDetails.jsx` calls `workImages.length`; `Date` timestamps stay RSC-serializable and pass through unchanged. `models/work.js`'s `workContributors` is intentionally untouched (Phase 3).
 
 ### Log cleanup (server/data layer only)
-Catch-block `console.log(error)` → `console.error("<fn> failed:", error)` across the member/work getters and mutators; removed the validation-echo `console.log(validatedFields.error)`, the success `console.log(result)` echoes (and the now-dead `result` bindings they were the only consumer of), and `console.log(filteredWork)` in the works detail page. The two genuine `console.error`s in `emailAction` are kept. **Client-component form logs are deferred to Phase 6** (per the locked decision below).
+Catch-block `console.log(error)` → `console.error("<fn> failed:", error)` across the member/work getters and mutators; removed the validation-echo `console.log(validatedFields.error)`, the success `console.log(result)` echoes (and the now-dead `result` bindings they were the only consumer of), and `console.log(filteredWork)` in the works detail page. The two genuine `console.error`s in `emailAction` are kept. **Client-component form logs are deferred to Phase 8** (per the locked decision below).
 
 ## Decisions locked with the user
 
 1. **The two Mongo pools stay separate** (Better Auth's native `MongoClient` + Mongoose). Consolidation was evaluated and **deferred**: merging needs a top-level `await` that breaks the `tsx`/test tooling (the same reason Phase 1 rejected it). Minimal hardening applied instead — **both** `lib/database.ts` and `lib/auth.ts` read the URI from `lib/env.ts`.
-2. **Log cleanup = server/data layer only** (`actions/*`, `lib/database`, `app/api/email/*`, `emailAction`). Client-component logs → Phase 6.
-3. **No `lib/logger.ts` now** (YAGNI). Recorded as a **Phase 5** tooling candidate in `plan.md`.
+2. **Log cleanup = server/data layer only** (`actions/*`, `lib/database`, `app/api/email/*`, `emailAction`). Client-component logs → Phase 8.
+3. **No `lib/logger.ts` now** (YAGNI). Recorded as a **Phase 4** tooling candidate in `plan.md`.
 
-## Verification (build/run — no test infra until Phase 5)
+## Verification (build/run — no test infra until Phase 4)
 
 - `npx tsc --noEmit` → clean (exit 0) on the new `.ts` and the whole strict project.
-- `npm run build` → **exit 0**, full production build (17 routes, static pages 7/7). The logged `ESLint: Failed to load config "next/babel"` is the pre-existing broken lint config (Phase 5) and is non-fatal; the jose/Edge-Runtime warnings are pre-existing Better Auth artifacts.
+- `npm run build` → **exit 0**, full production build (17 routes, static pages 7/7). The logged `ESLint: Failed to load config "next/babel"` is the pre-existing broken lint config (Phase 4) and is non-fatal; the jose/Edge-Runtime warnings are pre-existing Better Auth artifacts.
 - **Env fail-fast**: importing `lib/env.ts` with required vars unset throws the readable `Invalid environment variables:` list; with them set it parses and applies the `IMAP_HOST`/`IMAP_PORT`/`SALT_ROUNDS` defaults. Loads cleanly under plain `tsx` (confirms the guard keeps the auth chain tsx/test-safe).
 - **Greps**: no `"use client"` file imports `@/lib/env`; the only raw `process.env` read left is the single intended one in `env.ts`; both DB importers keep the default import; zero `console.log` in the touched server files.
 
@@ -66,7 +66,7 @@ Per the "surface new concerns; don't smuggle them in" convention, findings notic
 
 - **`actions/workAction.js` wrong entity in messages**: `createWork`/`updateWork` catch logs say `"Failed to create work"` but their error returns read `Failed to create the member due to …` (copy-paste from `memberAction`); `updateWork`'s catch message also says "create". Cosmetic, pre-existing — leave for a dedicated fix or the Phase 3 TS pass.
 - **Pre-existing unused `const result` bindings** in `workAction`'s `updateWork`/`deleteWork` (independent of logging) — Phase 3 (`noUnusedLocals`) territory.
-- **`app/[locale]/about/page.jsx`** does `members?.map(...)`, which would throw if `getMembers` returned its `{ error }` shape — a fragility better addressed by Phase 6 error boundaries.
+- **`app/[locale]/about/page.jsx`** does `members?.map(...)`, which would throw if `getMembers` returned its `{ error }` shape — a fragility better addressed by Phase 8 error boundaries.
 - **Edge-Runtime warnings** from `better-auth` → `jose` (`CompressionStream`/`DecompressionStream`) during build — a Phase 4 middleware-runtime concern, not Phase 2.
 
 ## Files touched
@@ -80,5 +80,5 @@ Per the "surface new concerns; don't smuggle them in" convention, findings notic
 ## Follow-ups for later phases
 
 - **Phase 3 (TypeScript):** migrate `actions/*` and `models/*` to `.ts`; the wrong-entity messages and unused bindings above get caught here.
-- **Phase 5 (tooling/tests/CI):** fix the ESLint flat config (unblocks lint-in-build); decide on a `lib/logger.ts` abstraction; when tests import the auth surface, the `typeof window` guard keeps `lib/env.ts` importable under Vitest without a `server-only` alias.
-- **Phase 6:** client-component log cleanup; error boundaries around the `?.map` fragility.
+- **Phase 4 (tooling/tests/CI):** fix the ESLint flat config (unblocks lint-in-build); decide on a `lib/logger.ts` abstraction; when tests import the auth surface, the `typeof window` guard keeps `lib/env.ts` importable under Vitest without a `server-only` alias.
+- **Phase 8 (frontend polish):** client-component log cleanup; error boundaries around the `?.map` fragility.
