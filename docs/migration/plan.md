@@ -121,6 +121,8 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 
 ## Phase 5 — Tooling, tests, CI (P1/P2) · ~2–3 days
 
+**Status: 🚧 In progress** — this is **reshaped Phase 4** (the number here is pre-reshape, per [#142](https://github.com/KBerkeYilmaz/team_random/issues/142); [README.md](README.md) is canonical). Ships as focused slices under umbrella [#144](https://github.com/KBerkeYilmaz/team_random/issues/144): **4a — tooling guardrails** (ESLint 9 flat config, Prettier, husky + lint-staged) shipped, closes [#145](https://github.com/KBerkeYilmaz/team_random/issues/145); 4b (unit tests) / 4c (e2e) / 4d (CI + docs) to follow — full write-up [phase4/tooling-tests-ci.md](phase4/tooling-tests-ci.md). **4a deviation:** eslint-config-next is **15** (not the `next/typescript` listed below, which needs config-next 15+) so `next/core-web-vitals` can run under ESLint 9 on Next 14; Phase 5's Next 16 codemod realigns config-next to 16.
+
 - **ESLint 9 flat config** `eslint.config.mjs`: `next/core-web-vitals` + `next/typescript` + `react-hooks` + `jsx-a11y` + `import` (order).
 - **Prettier** explicit `prettier.config.mjs` (wire the already-installed tailwind class-sort plugin).
 - **Pre-commit**: `husky` + `lint-staged` → `eslint --fix` + `prettier` + `tsc --noEmit` on staged files.

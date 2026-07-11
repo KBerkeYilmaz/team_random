@@ -25,7 +25,7 @@ Guidance for Claude Code (and any AI agent) working in this repository. Read thi
 ### Commands
 - `npm run dev` — dev server (needs env vars + a reachable MongoDB).
 - `npm run build` — production build (to fully complete it also needs EdgeStore keys + a DB).
-- `npm run lint` — ESLint. NOTE: the config is currently broken (`Failed to load config "next/babel"`); the tooling/tests/CI phase replaces it with flat config.
+- `npm run lint` — ESLint 9, flat config (`eslint.config.mjs`); `lint:fix` auto-fixes. `npm run format` / `format:check` — Prettier (`prettier.config.mjs`). A husky pre-commit hook (`.husky/pre-commit`) runs lint-staged + whole-project `tsc --noEmit`. Pre-existing lint findings are baselined in `eslint-suppressions.json` (new violations still fail). Fixed in **Phase 4a** — the old config extended the `next/babel` Babel preset and crashed on load. CI does not yet run lint (deferred to Phase 4d).
 
 ### Environment (nothing committed; `.env*.local` is gitignored)
 All env vars are validated once at boot in **`lib/env.ts`** (Zod, fail-fast, server-only) — import `env` from there, never read `process.env` directly. **Required:** `MONGO_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_EMAIL`, `APP_PASSWORD`, `EDGE_STORE_ACCESS_KEY`, `EDGE_STORE_SECRET_KEY`. **Optional (defaults in `lib/env.ts`):** `NEXT_PUBLIC_API_BASE_URL` (`http://localhost:3000`), `IMAP_HOST` (`imap.gmail.com`), `IMAP_PORT` (`993`), `SALT_ROUNDS` (`10`).
