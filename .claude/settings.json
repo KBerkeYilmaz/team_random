@@ -14,5 +14,20 @@
       "Bash(gh pr view:*)",
       "Bash(gh issue view:*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-main.sh\"",
+            "timeout": 10,
+            "statusMessage": "Checking branch protection…"
+          }
+        ]
+      }
+    ]
   }
 }
