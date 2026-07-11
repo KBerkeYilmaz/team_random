@@ -4,14 +4,10 @@ import { headers } from "next/headers";
 import { requireAdmin } from "@/lib/authGuard";
 import { z } from "zod";
 import type { ActionState } from "@/actions/types";
+import { updatePasswordSchema, type UpdatePasswordInput } from "@/actions/schemas";
 
 // The current user's own-account edit payloads (the values each form submits).
 type UpdateUserInput = { name: string; email: string };
-type UpdateUserPasswordInput = {
-  currentPassword: string;
-  newPassword: string;
-  passwordConfirmation: string;
-};
 
 // AUDIT #83 (issue #82): every action below is gated by requireAdmin(), which
 // derives the admin role from the server session. Previously each took a `role`
@@ -93,25 +89,12 @@ export const updateUserImage = async (
 };
 
 export const updateUserPassword = async (
-  formData: UpdateUserPasswordInput,
+  formData: UpdatePasswordInput,
   id: string,
 ): Promise<ActionState> => {
-  const userSchema = z
-    .object({
-      currentPassword: z.string().min(3),
-      // Better Auth enforces a minimum length server-side (default 8); align the
-      // client validation so users get a clear message instead of an API error.
-      newPassword: z
-        .string()
-        .min(8, "New password must be at least 8 characters."),
-      passwordConfirmation: z.string().min(8),
-    })
-    .refine((data) => data.newPassword === data.passwordConfirmation, {
-      message: "Passwords don't match",
-      path: ["passwordConfirmation"], // path of error
-    });
-
-  const validatedFields = userSchema.safeParse({
+  // Shared with EditUserPasswordForm via actions/schemas.ts so client and server
+  // password rules can't drift (issue #126).
+  const validatedFields = updatePasswordSchema.safeParse({
     currentPassword: formData.currentPassword,
     newPassword: formData.newPassword,
     passwordConfirmation: formData.passwordConfirmation,

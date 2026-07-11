@@ -17,16 +17,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const formSchema = z
-  .object({
-    currentPassword: z.string().min(3),
-    newPassword: z.string().min(3),
-    passwordConfirmation: z.string().min(3),
-  })
-  .refine((data) => data.newPassword === data.passwordConfirmation, {
-    message: "Passwords don't match",
-    path: ["passwordConfirmation"], // path of error
-  });
+// Single-sourced with the server action (actions/schemas.ts) so client and server
+// password rules stay in lockstep — issue #126. Both used to disagree (client
+// min(3) vs server min(8)).
+import { updatePasswordSchema } from "@/actions/schemas";
 
 import { useToast } from "../ui/use-toast";
 import { updateUserPassword } from "@/actions/userActions";
@@ -40,15 +34,15 @@ export const EditUserPasswordForm = ({
   const { toast } = useToast();
   // console.log(user);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof updatePasswordSchema>>({
+    resolver: zodResolver(updatePasswordSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",
       passwordConfirmation: "",
     },
   });
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof updatePasswordSchema>) => {
     console.log(values);
     // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
     // enforced server-side in the action (requireAdmin). Kept for a friendly toast.

@@ -17,10 +17,11 @@ and a `Loader2` spinner while submitting.
 
 ## Gotchas
 - **Schema source is split:** member/work forms import shared schemas from
-  `actions/schemas.ts` (`z.infer`); user/contact/login forms use **local inline**
-  schemas. Before changing validation, check which regime the form is in.
-  - Known drift: `EditUserPasswordForm`'s client `min(3)` vs the server's `min(8)` —
-    keep client and server rules aligned.
+  `actions/schemas.ts` (`z.infer`); the remaining user/contact/login forms use **local
+  inline** schemas. Before changing validation, check which regime the form is in.
+  - `EditUserPasswordForm` was moved into the shared regime: it now imports
+    `updatePasswordSchema` from `actions/schemas.ts` (issue #126), closing the old
+    client `min(3)` vs server `min(8)` drift. All three password fields require `min(8)`.
 - The client `role !== "admin"` bail-out is a **UX hint only** — the action's
   `requireAdmin()` is the real boundary.
 - `ContactForm`'s `if (result.error)` branch is effectively dead (`sendMail` never
