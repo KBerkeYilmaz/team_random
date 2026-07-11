@@ -81,13 +81,13 @@ export async function GET(req: Request) {
       pass: env.APP_PASSWORD,
     },
   });
-  let emailList = []; // Initialize an array to hold email data
+  const emailList = []; // Initialize an array to hold email data
 
   try {
     await client.connect();
 
     // Select and lock a mailbox. Throws if mailbox does not exist
-    let lock = await client.getMailboxLock("INBOX");
+    const lock = await client.getMailboxLock("INBOX");
     try {
       // fetch latest message source
       // client.mailbox includes information about currently selected mailbox
@@ -123,7 +123,7 @@ export async function GET(req: Request) {
         bodyStructure: true,
         source: true,
       } as unknown as FetchQueryObject;
-      for await (let message of client.fetch("1:*", fetchQuery)) {
+      for await (const message of client.fetch("1:*", fetchQuery)) {
         {
           // `source`/`envelope` are typed optional by imapflow, but we requested
           // both in the fetch above, so they are present at runtime — assert

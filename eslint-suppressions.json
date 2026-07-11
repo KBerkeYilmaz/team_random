@@ -60,17 +60,11 @@
   "app/api/email/count/route.ts": {
     "@typescript-eslint/no-unused-vars": {
       "count": 1
-    },
-    "prefer-const": {
-      "count": 2
     }
   },
   "app/api/email/route.ts": {
     "@typescript-eslint/no-unused-vars": {
       "count": 2
-    },
-    "prefer-const": {
-      "count": 3
     }
   },
   "components/CounterNumber.tsx": {
@@ -220,9 +214,6 @@
   },
   "components/ui/wavy-background.tsx": {
     "@typescript-eslint/no-explicit-any": {
-      "count": 1
-    },
-    "no-var": {
       "count": 1
     }
   },
