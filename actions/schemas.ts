@@ -67,3 +67,49 @@ export const updatePasswordSchema = z
     path: ["passwordConfirmation"], // attach the mismatch error to the confirm field
   });
 export type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>;
+
+// ---------------------------------------------------------------------------
+// Phase 4b (issue #153): the remaining form schemas, extracted from their inline
+// definitions in the client components so form validation becomes pure,
+// unit-testable logic (see actions/schemas.test.ts). Messages are copied
+// VERBATIM from the pre-extraction inline schemas so runtime validation
+// behaviour is unchanged — with the one deliberate exception noted on
+// editUserSchema below.
+// ---------------------------------------------------------------------------
+
+// ContactForm → lib/sendMail (a plain fetch wrapper, NOT a server action).
+// Verbatim from the form's former inline schema.
+export const contactSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters."),
+  email: z.string().email("Please enter a valid email."),
+  message: z.string().min(3, "Message must be at least 3 characters."),
+});
+export type ContactInput = z.infer<typeof contactSchema>;
+
+// LoginForm → Better Auth signIn.email. The min(3) password rule is the form's
+// client-side check only (Better Auth enforces its own stored-password minimum
+// server-side). Verbatim from the form's former inline schema.
+export const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email."),
+  password: z.string().min(3, "Password must be at least 3 characters."),
+});
+export type LoginInput = z.infer<typeof loginSchema>;
+
+// EditUserForm + updateUser (actions/userActions.ts) — the current user's own
+// name/email edit. Single-sourced here (mirroring the updatePasswordSchema fix
+// from #126) so the client form and the server action can never drift again.
+//
+// Canonicalisation — the one intentional behaviour change in this extraction:
+// the two former definitions disagreed on the name-too-short message. The server
+// action's inline schema said "User name must be at least 3 characters." while
+// the client form carried a copy-pasted "Member name must be at least 3
+// characters.". We adopt the server's "User name…" wording as canonical (the
+// field is the user's own name, not a member's). EditUserForm reads only
+// `result.error` from the action and never its field-level `errors` map
+// (verified repo-wide), so consolidating the server's error KEYS has no UI
+// effect; the only user-visible change is this single message.
+export const editUserSchema = z.object({
+  name: z.string().min(3, "User name must be at least 3 characters."),
+  email: z.string().email("Please enter a valid email."),
+});
+export type EditUserInput = z.infer<typeof editUserSchema>;

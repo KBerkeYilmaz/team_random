@@ -1,13 +1,15 @@
 "use server";
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { requireAdmin } from "@/lib/authGuard";
-import { z } from "zod";
-import type { ActionState } from "@/actions/types";
-import { updatePasswordSchema, type UpdatePasswordInput } from "@/actions/schemas";
 
-// The current user's own-account edit payloads (the values each form submits).
-type UpdateUserInput = { name: string; email: string };
+import {
+  editUserSchema,
+  type EditUserInput,
+  updatePasswordSchema,
+  type UpdatePasswordInput,
+} from "@/actions/schemas";
+import type { ActionState } from "@/actions/types";
+import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/authGuard";
 
 // AUDIT #83 (issue #82): every action below is gated by requireAdmin(), which
 // derives the admin role from the server session. Previously each took a `role`
@@ -26,17 +28,14 @@ type UpdateUserInput = { name: string; email: string };
 // flow for it, which needs email-sending infrastructure not yet wired up. Rather
 // than silently drop an email edit, updateUser rejects it with a clear message.
 export const updateUser = async (
-  formData: UpdateUserInput,
+  formData: EditUserInput,
   id: string,
 ): Promise<ActionState> => {
-  const userSchema = z.object({
-    fullName: z.string().min(3, "User name must be at least 3 characters."),
-    userMail: z.string().email("Please enter a valid email."),
-  });
-
-  const validatedFields = userSchema.safeParse({
-    fullName: formData.name,
-    userMail: formData.email,
+  // Single-sourced with EditUserForm via actions/schemas.ts so the client form
+  // and this action can't drift (mirrors the updatePasswordSchema fix in #126).
+  const validatedFields = editUserSchema.safeParse({
+    name: formData.name,
+    email: formData.email,
   });
 
   // Return early if the form data is invalid

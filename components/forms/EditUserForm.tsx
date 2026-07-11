@@ -1,12 +1,13 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useEdgeStore } from "@/lib/edgestore";
-import { SingleImageDropzone } from "@/components/SingleImageDropzone";
-import { Separator } from "@/components/ui/separator";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+
+import { editUserSchema, type EditUserInput } from "@/actions/schemas";
+import { updateUser, updateUserImage } from "@/actions/userActions";
+import { SingleImageDropzone } from "@/components/SingleImageDropzone";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -15,16 +16,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { useEdgeStore } from "@/lib/edgestore";
 
-const formSchema = z.object({
-  name: z.string().min(3, "Member name must be at least 3 characters."),
-  email: z.string().email("Please enter a valid email."),
-});
-
-import { updateUser, updateUserImage } from "@/actions/userActions";
 import { useToast } from "../ui/use-toast";
 
 export const EditUserForm = ({
@@ -39,8 +35,8 @@ export const EditUserForm = ({
   const { edgestore } = useEdgeStore();
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<EditUserInput>({
+    resolver: zodResolver(editUserSchema),
     defaultValues: {
       name: user.name,
       email: user.email,
@@ -66,7 +62,7 @@ export const EditUserForm = ({
     return () => window.removeEventListener("resize", updateDropzoneWidth);
   }, []);
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: EditUserInput) => {
     // AUDIT #83: UX hint only, NOT the security boundary — real authorization is
     // enforced server-side in the action (requireAdmin). Kept for a friendly toast.
     if (user.role !== "admin") {
