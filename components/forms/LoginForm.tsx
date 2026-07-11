@@ -63,7 +63,7 @@ const LoginForm = () => {
   });
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-xl p-4">
+    <div className="flex w-full max-w-xl flex-col gap-4 p-4">
       <h2 className="text-5xl font-semibold">Login</h2>
       <Separator />
       <div className="flex flex-col gap-2">
@@ -106,11 +106,11 @@ const LoginForm = () => {
               />
             </div>
             {!isSubmitting ? (
-              <Button className="w-full mt-4" type="submit">
+              <Button className="mt-4 w-full" type="submit">
                 Submit
               </Button>
             ) : (
-              <Button className="w-full mt-4" disabled>
+              <Button className="mt-4 w-full" disabled>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Please wait
               </Button>

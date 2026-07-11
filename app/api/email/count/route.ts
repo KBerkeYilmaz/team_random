@@ -27,14 +27,14 @@ export async function GET(req: Request) {
     await client.connect();
 
     // Select and lock a mailbox. Throws if mailbox does not exist
-    let lock = await client.getMailboxLock("INBOX");
+    const lock = await client.getMailboxLock("INBOX");
     // fetch latest message source
     // client.mailbox includes information about currently selected mailbox
     // "exists" value is also the largest sequence number available in the mailbox
 
     // list subjects for all messages
     // uid value is always included in FETCH response, envelope strings are in unicode.
-    let status = await client.status("INBOX", { unseen: true });
+    const status = await client.status("INBOX", { unseen: true });
     const unseenMails = status.unseen;
     lock.release();
     await client.logout();

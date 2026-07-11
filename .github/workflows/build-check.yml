@@ -8,8 +8,10 @@
 # only satisfy lib/env.ts's Zod validation. The DB is intentionally unreachable —
 # the read getters catch the connection error and degrade to empty data, so the
 # build still compiles every route and surfaces type/import/compile errors just as
-# Vercel would. `npm run lint` is deliberately NOT run here: the ESLint config is
-# known-broken (next/babel) and is fixed in Phase 5 — add a lint step then.
+# Vercel would. `npm run lint` is deliberately NOT run here yet: ESLint was fixed
+# in Phase 4a (flat config, `eslint.config.mjs`); wiring `lint` + the test suites
+# into this workflow is Phase 4d's job — add the lint step then. Keep the job name
+# `typecheck-and-build` (it is the required branch-protection status check).
 name: build-check
 
 on:

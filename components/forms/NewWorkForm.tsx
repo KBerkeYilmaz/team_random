@@ -73,7 +73,7 @@ const NewWorkForm = () => {
           // fileStates here only ever hold freshly-dropped Files (never the
           // string-URL variant of FileState), so this cast is safe.
           .upload({ file: addedFileState.file as File })
-          .then((res) => res.url)
+          .then((res) => res.url),
       );
 
       // Wait for all uploads to finish.
@@ -116,14 +116,14 @@ const NewWorkForm = () => {
           Create New Work
         </Button>
       </DialogTrigger>
-      <DialogContent className="md:min-w-[800px] p-8">
-        <DialogHeader className=" text-2xl md:text-4xl font-semibold">
+      <DialogContent className="p-8 md:min-w-[800px]">
+        <DialogHeader className=" text-2xl font-semibold md:text-4xl">
           Create New Work
         </DialogHeader>
         <Separator />
 
-        <div className="flex mt-2 gap-4  md:flex-row flex-col max-h-[430px] md:max-h-[540px]  overflow-y-scroll no-scrollbar">
-          <div className="flex flex-col items-center md:items-start w-full md:w-fit gap-2">
+        <div className="no-scrollbar mt-2 flex  max-h-[430px] flex-col gap-4 overflow-y-scroll  md:max-h-[540px] md:flex-row">
+          <div className="flex w-full flex-col items-center gap-2 md:w-fit md:items-start">
             <MultiImageDropzoneColumn
               value={fileStates}
               dropzoneOptions={{
@@ -224,11 +224,11 @@ const NewWorkForm = () => {
                 />
               </div>
               {!pending ? (
-                <Button className="w-full mt-4" type="submit">
+                <Button className="mt-4 w-full" type="submit">
                   Submit
                 </Button>
               ) : (
-                <Button className="w-full mt-4" disabled>
+                <Button className="mt-4 w-full" disabled>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Please wait
                 </Button>

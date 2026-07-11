@@ -2,7 +2,7 @@ import React from "react";
 
 function Page() {
   return (
-    <div className="flex flex-col items-center w-screen pt-[72px] animate-fadeIn">
+    <div className="flex w-screen animate-fadeIn flex-col items-center pt-[72px]">
       Works
     </div>
   );

@@ -1,7 +1,10 @@
 import { create } from "zustand";
 
 // Define the initial state based on your example data
-import { Mail, mails } from "@app/[locale]/(dashboard)/dashboard/messages/data.jsx";
+import {
+  Mail,
+  mails,
+} from "@app/[locale]/(dashboard)/dashboard/messages/data.jsx";
 
 // Create the Zustand store
 const useMailStore = create((set) => ({

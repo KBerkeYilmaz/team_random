@@ -1,35 +1,35 @@
-import { ComponentProps } from "react"
+import { ComponentProps } from "react";
 // date-fns v3 dropped default exports from its submodules — use the named import.
-import { formatDistanceToNow } from "date-fns/formatDistanceToNow"
+import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 // import { Separator } from "@/components/ui/separator"
-import { type Mail } from "@/app/[locale]/(dashboard)/dashboard/inbox/data"
-import { useMail } from "@/app/[locale]/(dashboard)/dashboard/inbox/use-mail"
+import { type Mail } from "@/app/[locale]/(dashboard)/dashboard/inbox/data";
+import { useMail } from "@/app/[locale]/(dashboard)/dashboard/inbox/use-mail";
 import { Loader2 } from "lucide-react";
 
 export function MailList({ items }: { items: Mail[] }) {
-  const [mail, setMail] = useMail()
+  const [mail, setMail] = useMail();
 
   if (!items.length) {
     return (
-      <div className="flex flex-col w-full h-full justify-center items-center mt-10">
+      <div className="mt-10 flex h-full w-full flex-col items-center justify-center">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       </div>
-    )
+    );
   }
 
   return (
     <ScrollArea className="h-[70vh]">
       <div className="flex flex-col gap-2 p-4 pt-0">
-      {[...items].reverse().map((item) => (
+        {[...items].reverse().map((item) => (
           <button
             key={item.id}
             className={cn(
               "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
-              mail.selected === item.id && "bg-muted"
+              mail.selected === item.id && "bg-muted",
             )}
             onClick={() =>
               setMail({
@@ -51,7 +51,7 @@ export function MailList({ items }: { items: Mail[] }) {
                     "ml-auto text-xs",
                     mail.selected === item.id
                       ? "text-foreground"
-                      : "text-muted-foreground"
+                      : "text-muted-foreground",
                   )}
                 >
                   {formatDistanceToNow(new Date(item.date), {
@@ -62,7 +62,7 @@ export function MailList({ items }: { items: Mail[] }) {
               <div className="text-xs font-medium">{item.subject}</div>
             </div>
             <div className="line-clamp-2 text-xs text-muted-foreground">
-            {item.text?.substring(0, 300) ?? ''}
+              {item.text?.substring(0, 300) ?? ""}
             </div>
             {item.labels.length ? (
               <div className="flex items-center gap-2">
@@ -77,19 +77,17 @@ export function MailList({ items }: { items: Mail[] }) {
         ))}
       </div>
     </ScrollArea>
-  )
+  );
 }
 
-function getBadgeVariantFromLabel(
-  label: string
-){
+function getBadgeVariantFromLabel(label: string) {
   if (["work"].includes(label.toLowerCase())) {
-    return "default"
+    return "default";
   }
 
   if (["personal"].includes(label.toLowerCase())) {
-    return "outline"
+    return "outline";
   }
 
-  return "secondary"
+  return "secondary";
 }

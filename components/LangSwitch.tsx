@@ -70,7 +70,7 @@ function LangSwitch() {
             setValue(currentValue === value ? "" : currentValue);
             setOpen(false);
           }}
-          className="p-1 flex flex-col"
+          className="flex flex-col p-1"
         >
           {languages.map((lang, i) => {
             return (

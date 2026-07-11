@@ -44,7 +44,7 @@ const ERROR_MESSAGES = {
 const SingleImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
   (
     { dropzoneOptions, width, height, value, className, disabled, onChange },
-    ref
+    ref,
   ) => {
     const imageUrl = React.useMemo(() => {
       if (typeof value === "string") {
@@ -89,7 +89,7 @@ const SingleImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
           imageUrl && variants.image,
           (isDragReject ?? fileRejections[0]) && variants.reject,
           isDragAccept && variants.accept,
-          className
+          className,
         ).trim(),
       [
         isFocused,
@@ -99,7 +99,7 @@ const SingleImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
         isDragReject,
         disabled,
         className,
-      ]
+      ],
     );
 
     // error validation messages
@@ -131,10 +131,7 @@ const SingleImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
           })}
         >
           {/* Main File Input */}
-          <input
-            ref={ref}
-            {...getInputProps()}
-          />
+          <input ref={ref} {...getInputProps()} />
 
           {imageUrl ? (
             // Image Preview
@@ -178,7 +175,7 @@ const SingleImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="mt-1 text-xs text-red-500">{errorMessage}</div>
       </div>
     );
-  }
+  },
 );
 SingleImageDropzone.displayName = "SingleImageDropzone";
 
@@ -190,12 +187,12 @@ const Button = React.forwardRef<
     <button
       className={twMerge(
         // base
-        "focus-visible:ring-ring inline-flex cursor-pointer items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex cursor-pointer items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
         // color
         "border border-gray-400 text-gray-400 shadow hover:bg-gray-100 hover:text-gray-500 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700",
         // size
         "h-6 rounded-md px-2 text-xs",
-        className
+        className,
       )}
       ref={ref}
       {...props}

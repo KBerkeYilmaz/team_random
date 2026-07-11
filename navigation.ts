@@ -1,5 +1,5 @@
-import { createSharedPathnamesNavigation } from 'next-intl/navigation';
-import { locales, localePrefix } from './config';
+import { createSharedPathnamesNavigation } from "next-intl/navigation";
+import { locales, localePrefix } from "./config";
 
 // The app does not use localized pathnames — every route is navigated to as a
 // plain string (/about, /login, /dashboard, /dashboard/works/[id], …). So we use
@@ -12,4 +12,4 @@ import { locales, localePrefix } from './config';
 // forced a type-only widening cast in this file as a stopgap. Issue #104 removed
 // both by switching to the shared navigation — runtime behaviour is identical.)
 export const { Link, redirect, usePathname, useRouter } =
-    createSharedPathnamesNavigation({ locales, localePrefix });
+  createSharedPathnamesNavigation({ locales, localePrefix });

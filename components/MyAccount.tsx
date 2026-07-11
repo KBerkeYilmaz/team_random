@@ -12,22 +12,22 @@ function MyAccount() {
 
   if (!data) {
     return (
-      <div className="flex w-full justify-center mt-10">
+      <div className="mt-10 flex w-full justify-center">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       </div>
     );
   }
   return (
-    <div className="h-screen w-full flex flex-col gap-4 justify-start items-center md:items-start pb-28 p-10 animate-fadeIn overflow-y-scroll no-scrollbar">
-      <h2 className="text-4xl font-semibold text-center sm:text-start ">
+    <div className="no-scrollbar flex h-screen w-full animate-fadeIn flex-col items-center justify-start gap-4 overflow-y-scroll p-10 pb-28 md:items-start">
+      <h2 className="text-center text-4xl font-semibold sm:text-start ">
         My Account
       </h2>
       <Separator />
-      <div className="flex flex-col gap-4 w-full max-w-5xl">
-        <div className="flex flex-col sm:flex-row gap-6 w-full">
-          <div className="flex sm:flex-row justify-center md:justify-start min-w-fit">
+      <div className="flex w-full max-w-5xl flex-col gap-4">
+        <div className="flex w-full flex-col gap-6 sm:flex-row">
+          <div className="flex min-w-fit justify-center sm:flex-row md:justify-start">
             {data?.user.image === "" ? (
-              <div className=" w-40 aspect-square bg-gray-800 text-white flex justify-center items-center rounded">
+              <div className=" flex aspect-square w-40 items-center justify-center rounded bg-gray-800 text-white">
                 User Image
               </div>
             ) : (
@@ -37,18 +37,18 @@ function MyAccount() {
               <img
                 src={data?.user.image as string | undefined}
                 alt="User Picture"
-                className="md:w-[180px] w-[220px] sm:w-[250px] md:h-[180px] h-[220px] sm:h-[250px]"
+                className="h-[220px] w-[220px] sm:h-[250px] sm:w-[250px] md:h-[180px] md:w-[180px]"
               />
             )}
           </div>
-          <div className="flex flex-col w-full">
-            <div className="flex gap-1 w-full flex-col md:flex-row">
+          <div className="flex w-full flex-col">
+            <div className="flex w-full flex-col gap-1 md:flex-row">
               <Label className="text-md font-bold dark:text-primary ">
                 Name:{" "}
               </Label>
               <p className="break-all">{data?.user.name}</p>
             </div>
-            <div className="flex gap-1 w-full flex-col md:flex-row">
+            <div className="flex w-full flex-col gap-1 md:flex-row">
               <Label className="text-md font-bold dark:text-primary ">
                 Email:{" "}
               </Label>
@@ -56,7 +56,7 @@ function MyAccount() {
             </div>
           </div>
         </div>
-        <div className="flex w-full gap-6 flex-wrap">
+        <div className="flex w-full flex-wrap gap-6">
           <EditUserForm user={data?.user} />
           <EditUserPasswordForm user={data?.user} />
         </div>

@@ -50,7 +50,7 @@ export default function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -121,11 +121,13 @@ export default function DataTable<TData, TValue>({
 
   return (
     <>
-      <div className="flex items-center py-4 w-full">
-        <div className="w-full justify-between gap-4  flex flex-col md:flex-row pr-2">
+      <div className="flex w-full items-center py-4">
+        <div className="flex w-full flex-col  justify-between gap-4 pr-2 md:flex-row">
           <Input
             placeholder={`Filter ${filterAnchor}...`}
-            value={(table.getColumn(columnName)?.getFilterValue() as string) ?? ""}
+            value={
+              (table.getColumn(columnName)?.getFilterValue() as string) ?? ""
+            }
             onChange={(event) =>
               table.getColumn(columnName)?.setFilterValue(event.target.value)
             }
@@ -164,7 +166,7 @@ export default function DataTable<TData, TValue>({
           </DropdownMenu>
         </div>
       </div>
-      <div className="rounded-md border w-full">
+      <div className="w-full rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -177,7 +179,7 @@ export default function DataTable<TData, TValue>({
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                       </TableHead>
                     );
@@ -209,7 +211,7 @@ export default function DataTable<TData, TValue>({
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       );
@@ -230,7 +232,7 @@ export default function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end w-full space-x-2 py-4">
+      <div className="flex w-full items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
           size="sm"

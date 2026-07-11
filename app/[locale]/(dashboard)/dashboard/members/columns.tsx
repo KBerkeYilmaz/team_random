@@ -42,7 +42,7 @@ export const columns: ColumnDef<MemberRow>[] = [
   {
     accessorKey: "memberImage",
     header: () => (
-      <div className="gap-2 flex items-center">
+      <div className="flex items-center gap-2">
         <p>Image</p>
       </div>
     ),
@@ -50,12 +50,12 @@ export const columns: ColumnDef<MemberRow>[] = [
       <div className="capitalize">
         {row.getValue("memberImage") === undefined ||
         row.getValue("memberImage") === "" ? (
-          <div className="w-12 h-12 bg-slate-900"></div>
+          <div className="h-12 w-12 bg-slate-900"></div>
         ) : (
           <img
             src={`${row.getValue("memberImage")}`}
             alt="Member Image"
-            className="w-12 h-12"
+            className="h-12 w-12"
           />
         )}
       </div>
@@ -64,7 +64,7 @@ export const columns: ColumnDef<MemberRow>[] = [
   {
     accessorKey: "memberName",
     header: () => (
-      <div className="gap-2 flex items-center">
+      <div className="flex items-center gap-2">
         <p>Name</p>
       </div>
     ),
@@ -75,7 +75,7 @@ export const columns: ColumnDef<MemberRow>[] = [
   {
     accessorKey: "memberLastName",
     header: () => (
-      <div className="gap-2 flex items-center">
+      <div className="flex items-center gap-2">
         <p>Last Name</p>
       </div>
     ),
@@ -86,7 +86,7 @@ export const columns: ColumnDef<MemberRow>[] = [
   {
     accessorKey: "memberTitle",
     header: () => (
-      <div className="gap-2 flex items-center">
+      <div className="flex items-center gap-2">
         <p>Title</p>
       </div>
     ),
@@ -97,7 +97,7 @@ export const columns: ColumnDef<MemberRow>[] = [
   {
     accessorKey: "id",
     header: () => (
-      <div className="gap-2 flex items-center">
+      <div className="flex items-center gap-2">
         {/* <span className=" text-opacity-60 text-amber-400 ">
           <Phone size={18} />
         </span> */}

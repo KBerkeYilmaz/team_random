@@ -29,18 +29,20 @@ export default function AccountMenu() {
             <AvatarImage src={data?.user?.image as string | undefined} />
             {/* AUDIT #87 (Phase 1): guard nullish name/[0] — data is null until
                 the Better Auth session resolves (useSession is async). */}
-            <AvatarFallback>{data?.user?.name?.[0]?.toUpperCase()}</AvatarFallback>
+            <AvatarFallback>
+              {data?.user?.name?.[0]?.toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel className="w-full flex justify-center">
+        <DropdownMenuLabel className="flex w-full justify-center">
           My Account
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="w-full flex justify-center cursor-pointer"
+          className="flex w-full cursor-pointer justify-center"
           onClick={() => router.push("/dashboard/account")}
         >
           Settings

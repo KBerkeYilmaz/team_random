@@ -52,7 +52,7 @@ const memberSchema = new Schema<IMember>(
       required: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Member =

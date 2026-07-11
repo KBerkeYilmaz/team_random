@@ -1,0 +1,9 @@
+# Pre-commit guardrail (husky v9).
+#
+# 1. lint-staged: run `eslint --fix` + `prettier --write` on the STAGED files only
+#    (fast; auto-fixes what it can and blocks the commit on any remaining error).
+# 2. tsc --noEmit: type-check the WHOLE project, once. tsc must NOT be handed the
+#    individual staged files — given explicit file args it ignores tsconfig.json
+#    (project references, path aliases, lib/types), so a per-file check is wrong.
+#    The `&&` makes the commit abort if lint-staged fails (tsc is then skipped).
+npx lint-staged && npx tsc --noEmit

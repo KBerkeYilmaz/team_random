@@ -22,8 +22,8 @@ export function ModeToggle() {
           variant="outline"
           size="icon"
         >
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:hidden" />
-          <Moon className="h-[1.2rem] w-[1.2rem] rotate-90 hidden transition-all dark:rotate-0 dark:block" />
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:hidden dark:-rotate-90" />
+          <Moon className="hidden h-[1.2rem] w-[1.2rem] rotate-90 transition-all dark:block dark:rotate-0" />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </PopoverTrigger>
@@ -35,7 +35,7 @@ export function ModeToggle() {
             setValue(currentValue === value ? "" : currentValue);
             setOpen(false);
           }}
-          className="p-1 flex flex-col"
+          className="flex flex-col p-1"
         >
           <Button
             className="font-normal"

@@ -1,9 +1,9 @@
-import { initEdgeStore } from '@edgestore/server';
+import { initEdgeStore } from "@edgestore/server";
 import {
   createEdgeStoreNextHandler,
   type CreateContextOptions,
-} from '@edgestore/server/adapters/next/app';
-import { auth } from '@/lib/auth';
+} from "@edgestore/server/adapters/next/app";
+import { auth } from "@/lib/auth";
 
 // AUDIT #125 (issue #125): close an unauthenticated-upload hole. This handler
 // hands out the signed URLs the client uses to write to the bucket, and it
@@ -61,8 +61,8 @@ const es = initEdgeStore.context<Context>().create();
 const edgeStoreRouter = es.router({
   publicFiles: es
     .fileBucket()
-    .beforeUpload(({ ctx }) => ctx.userRole === 'admin')
-    .beforeDelete(({ ctx }) => ctx.userRole === 'admin'),
+    .beforeUpload(({ ctx }) => ctx.userRole === "admin")
+    .beforeDelete(({ ctx }) => ctx.userRole === "admin"),
 });
 
 const handler = createEdgeStoreNextHandler({

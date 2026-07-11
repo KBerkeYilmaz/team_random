@@ -1,0 +1,25 @@
+# Build output & dependencies
+.next
+build
+out
+coverage
+node_modules
+
+# Machine-generated — let their owning tools control the format
+package-lock.json
+eslint-suppressions.json
+next-env.d.ts
+
+# Workspace-local scratch (gitignored) and agent/tooling dirs — not app source
+.context
+.claude
+
+# i18n message catalogs — preserve their exact shape/ordering; the i18n phase
+# owns these files.
+messages/*.json
+
+# Markdown docs (the CLAUDE.md waterfall + docs/migration) are hand-maintained
+# with intentional structure and edited through the doc-sync workflow; Prettier's
+# markdown table-padding produces large, low-value diffs and would collide with
+# the doc edits this very slice makes. Formatting docs is a separate future call.
+*.md
