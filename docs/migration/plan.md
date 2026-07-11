@@ -1,12 +1,7 @@
 # Modernization Plan — Team Random (Next.js Portfolio/Agency Site)
 
-> ⚠️ **Sequencing reshaped 2026-07-09 (epic #81) — the per-phase sections below still use
-> the pre-reshape 0–7 numbering.** The canonical phase index + current status is
-> [`docs/migration/README.md`](README.md) (Phases 0–9). Renumbering these detailed sections
-> to 0–9 — tooling/CI ahead of the Next 16 bump, un-defer the Prisma-on-Postgres + tRPC
-> data layer, split i18n / frontend polish, pnpm → Phase 9 — is tracked in
-> [#142](https://github.com/KBerkeYilmaz/team_random/issues/142). Until then read the phase
-> **numbers** below as historical; the **scope** of each is still accurate.
+> Phase numbering matches the canonical index in [`docs/migration/README.md`](README.md)
+> (Phases 0–9, reshaped 2026-07-09). Sections below are in phase order.
 
 ## Context
 
@@ -32,16 +27,19 @@ Plus: DB connection isn't pooled (`lib/database.js` does `mongoose.connect()` pe
 
 ## Execution workflow (tracking)
 
-- **GitHub issues**: one tracking/epic issue linking all phases, plus one issue per phase (0–6) on `KBerkeYilmaz/team_random`, so progress is followable.
+- **GitHub issues**: one tracking/epic issue linking all phases, plus one issue per phase (0–9) on `KBerkeYilmaz/team_random`, so progress is followable.
 - **PRs**: one PR per phase, each branched off `main` and opened with `--base main`; each PR body closes its phase issue (`Closes #N`). Phase 0 ships first and standalone.
 
 ## Sequencing rationale (the load-bearing decisions)
 
 - **Security hotfix ships first, in plain JS, still on next-auth v4** (Phase 0). The vulns are exploitable today; the Better Auth swap is large and risky. Decouple them — a small surgical fix ships security in hours and is independently revertible.
 - **Better Auth before the full TS migration** (Phase 1 before Phase 3). Better Auth is TS-first; write *only the new auth surface* in TS as a beachhead (`allowJs` already lets `.ts` and `.jsx` coexist). Migrating everything to TS first would type the *old* next-auth session shape, then throw it away. Auth files get written in TS exactly once.
-- **Next 16 / React 19 after the TS sweep, via the official codemod** (Phase 4). Async `params`/`searchParams`/`headers()`/`cookies()` (introduced in Next 15, carried into 16) are pervasive across every page/layout and the Better Auth `getSession` calls; Next 16 additionally renames the middleware convention to **`proxy`** (`middleware.ts` → `proxy.ts`). Running `@next/codemod` on already-typed files lands both changes cleanly with compiler backup.
+- **Tooling, tests & CI before the framework bump** (Phase 4 before Phase 5). The Vitest/Playwright suite + CI is the *regression net*; landing it first means the Next 16 / React 19 codemod — and every phase after — runs against a green, CI-enforced baseline instead of a manual smoke test. (Reshaped 2026-07-09 to pull tests ahead of the Next 16 bump.)
+- **Next 16 / React 19 after the TS sweep, via the official codemod** (Phase 5). Async `params`/`searchParams`/`headers()`/`cookies()` (introduced in Next 15, carried into 16) are pervasive across every page/layout and the Better Auth `getSession` calls; Next 16 additionally renames the middleware convention to **`proxy`** (`middleware.ts` → `proxy.ts`). Running `@next/codemod` on already-typed files lands both changes cleanly with compiler backup.
+- **Data layer (Prisma on Postgres + tRPC) un-deferred to Phase 6.** The 2026-07-09 reshape commits to moving *both* domain data and auth off Mongo onto Postgres, dropping Mongoose — sequenced after the typed/tested/upgraded shape lands (Phases 3–5) so the rework targets a stable, green baseline. Full rationale (incl. why it was previously deferred) lives in the Phase 6 section.
+- **i18n and frontend polish split** into Phase 7 (i18n) and Phase 8 (frontend polish) — two independent, separately-shippable concerns that used to be one phase.
 
-**Order:** Phase 0 (security hotfix) → 1 (Better Auth) → 2 (DB/env) → 3 (TypeScript) → 4 (Next 16/React 19) → 5 (tooling/tests/CI) → 6 (i18n + frontend polish) → 7 (npm → pnpm). Each phase is independently shippable.
+**Order:** Phase 0 (security hotfix) → 1 (Better Auth) → 2 (DB/env) → 3 (TypeScript) → 4 (tooling/tests/CI) → 5 (Next 16/React 19) → 6 (data layer: Prisma/Postgres + tRPC) → 7 (i18n) → 8 (frontend polish) → 9 (npm → pnpm). Each phase is independently shippable.
 
 ---
 
@@ -94,7 +92,7 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 
 ## Phase 3 — Full TypeScript migration (P1) · ~3–5 days
 
-**Status: ✅ Shipped** (PR #103, closes #102) — see [phase3/typescript-migration.md](phase3/typescript-migration.md) for the full write-up, deviations, and forced edits. Notes: `tsconfig.json` was already pulled forward in Phase 1 (so this phase only added the `typecheck` script + `components.json "tsx": true`); the shared **`ActionResult<T>` discriminated union below was replaced with a permissive `ActionState`** (no action returns `{ data }`; forms truthy-check `.error`/`.message`) — the discriminated union is deferred to Phase 5/6.
+**Status: ✅ Shipped** (PR #103, closes #102) — see [phase3/typescript-migration.md](phase3/typescript-migration.md) for the full write-up, deviations, and forced edits. Notes: `tsconfig.json` was already pulled forward in Phase 1 (so this phase only added the `typecheck` script + `components.json "tsx": true`); the shared **`ActionResult<T>` discriminated union below was replaced with a permissive `ActionState`** (no action returns `{ data }`; forms truthy-check `.error`/`.message`) — the discriminated union is deferred to the Phase 4 tooling/tests or the Phase 6 data-layer rework.
 
 - `jsconfig.json` → `tsconfig.json` (keep `strict`, `paths`, `moduleResolution:"bundler"`); set `components.json` `"tsx": true`; add a `typecheck` script (`tsc --noEmit`).
 - **Models** → `.ts` with interfaces + typed schemas (`Schema<IMember>`, `models.X as Model<IX>`). Flag `work.workContributors` (String vs the commented-out ObjectId ref).
@@ -106,22 +104,9 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 
 ---
 
-## Phase 4 — Next 14→16 / React 18→19 (P1) · ~2–3 days
+## Phase 4 — Tooling, tests, CI (P1/P2) · ~2–3 days
 
-- Run **`npx @next/codemod@latest upgrade latest`** (targets **Next 16**) — bumps `next`/`react`/`react-dom`/`eslint-config-next` and applies the **async `params`/`searchParams`/`cookies()`/`headers()`** codemod across all pages/layouts and the Better Auth `getSession` calls (lands on Phase-3-typed signatures).
-- `@types/react`/`@types/react-dom` → 19.
-- **Middleware → Proxy (Next 16):** rename `middleware.ts` → **`proxy.ts`** and the exported `middleware` → `proxy` via `npx @next/codemod@latest rename-middleware-to-proxy .`. `proxy.ts` runs on the **Node.js runtime** (Edge unsupported) — fine for us; re-verify Better Auth's `getSessionCookie` and the next-intl composition run under it. Do **not** leave a stray `middleware.ts` (deprecated in 16; may be silently ignored → the optimistic gate stops firing, though the dashboard-layout enforcement still holds). Refs: [rename guide](https://nextjs.org/docs/messages/middleware-to-proxy) · [proxy convention](https://nextjs.org/docs/app/api-reference/file-conventions/proxy) · [v16 upgrade](https://nextjs.org/docs/app/guides/upgrading/version-16).
-- **next-intl compat**: bump for Next 16 (newer next-intl makes request-config `locale` async, and must support the `proxy.ts` convention) — the most likely integration snag.
-- Verify peer-dep compatibility for EdgeStore / Framer Motion 11 / Radix under React 19.
-- Audit caching: Next 15+ is uncached-by-default; inbox actions already use `cache:"no-store"`; confirm `revalidatePath` usage still holds.
-
-**Verify:** `npm run build` on 16, `tsc --noEmit`, manual pass of all routes incl. login→session→dashboard (async `headers()`, `proxy.ts` gate), both locales resolve; grep for any sync `params.` the codemod missed and any leftover `middleware.ts`.
-
----
-
-## Phase 5 — Tooling, tests, CI (P1/P2) · ~2–3 days
-
-**Status: 🚧 In progress** — this is **reshaped Phase 4** (the number here is pre-reshape, per [#142](https://github.com/KBerkeYilmaz/team_random/issues/142); [README.md](README.md) is canonical). Ships as focused slices under umbrella [#144](https://github.com/KBerkeYilmaz/team_random/issues/144): **4a — tooling guardrails** (ESLint 9 flat config, Prettier, husky + lint-staged) shipped (PR #146), closes [#145](https://github.com/KBerkeYilmaz/team_random/issues/145); **4b — unit tests** (Vitest + RTL) shipping ([#153](https://github.com/KBerkeYilmaz/team_random/issues/153)); 4c (e2e) / 4d (CI + docs) to follow — full write-up [phase4/tooling-tests-ci.md](phase4/tooling-tests-ci.md). **4a deviation:** eslint-config-next is **15** (not the `next/typescript` listed below, which needs config-next 15+) so `next/core-web-vitals` can run under ESLint 9 on Next 14; Phase 5's Next 16 codemod realigns config-next to 16.
+**Status: 🚧 In progress** — ships as focused slices under umbrella [#144](https://github.com/KBerkeYilmaz/team_random/issues/144): **4a — tooling guardrails** (ESLint 9 flat config, Prettier, husky + lint-staged) shipped (PR #146), closes [#145](https://github.com/KBerkeYilmaz/team_random/issues/145); **4b — unit tests** (Vitest + RTL) shipped (PR #154), closes [#153](https://github.com/KBerkeYilmaz/team_random/issues/153); 4c (e2e) / 4d (CI + docs) to follow — full write-up [phase4/tooling-tests-ci.md](phase4/tooling-tests-ci.md). **4a deviation:** eslint-config-next is **15** (not the `next/typescript` listed below, which needs config-next 15+) so `next/core-web-vitals` can run under ESLint 9 on Next 14; Phase 5's Next 16 codemod realigns config-next to 16.
 
 - **ESLint 9 flat config** `eslint.config.mjs`: `next/core-web-vitals` + `next/typescript` + `react-hooks` + `jsx-a11y` + `import` (order).
 - **Prettier** explicit `prettier.config.mjs` (wire the already-installed tailwind class-sort plugin).
@@ -135,29 +120,66 @@ Swap the auth engine to Better Auth over MongoDB, keep Mongoose for domain model
 
 ---
 
-## Phase 6 — i18n completion + frontend polish (P1/P2) · ~3–5 days
+## Phase 5 — Next 14→16 / React 18→19 (P1) · ~2–3 days
+
+- Run **`npx @next/codemod@latest upgrade latest`** (targets **Next 16**) — bumps `next`/`react`/`react-dom`/`eslint-config-next` and applies the **async `params`/`searchParams`/`cookies()`/`headers()`** codemod across all pages/layouts and the Better Auth `getSession` calls (lands on Phase-3-typed signatures).
+- `@types/react`/`@types/react-dom` → 19.
+- **Middleware → Proxy (Next 16):** rename `middleware.ts` → **`proxy.ts`** and the exported `middleware` → `proxy` via `npx @next/codemod@latest rename-middleware-to-proxy .`. `proxy.ts` runs on the **Node.js runtime** (Edge unsupported) — fine for us; re-verify Better Auth's `getSessionCookie` and the next-intl composition run under it. Do **not** leave a stray `middleware.ts` (deprecated in 16; may be silently ignored → the optimistic gate stops firing, though the dashboard-layout enforcement still holds). Refs: [rename guide](https://nextjs.org/docs/messages/middleware-to-proxy) · [proxy convention](https://nextjs.org/docs/app/api-reference/file-conventions/proxy) · [v16 upgrade](https://nextjs.org/docs/app/guides/upgrading/version-16).
+- **next-intl compat**: bump for Next 16 (newer next-intl makes request-config `locale` async, and must support the `proxy.ts` convention) — the most likely integration snag.
+- Verify peer-dep compatibility for EdgeStore / Framer Motion 11 / Radix under React 19.
+- Audit caching: Next 15+ is uncached-by-default; inbox actions already use `cache:"no-store"`; confirm `revalidatePath` usage still holds.
+
+**Verify:** `npm run build` on 16, `tsc --noEmit`, manual pass of all routes incl. login→session→dashboard (async `headers()`, `proxy.ts` gate), both locales resolve; grep for any sync `params.` the codemod missed and any leftover `middleware.ts`.
+
+---
+
+## Phase 6 — Data layer: Prisma on Postgres + tRPC (P1/P2) · ~5–8 days
+
+**Un-deferred 2026-07-09** (was "considered & deferred" — rationale below). Move the domain data layer **and** auth off MongoDB/Mongoose onto **Prisma + Postgres**, front the domain data with a **tRPC** API layer, and adopt **TanStack Query** for the client-side caching/polling the inbox needs. Absorbs [#116](https://github.com/KBerkeYilmaz/team_random/issues/116) (email → Resend + Prisma-backed inbox).
+
+- **Postgres + Prisma schema**: the domain models are flat and relation-free (`work.workContributors` is a plain string), so it is a small 3-table schema (`member`, `work`, + the inbox messages from #116) plus a one-time data move off Mongo. Prisma on Postgres gets its full-power home — v7, real migrations, no ObjectId friction.
+- **Move auth to Postgres too**: repoint Better Auth from the `mongodbAdapter` to its **Prisma adapter** (which works cleanly on SQL, unlike Prisma + Mongo's ObjectId issues); migrate the `user`/`account` collections, preserving the existing bcrypt hashes. This drops the second (native `MongoClient`) pool that Phase 1 introduced.
+- **Drop Mongoose entirely**: once domain + auth are on Postgres, remove Mongoose, `lib/database.ts`'s cached connection, and the `models/*.ts` schemas; `lib/env.ts`'s `MONGO_URI` retires in favour of the Postgres URL.
+- **tRPC layer**: typed routers for the domain reads/writes; Phase 0's `requireAdmin()` becomes a tRPC `adminProcedure` middleware (the one clean fit flagged during scoping). Server Actions that remain stay end-to-end typed; adopt tRPC where the inbox's interactive/polling surface benefits from TanStack Query.
+- **`#116` inbox slice**: swap Gmail IMAP/SMTP for **Resend** + a Prisma-backed message store, so the inbox reads from a real table rather than a live IMAP connection.
+
+**Why it was deferred, and why it's now un-deferred:** originally (2026-07-06) Prisma + tRPC was weighed and **deferred** — Prisma is *hobbled on MongoDB* (pinned to v6, since v7 dropped Mongo support; no real migrations, only `prisma db push`; replica-set required) and tRPC was *low-value* for a Server-Actions-first, RSC-rendered app with no client-side data fetching (only `@tanstack/react-table` for UI). The 2026-07-09 reshape flips both premises: rather than run Prisma *on* Mongo, the decision is to **leave Mongo entirely** for Postgres — Prisma's full-power home (v7, real migrations, no ObjectId friction), and a small flat 3-table move since the models are relation-free — while the inbox rework (#116) introduces exactly the interactive/polling surface that makes tRPC + TanStack Query worthwhile. Treated as its own migration, not a bolt-on.
+
+**Verify:** domain CRUD + auth work against Postgres; a one-time data-move script ports existing Mongo docs; migrated users log in with their *existing* bcrypt passwords; `requireAdmin`/`adminProcedure` still reject forged roles; the Phase 4 tests stay green (re-pointed at the new data layer); `npm run build`.
+
+---
+
+## Phase 7 — i18n completion (P1/P2) · ~1–2 days
 
 - **i18n**: expand `messages/en.json`/`tr.json` from 2 keys to full coverage; extract ~95% hardcoded strings (Navbar, Footer, `HeroWavy`, About, forms, ~30 Zod messages) into namespaced keys via `useTranslations`/`getTranslations`; move Zod messages into schema factories taking `t` so validation localizes.
+
+**Verify:** EN/TR toggle switches every visible string incl. validation errors; `npm run build`.
+
+---
+
+## Phase 8 — Frontend polish (P2) · ~2–3 days
+
 - **State consolidation**: standardize on **zustand**; port the inbox jotai atom (`use-mail.jsx`) to a small store; **delete** dead `stores/counter-store.js`, `components/Counter.jsx`, the broken-import `stores/mailStore.js`, and jotai from deps.
 - **RSC-by-default**: remove needless `"use client"` (~55/90 files — `Footer`, static content) leaf-up; keep it only where hooks/handlers/`useSession`/framer-motion/dropzones need it.
 - **Error/loading boundaries**: add `error.tsx` at `app/[locale]/` and `(dashboard)/` + root `global-error.tsx`; replace manual `if(!data)` blocks with `Suspense` + the existing `loading.jsx` files. This also covers the Phase 2-surfaced fragility where `app/[locale]/about/page.jsx` does `members?.map(...)`, which throws if `getMembers` returns its `{ error }` shape on a getter DB failure (see `phase2/db-env-hardening.md`).
 - **a11y**: skip link + real `<main>` landmark on the public layout; `aria-current` on active nav; consistent `htmlFor`/`id`; descriptive `alt`; `rel="noopener noreferrer"` on external links; guard `AccountMenu` name access.
 - **DRY dropzones**: extract a shared `useImageDropzone` hook/base; the three variants become thin wrappers. Extract the copy-pasted responsive-width `useEffect`.
 - **Images**: replace raw `<img>` with `next/image` (remote patterns already in `next.config.mjs`).
+- **Visual refresh (per epic #81)**: Tailwind v4, a shadcn/ui component refresh, and Aceternity UI accents — the design-modernization layer on top of the structural cleanup above.
 
-**Verify:** EN/TR toggle switches every visible string incl. validation errors; keyboard-only tab-through + skip link; error boundaries render on a thrown error; removed state lib absent from the bundle; axe/Lighthouse a11y pass; `npm run build`.
+**Verify:** keyboard-only tab-through + skip link; error boundaries render on a thrown error; removed state lib absent from the bundle; axe/Lighthouse a11y pass; `npm run build`.
 
 ---
 
-## Phase 7 — Migrate npm → pnpm (P2, final step) · ~0.5 day
+## Phase 9 — Migrate npm → pnpm (P2, final step) · ~0.5 day
 
-Swap the package manager from npm to **pnpm** once the dependency tree has fully settled. Placed **last, after Phase 6**, deliberately: Phases 1/4/5/6 each mutate `package.json` + the lockfile (Better Auth swap, Next 16/React 19 bump, test/lint tooling, jotai removal). Converting after they land means **one** lockfile migration and **one** CI repoint instead of repeated npm↔pnpm churn or cross-phase lockfile conflicts. Independently shippable and fully revertible (restore `package-lock.json`, delete `pnpm-lock.yaml`).
+Swap the package manager from npm to **pnpm** once the dependency tree has fully settled. Placed **last, after Phase 8**, deliberately: Phases 1/4/5/6/8 each mutate `package.json` + the lockfile (Better Auth swap, test/lint tooling, Next 16/React 19 bump, the Prisma/tRPC/TanStack data layer, jotai removal). Converting after they land means **one** lockfile migration and **one** CI repoint instead of repeated npm↔pnpm churn or cross-phase lockfile conflicts. Independently shippable and fully revertible (restore `package-lock.json`, delete `pnpm-lock.yaml`).
 
 - **Pin the toolchain**: `corepack enable`; add `"packageManager": "pnpm@10.x"` to `package.json` (exact version+hash pinned by corepack) so every environment — local, CI, and Vercel — resolves the same pnpm.
 - **Convert the lockfile losslessly**: `pnpm import` (reads `package-lock.json` → seeds `pnpm-lock.yaml`, preserving resolved versions), then delete `package-lock.json` and run `pnpm install` to finalize. Commit `pnpm-lock.yaml`.
 - **Handle strict linking (phantom deps)**: pnpm's non-flat `node_modules` surfaces any undeclared/phantom dependency (candidates: EdgeStore, Radix, next-intl transitives). **Fix by declaring the real dependency**, not by masking it. Add `.npmrc` with `shamefully-hoist=true` only as a documented last resort if a dep genuinely can't resolve under strict linking.
-- **Repoint Phase 5 CI** (`.github/workflows/ci.yml`): add `pnpm/action-setup`, switch `actions/setup-node` cache to `pnpm`, replace `npm ci` → `pnpm install --frozen-lockfile` (fails on a lockfile/`package.json` mismatch — the reproducibility guarantee) and `npm run <x>` → `pnpm <x>`. Local dev keeps plain `pnpm install`, which is allowed to update the lockfile.
-- **Repoint husky/lint-staged** (Phase 5) and any script that shells out to `npm`.
+- **Repoint Phase 4 CI** (`.github/workflows/ci.yml`): add `pnpm/action-setup`, switch `actions/setup-node` cache to `pnpm`, replace `npm ci` → `pnpm install --frozen-lockfile` (fails on a lockfile/`package.json` mismatch — the reproducibility guarantee) and `npm run <x>` → `pnpm <x>`. Local dev keeps plain `pnpm install`, which is allowed to update the lockfile.
+- **Repoint husky/lint-staged** (Phase 4) and any script that shells out to `npm`.
 - **Vercel deploy**: no config change needed — Vercel auto-detects pnpm from the committed `pnpm-lock.yaml` + `packageManager` field and installs with frozen-lockfile semantics by default. Verify the first post-migration deploy build resolves under pnpm's strict linking (same phantom-dep check as CI); if a dep only breaks on Vercel, the fix is the same (declare the real dep, `.npmrc` hoist as last resort).
 - **Update docs**: CLAUDE.md **Commands** section (`pnpm dev`/`pnpm build`/`pnpm lint`), README, and the `.env.example` generation command — all npm invocations → pnpm.
 
@@ -173,13 +195,15 @@ Swap the package manager from npm to **pnpm** once the dependency tree has fully
 | 1 | Better Auth migration (new files TS) | 3–5 d |
 | 2 | DB/env hardening | 1–1.5 d |
 | 3 | Full TypeScript migration | 3–5 d |
-| 4 | Next 16 / React 19 | 2–3 d |
-| 5 | Tooling / tests / CI | 2–3 d |
-| 6 | i18n + frontend polish | 3–5 d |
-| 7 | Migrate npm → pnpm | 0.5 d |
-| **Total** | | **~16–24 days** |
+| 4 | Tooling / tests / CI | 2–3 d |
+| 5 | Next 16 / React 19 | 2–3 d |
+| 6 | Data layer: Prisma on Postgres + tRPC | 5–8 d |
+| 7 | i18n completion | 1–2 d |
+| 8 | Frontend polish | 2–3 d |
+| 9 | Migrate npm → pnpm | 0.5 d |
+| **Total** | | **~20–32 days** |
 
-**Dependencies:** Phase 1 depends on Phase 0's server-side role derivation (so the swap doesn't reintroduce the vuln) and Phase 2's cached connection (pull forward for the `Db`). Phase 3 depends on Phase 1 (type against final auth). Phase 4's codemod runs after Phase 3. Phases 5–6 want the final TS/Next-16 shape (except Phase 5's lint/format config, which can move earlier). Phase 7 (pnpm) is strictly last: it repoints Phase 5's CI/husky commands and needs the dependency tree fully settled, so it lands after every dep-mutating phase; it is independently revertible.
+**Dependencies:** Phase 1 depends on Phase 0's server-side role derivation (so the swap doesn't reintroduce the vuln) and Phase 2's cached connection (pull forward for the `Db`). Phase 3 depends on Phase 1 (type against final auth). Phase 4 (tooling/tests/CI) wants the TS shape from Phase 3 and lands *before* the framework bump so its suite is the regression net for it (its lint/format config alone can move earlier). Phase 5's Next 16 codemod runs after Phase 3's typed files, backed by Phase 4's tests. Phase 6 (data layer) is the largest — it reworks both domain data and auth onto Postgres and wants the typed/tested/upgraded shape (Phases 3–5) first; it absorbs #116. Phases 7–8 (i18n, frontend polish) want the final data/framework shape. Phase 9 (pnpm) is strictly last: it repoints Phase 4's CI/husky commands and needs the dependency tree fully settled, so it lands after every dep-mutating phase; it is independently revertible.
 
 ## Critical files
 
@@ -190,27 +214,9 @@ Swap the package manager from npm to **pnpm** once the dependency tree has fully
 - `middleware.js` → `middleware.ts` — next-auth+next-intl → Better Auth (optimistic) + next-intl
 - `lib/database.js` — cached connection + source of the native `Db` for Better Auth
 - `lib/env.ts`, `lib/authGuard.js`→`.ts`, `scripts/migrations/migrate-to-better-auth.ts` — new
-- `package.json` (`packageManager` field), `package-lock.json` → `pnpm-lock.yaml`, `.npmrc` (new, conditional), `.github/workflows/ci.yml` (repoint) — Phase 7 pnpm migration
+- `prisma/schema.prisma` + tRPC routers (new), `lib/auth.ts` (`mongodbAdapter` → Prisma adapter), `lib/database.ts` + `models/*.ts` (removed with Mongoose), `lib/env.ts` (`MONGO_URI` → Postgres URL) — Phase 6 data layer
+- `package.json` (`packageManager` field), `package-lock.json` → `pnpm-lock.yaml`, `.npmrc` (new, conditional), `.github/workflows/ci.yml` (repoint) — Phase 9 pnpm migration
 
 ## Better Auth references (verified July 2026)
 
 - [MongoDB adapter](https://www.better-auth.com/docs/adapters/mongo) · [Next.js integration](https://www.better-auth.com/docs/integrations/next) · [Admin plugin](https://www.better-auth.com/docs/plugins/admin) · [Email & Password (custom hash/verify)](https://www.better-auth.com/docs/authentication/email-password) · [Database concepts (additionalFields)](https://www.better-auth.com/docs/concepts/database) · [Clerk migration (bcrypt pattern)](https://www.better-auth.com/docs/guides/clerk-migration-guide)
-
----
-
-## Deferred / candidate future migrations
-
-Ideas considered during scoping but **explicitly out of scope for Phases 0–6**. Recorded here (CLAUDE.md rule 1) so they are not re-litigated cold.
-
-### Prisma + tRPC data layer — considered & deferred (2026-07-06)
-
-Replacing the in-app ORM (Mongoose) with **Prisma**, and fronting the domain data with a **tRPC** API layer, was weighed and **deferred**. The data layer stays **Mongoose + MongoDB**, and Phase 1 (Better Auth) is unchanged (native `mongodbAdapter` sourcing the `Db` from the Mongoose connection; Mongoose kept for domain models).
-
-**Why deferred:**
-- **Prisma is hobbled on MongoDB** — pinned to Prisma v6 (v7 dropped Mongo support), no real migrations (`prisma db push` only), and it requires a replica-set deployment.
-- **tRPC is low-value for this app today** — it is Server-Actions-first and every domain read is server-rendered in RSCs (no client-side data fetching, no React Query/SWR — only `@tanstack/react-table` for UI). On TypeScript the Server Actions are already end-to-end typed, so tRPC would add an RPC layer + provider plumbing for little gain. (The one clean fit: Phase 0's `requireAdmin()` → a tRPC `adminProcedure` middleware.)
-
-**If ever pursued** — treat it as its own migration, not a bolt-on:
-- Pair Prisma with **Postgres**, its full-power home (v7, real migrations, no ObjectId friction). The domain models are flat and relation-free (`work.workContributors` is a plain string), so it is a small 3-table schema + one-time data move.
-- Adopt tRPC only if genuinely client-heavy / interactive features arrive.
-- Better Auth could stay on Mongo (two databases) or also move to Postgres via its Prisma adapter (which works cleanly on SQL, unlike the Prisma + Mongo ObjectId issues).
