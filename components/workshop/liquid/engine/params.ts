@@ -128,9 +128,16 @@ export interface FormParams extends CascadeParams {
   puddle: string;
   /** Reflections of the shapes in the bottom pool (0 = off). */
   reflect: number;
-  /** The first shape is made of the hero pool's liquid (pours out of it), not poured from above. */
-  fromPool: boolean;
-  /** Share of the hero pool that spills into the falls before the first shape takes the rest. */
+  /**
+   * Where the first shape comes from: "falls" (falling droplets turn into it, round 7),
+   * "pool" (the rest of the hero pool pours into it, round 6), "above" (round 4).
+   */
+  firstFrom: string;
+  /** Share of each droplet's trip spent just falling before it turns into the shape (falls). */
+  fallFirst: number;
+  /** How much longer the first shape's turn is than the others' (the pool -> code stretch). */
+  firstSlot: number;
+  /** Share of the hero pool that spills slowly into the falls before the rest goes at once. */
   poolToFalls: number;
   /** Surface-tension wobble while a shape holds (px). */
   wobble: number;
@@ -292,7 +299,9 @@ export function defaultParams(): AllParams {
       handover: "morph",
       puddle: "base",
       reflect: 1,
-      fromPool: true,
+      firstFrom: "falls",
+      fallFirst: 0.45,
+      firstSlot: 1.6,
       poolToFalls: 0.45,
       wobble: 2.5,
       glint: 1,

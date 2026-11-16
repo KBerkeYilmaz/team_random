@@ -7,17 +7,21 @@
 // the flow is good", the wordmark is gone ("hideous"), more vibrant colours (LOOKS.vivid).
 // Round 5 (after "going really good"): the liquid morph hand-over and pool reflections.
 // Round 6: "pool particles should slowly transition into falling particles ... right now
-// they are disconnected" + "particles in pool should transform into the code shape": one
-// continuous liquid. The hero pool drains (scrubbed): it slides over its near edge and
-// pours, the falls cross-fade out of that pour, and what is left of it pours down into the
-// first shape, which now sits lower. Once it is empty the falls come from above.
+// they are disconnected": one continuous liquid. The hero pool drains (scrubbed): it
+// slides over its near edge and pours, and the falls cross-fade out of that pour. Once it
+// is empty the falls come from above. Shapes sit lower.
+// Round 7: "it should fall a little bit before turning into the code shape ... not from
+// the actual pool ... pool, a couple of seconds going on, to turn into code": the pool
+// pours out completely into the falls first; then, after a stretch of just falls, falling
+// droplets bend out of the falls into the first shape. (Out of the pool, round 6, and
+// from above, round 4, stay as panel options.)
 //
 // The story. Scroll position, smoothed by a critically damped spring so wheel steps glide:
 //   hero   -> only the pool and its light; scrolling out, it slowly slides over its near
 //             edge and pours, and that pour becomes the cascade
-//   then   -> the shapes take turns, evenly paced down the rest of the page. The first one
-//             is the rest of the pool pouring down into it (the bottom of the shape first,
-//             like a mould filling) while the pool runs dry.
+//   then   -> the shapes take turns down the rest of the page. The first one gets a longer
+//             turn: droplets of the falls fall a little, then turn into it (the bottom of
+//             the shape first, like a mould filling).
 //             Each hand-over is either:
 //               morph (default): the same liquid slumps into a glowing puddle under the
 //                 shape, then rises out of it into the next shape, bottom first;
@@ -84,8 +88,10 @@ uniform float uClock;
 uniform float uSize;
 uniform float uAlphaK;
 uniform vec3 uLight;      // light direction (shape space, z towards the viewer)
-uniform float uFromPool;  // 1: this pour comes out of the hero pool instead of from above
+uniform float uFirstFrom; // where a pour-in comes from: 0 above, 1 the hero pool, 2 the falls
 uniform float uPoolLeft;  // how much of the hero pool's surface is left (v units, 0..1)
+uniform float uFallTop;   // where the falls start on screen (px)
+uniform float uFallFirst; // share of a droplet's trip spent just falling before it turns
 #ifdef MIRROR
 uniform float uMirrorY;   // the bottom pool's surface line (px)
 uniform float uReflect;   // reflection strength (0 hides it)
@@ -156,14 +162,47 @@ void main() {
   // Pouring in: the bottom of the shape fills first and the level rises (h: 0 bottom).
   // Each droplet sets off at its own moment (never before uForm 0, so nothing pops in
   // mid-air) and travels for fallDur, in uForm units.
-  bool fromPool = uFromPool > 0.5;
-  float fallDur = fromPool ? 0.3 + 0.12 * r2 : 0.2 + 0.1 * r2;
+  bool fromFalls = uFirstFrom > 1.5;
+  bool fromPool = uFirstFrom > 0.5 && !fromFalls;
+  float fallDur = fromFalls
+    ? 0.55 + 0.15 * r2
+    : fromPool ? 0.3 + 0.12 * r2 : 0.2 + 0.1 * r2;
   float depart = (1.0 - fallDur) * clamp(0.78 * h + 0.22 * r1, 0.0, 1.0);
   float q = clamp((uForm - depart) / fallDur, 0.0, 1.0);
   float startY = -24.0 - 160.0 * r3;
   float alpha;
   float tcol;
-  if (fromPool && q < 1.0) {
+  if (fromFalls && q < 1.0) {
+    // Out of the falls (the pool has poured into them by now): the droplet starts as one
+    // of the falling particles, spread wider than the shape, and falls with them for the
+    // first uFallFirst of its trip. Then its fall bends into its place in the shape:
+    // a Hermite curve that leaves with the fall's downward speed (so it carries on down a
+    // little through the turn) and arrives at rest.
+    vec2 slot = pos;
+    float qf = clamp(uFallFirst, 0.05, 0.9);
+    float drift = sin(r1 * 40.0 + uTime * 1.3) * 6.0;
+    vec2 fallStart = vec2(
+      uCenter.x + (slot.x - uCenter.x) * 1.4 + (r4 - 0.5) * uViewport.x * 0.35,
+      max(uFallTop, 0.0) + r3 * uViewport.y * 0.3
+    );
+    float fallPx = uViewport.y * (0.12 + 0.1 * r2);
+    if (q < qf) {
+      float k = q / qf;
+      pos = fallStart + vec2(drift * k, fallPx * k * k);
+    } else {
+      float t = (q - qf) / (1.0 - qf);
+      vec2 fallEnd = fallStart + vec2(drift, fallPx);
+      vec2 fallVel = vec2(0.0, 1.2 * fallPx / qf * (1.0 - qf));
+      float t2 = t * t;
+      float t3 = t2 * t;
+      pos = (2.0 * t3 - 3.0 * t2 + 1.0) * fallEnd
+        + (t3 - 2.0 * t2 + t) * fallVel
+        + (3.0 * t2 - 2.0 * t3) * slot;
+    }
+    float turned = smoothstep(qf, 1.0, q);
+    alpha = smoothstep(0.0, 0.08, q) * mix(0.75, aLit, turned);
+    tcol = mix(mix(0.62, 0.55, uTheme), shaded, turned);
+  } else if (fromPool && q < 1.0) {
     // Out of the hero pool: from somewhere on what is left of its surface, along it to the
     // near edge, over the edge and down into the mould. The curve's bend is kept between
     // the start and the slot, so a droplet never dips below where it is going.
@@ -304,13 +343,59 @@ interface Layer {
 /** v depth of the hero pool band that is still pouring over its edge (see POOL_VERT). */
 const POUR_V = 0.18;
 
-/** Where the first shape's scroll slot starts, and how long a slot is (px of scroll). */
-function storyLayout(f: FrameState, n: number) {
+/** The hero pool's slow drain ends at this share of the hero's scroll... */
+const DRAIN_SLOW_END = 0.55;
+/** ...and the rest has poured into the falls by this one. */
+const DRAIN_END = 0.7;
+/** Share of the first shape's (longer) turn spent forming it. */
+const FIRST_POUR = 0.55;
+
+/** Cubic Hermite from (x0, y0, slope m0) to (x1, y1, slope m1); clamped outside. */
+function hermite(
+  x: number,
+  x0: number,
+  x1: number,
+  y0: number,
+  y1: number,
+  m0: number,
+  m1: number,
+): number {
+  const w = x1 - x0;
+  const t = clamp((x - x0) / w, 0, 1);
+  const t2 = t * t;
+  const t3 = t2 * t;
+  return (
+    (2 * t3 - 3 * t2 + 1) * y0 +
+    (t3 - 2 * t2 + t) * w * m0 +
+    (3 * t2 - 2 * t3) * y1 +
+    (t3 - t2) * w * m1
+  );
+}
+
+/**
+ * The story's scroll layout (px of scroll). It starts as the hero pool runs dry. The first
+ * shape's turn is `firstSlot` times longer than the others (it is formed out of the falls,
+ * which takes a while); the rest share what is left of the page evenly.
+ */
+function storyLayout(
+  f: FrameState,
+  n: number,
+  firstSlot: number,
+  startExit: number,
+) {
   const s = f.sections;
-  // The first shape starts pouring once the hero pool has mostly spilled away.
-  const start = Math.max(f.H * 0.25, s.heroBottom - f.H * 0.45);
-  const end = Math.max(start + n * f.H * 0.3, s.docH - f.H);
-  return { start, slot: (end - start) / n };
+  const heroH = Math.max(1, s.heroBottom - s.heroTop);
+  const start = s.heroTop + heroH * startExit;
+  const units = n - 1 + firstSlot;
+  const end = Math.max(start + units * f.H * 0.3, s.docH - f.H);
+  const unit = (end - start) / units;
+  return {
+    unit,
+    /** Where shape k's turn starts. */
+    at: (k: number) => start + (k === 0 ? 0 : (firstSlot + k - 1) * unit),
+    /** How long shape k's turn is. */
+    len: (k: number) => (k === 0 ? firstSlot : 1) * unit,
+  };
 }
 
 /**
@@ -414,8 +499,10 @@ export function createForm(ctx: VariantContext): VariantSystem {
       uLight: { value: new THREE.Vector3(0, 0.6, 0.8) },
       uMirrorY: { value: 0 },
       uReflect: { value: 0 },
-      uFromPool: { value: 0 },
+      uFirstFrom: { value: 0 },
       uPoolLeft: { value: 1 },
+      uFallTop: { value: 0 },
+      uFallFirst: { value: 0.45 },
       // The hero pool's own uniforms, so poolSurface() always matches what it draws.
       ...poolSurfaceUniforms(ctx.topPool),
     };
@@ -549,23 +636,52 @@ export function createForm(ctx: VariantContext): VariantSystem {
       }
       storyY = y;
 
-      const { start, slot } = storyLayout(f, n);
       const pinned = SHAPES.findIndex((s) => s.key === p.shape);
       const morph = p.handover === "morph" && !f.reduced && pinned < 0;
+      // Where the first shape comes from: 2 the falls, 1 the hero pool, 0 above.
+      const firstFrom =
+        f.reduced || pinned >= 0
+          ? 0
+          : p.firstFrom === "pool"
+            ? 1
+            : p.firstFrom === "above"
+              ? 0
+              : 2;
+      const layout = storyLayout(
+        f,
+        n,
+        Math.max(1, p.firstSlot),
+        firstFrom === 1 ? DRAIN_SLOW_END : DRAIN_END,
+      );
+      const { at, len, unit } = layout;
       // The first shape's pour-in, scrubbed (0..1).
-      const form0 = clamp((y - start) / (p.pourLen * slot), 0, 1);
+      const form0 = clamp((y - at(0)) / (FIRST_POUR * len(0)), 0, 1);
 
-      // One liquid. The hero pool empties in two scrubbed stages: while the hero scrolls
-      // away it slowly slides over its near edge and pours (into the falls), then what is
-      // left pours down into the first shape as it fills. Scroll back and it refills.
+      // One liquid. The hero pool empties, scrubbed: while the hero scrolls away it slides
+      // over its near edge and pours into the falls, slowly at first (poolToFalls of it),
+      // then the rest. Out of the pool (round 6), that rest pours into the first shape
+      // instead. Scroll back and it refills.
       const s = f.sections;
       const heroH = Math.max(1, s.heroBottom - s.heroTop);
       const toFalls = clamp(p.poolToFalls, 0, 1);
       const exit = (y - s.heroTop) / heroH;
+      const rest = 1 + POUR_V - toFalls;
+      // One smooth curve: the slow stage hands its speed to the fast one (no stall where
+      // they meet), and the last of the pool rushes out at the end.
+      const e0 = 0.02;
+      const e1 = DRAIN_SLOW_END;
+      const seam = Math.min(
+        (1.2 * toFalls) / (e1 - e0),
+        (2.5 * rest) / (DRAIN_END - e1),
+      );
+      const slow = hermite(exit, e0, e1, 0, toFalls, 0, seam);
       drain = f.reduced
         ? 1 + POUR_V // the static frame hides the hero pool: the falls come from above
-        : toFalls * smoothstep(0.02, 0.55, exit) +
-          (1 + POUR_V - toFalls) * form0;
+        : firstFrom === 1
+          ? slow + rest * form0 // round 6: the rest pours into the first shape
+          : exit <= e1
+            ? slow
+            : hermite(exit, e1, DRAIN_END, toFalls, 1 + POUR_V, seam, 0);
       // Perspective crowds the far half of the pool into a thin strip at its horizon, so a
       // drain linear in depth would show nothing for a long while and then rush. Drain
       // linearly on screen instead: the back edge recedes evenly as you scroll.
@@ -606,14 +722,19 @@ export function createForm(ctx: VariantContext): VariantSystem {
 
       if (!targets) return;
       const shapes = targets;
-      // The first shape is the pool's liquid while its edge is on screen to pour from.
-      const fromPool =
-        p.fromPool &&
-        !f.reduced &&
-        pinned < 0 &&
-        f.sourceY > -20 &&
-        f.sourceY < f.H + 20;
+      // (Out of the pool: once its edge has scrolled off the top, the droplets simply come
+      // in from above the screen along the same path, so the source never switches.)
+      const first = firstFrom;
       const poolLeft = clamp(1 - drainV, 0, 1);
+      const fallTop = lerp(f.sourceY, -40, dry);
+      // Sets where layer `l`'s pour-in comes from (only a first pour has a choice).
+      const setFirst = (l: Layer, isFirst: boolean) => {
+        const u = l.material.uniforms;
+        u.uFirstFrom.value = isFirst ? first : 0;
+        u.uPoolLeft.value = poolLeft;
+        u.uFallTop.value = fallTop;
+        u.uFallFirst.value = p.fallFirst;
+      };
 
       // A hard fling bursts the shapes; they gather again as the scroll slows.
       const fling = f.reduced
@@ -713,23 +834,25 @@ export function createForm(ctx: VariantContext): VariantSystem {
         let pair = 0;
         let M = 0;
         for (let k = 0; k < n - 1; k++) {
-          const m0 = start + (k + 1) * slot - 0.45 * p.meltLen * slot;
-          const m1 = start + (k + 1) * slot + p.pourLen * slot;
+          const m0 = at(k + 1) - 0.45 * p.meltLen * unit;
+          const m1 = at(k + 1) + p.pourLen * unit;
           if (y >= m0) {
             pair = k;
             M = clamp((y - m0) / (m1 - m0), 0, 1);
           }
         }
-        const pour = clamp((y - start) / (p.pourLen * slot), 0, 1);
+        const pour = form0;
         const l = layers[0];
         hide(layers[1]);
         for (let k = 0; k < n; k++) lastRelease[k] = 0;
         if (pour <= 0) {
           hide(l);
           label =
-            drain > 0.01
-              ? `pool pouring ${Math.round((drain / (1 + POUR_V)) * 100)}%`
-              : "";
+            drain < 0.01
+              ? ""
+              : drain < 1 + POUR_V - 0.005
+                ? `pool pouring ${Math.round((drain / (1 + POUR_V)) * 100)}%`
+                : "falls";
         } else {
           upload(l, pair, Math.min(pair + 1, n - 1));
           const scaleA = scaleOf(pair);
@@ -747,8 +870,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
           u.uScale.value = scaleA;
           u.uScaleB.value = scaleB;
           u.uForm.value = pair === 0 && M === 0 ? pour : 1;
-          u.uFromPool.value = fromPool && pair === 0 && M === 0 ? 1 : 0;
-          u.uPoolLeft.value = poolLeft;
+          setFirst(l, pair === 0 && M === 0);
           u.uRelease.value = 0;
           u.uMorphOn.value = 1;
           u.uMorph.value = M;
@@ -772,9 +894,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
           );
           const from = SHAPES[pair].key;
           const to = SHAPES[Math.min(pair + 1, n - 1)].key;
-          const pourLabel = fromPool
-            ? `pool -> ${from} ${Math.round(pour * 100)}%`
-            : `${from} pouring ${Math.round(pour * 100)}%`;
+          const pourLabel = `${["above", "pool", "falls"][first]} -> ${from} ${Math.round(pour * 100)}%`;
           label =
             M <= 0
               ? pour < 1
@@ -791,19 +911,20 @@ export function createForm(ctx: VariantContext): VariantSystem {
       // each slot, melt out across the end of it (overlapping the next shape's pour); the
       // last one never melts.
       for (let k = 0; k < n; k++) {
-        const s0 = start + k * slot;
+        const s0 = at(k);
         release[k] = 0;
         if (pinned >= 0) {
           form[k] = k === pinned ? 1 : 0;
         } else if (f.reduced) {
           // No pours or melts under reduced motion: the slot's shape, simply there.
-          const inSlot = y >= s0 && (y < s0 + slot || k === n - 1);
+          const inSlot = y >= s0 && (y < s0 + len(k) || k === n - 1);
           form[k] = inSlot || (k === 0 && y < s0) ? 1 : 0;
         } else {
-          form[k] = clamp((y - s0) / (p.pourLen * slot), 0, 1);
+          form[k] =
+            k === 0 ? form0 : clamp((y - s0) / (p.pourLen * unit), 0, 1);
           if (k < n - 1) {
-            const m0 = s0 + slot - 0.45 * p.meltLen * slot;
-            release[k] = clamp((y - m0) / (p.meltLen * slot), 0, 1);
+            const m0 = s0 + len(k) - 0.45 * p.meltLen * unit;
+            release[k] = clamp((y - m0) / (p.meltLen * unit), 0, 1);
           }
         }
       }
@@ -821,8 +942,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
         const u = l.material.uniforms;
         u.uScale.value = scale;
         u.uForm.value = form[k];
-        u.uFromPool.value = fromPool && k === 0 ? 1 : 0;
-        u.uPoolLeft.value = poolLeft;
+        setFirst(l, k === 0);
         u.uRelease.value = release[k];
         u.uMorphOn.value = 0;
         u.uMorph.value = 0;

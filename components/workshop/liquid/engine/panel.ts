@@ -124,11 +124,28 @@ export function createPanel(opts: {
       };
       for (const spec of SHAPES) shapeOptions[spec.key] = spec.key;
       folder.addBinding(m, "shape", { options: shapeOptions });
-      folder.addBinding(m, "fromPool", { label: "first shape from pool" });
+      folder.addBinding(m, "firstFrom", {
+        label: "first shape from",
+        options: {
+          "the falls": "falls",
+          "the pool": "pool",
+          above: "above",
+        },
+      });
+      folder.addBinding(m, "fallFirst", {
+        min: 0.1,
+        max: 0.8,
+        label: "fall before turning",
+      });
+      folder.addBinding(m, "firstSlot", {
+        min: 1,
+        max: 3,
+        label: "pool → code stretch",
+      });
       folder.addBinding(m, "poolToFalls", {
         min: 0,
         max: 1,
-        label: "pool → falls",
+        label: "slow drain share",
       });
       folder.addBinding(m, "handover", {
         label: "hand-over",
