@@ -27,6 +27,8 @@ uniform vec3 uBaseL;
 uniform vec4 uGlowPos[${GLOW_COUNT}];
 uniform vec4 uGlowCol[${GLOW_COUNT}];
 uniform vec3 uEdgeCol;
+uniform float uDots;
+uniform float uDotSpacing;
 varying vec2 vUv;
 
 ${NOISE}
@@ -66,6 +68,12 @@ void main() {
     light += col * gc.a * g;
   }
   light *= uGlowGain;
+  // LED dot matrix (the user's reference): the light reads through a fine grid of dots
+  // (dimmer between them, hot on them, same average), and the base gets a faint lit grid.
+  vec2 cell = fract(p / uDotSpacing) - 0.5;
+  float dotMask = 1.0 - smoothstep(0.55, 1.15, length(cell) * uDotSpacing);
+  light *= mix(1.0, 0.62 + 3.8 * dotMask, uDots);
+  base += base * 0.18 * dotMask * uDots * (1.0 - uTheme);
   // Dark: light adds. Light theme: the same field becomes a faint pastel haze of the
   // glow's hue over the porcelain base (never muddy brown).
   vec3 dark = base + light;
@@ -93,6 +101,8 @@ export function createBackgroundMaterial(
       uGlowPos: { value: glowPos },
       uGlowCol: { value: glowCol },
       uEdgeCol: { value: new THREE.Color() },
+      uDots: { value: 0 },
+      uDotSpacing: { value: 5 },
     },
     vertexShader: FULLSCREEN_VERT,
     fragmentShader: BACKGROUND_FRAG,
@@ -113,6 +123,7 @@ uniform float uGrain;
 uniform float uVignette;
 uniform float uChroma;
 uniform float uVelN;
+uniform vec3 uBase;
 varying vec2 vUv;
 
 ${HASH}
@@ -138,8 +149,12 @@ void main() {
     texture2D(uScene, vUv).g,
     texture2D(uScene, vUv - vec2(0.0, ca)).b
   );
-  c *= uExposure;
-  c = mix(tonemap(c), clamp(c, 0.0, 1.0), uTheme);
+  // Additive looks: only the light added on top of the base is tonemapped, then screened
+  // over it, so a bright base (the vivid orange) stays exactly its colour and light lifts
+  // it toward cream instead of the whole frame being compressed.
+  vec3 lit = max(c - uBase, 0.0) * uExposure;
+  vec3 additive = uBase + (1.0 - uBase) * tonemap(lit);
+  c = mix(additive, clamp(c * uExposure, 0.0, 1.0), uTheme);
   vec2 d = vUv - 0.5;
   c *= 1.0 - uVignette * dot(d, d) * 1.6 * mix(1.0, 0.3, uTheme);
   c = linearToSRGB(clamp(c, 0.0, 1.0));
@@ -161,6 +176,7 @@ export function createFinalMaterial(common: Record<string, THREE.IUniform>) {
       uTime: common.uTime,
       uTheme: common.uTheme,
       uVelN: common.uVelN,
+      uBase: { value: new THREE.Color() },
       uExposure: { value: 1 },
       uWhite: { value: 4 },
       uGrain: { value: 0.05 },

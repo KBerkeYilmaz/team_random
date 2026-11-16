@@ -9,6 +9,7 @@ import { Pane, type FolderApi } from "tweakpane";
 import {
   assignDeep,
   defaultParams,
+  LOOKS,
   type AllParams,
   type PaletteParams,
   type VariantKey,
@@ -23,6 +24,8 @@ export interface PanelStats {
   particles: number;
   scroll: number;
   velocity: number;
+  /** form: which shape is pouring / holding / melting. */
+  story: string;
 }
 
 export interface Panel {
@@ -75,6 +78,7 @@ export function createPanel(opts: {
     particles: 0,
     scroll: 0,
     velocity: 0,
+    story: "",
   };
 
   const monitor = pane.addFolder({ title: "Monitor", expanded: true });
@@ -103,6 +107,7 @@ export function createPanel(opts: {
     label: "vel (vh/s)",
     format: (v: number) => v.toFixed(2),
   });
+  monitor.addBinding(stats, "story", { readonly: true });
 
   let variantFolder: FolderApi | null = null;
   const buildVariantFolder = (key: VariantKey) => {
@@ -115,19 +120,30 @@ export function createPanel(opts: {
     if (key === "form") {
       const m = params.form;
       const shapeOptions: Record<string, string> = {
-        "auto (sections)": "auto",
+        "auto (scroll scrubs)": "auto",
       };
       for (const spec of SHAPES) shapeOptions[spec.key] = spec.key;
       folder.addBinding(m, "shape", { options: shapeOptions });
-      folder.addButton({ title: "Replay pour" }).on("click", () => {
-        m.replay += 1;
+      folder.addBinding(m, "pourLen", {
+        min: 0.1,
+        max: 0.6,
+        label: "pour share",
       });
-      folder.addBinding(m, "formTime", {
-        min: 0.6,
-        max: 6,
-        label: "pour-in (s)",
+      folder.addBinding(m, "meltLen", {
+        min: 0.1,
+        max: 0.6,
+        label: "melt share",
       });
-      folder.addBinding(m, "meltTime", { min: 0.4, max: 4, label: "melt (s)" });
+      folder.addBinding(m, "scrub", {
+        min: 0,
+        max: 1.2,
+        label: "scrub smooth (s)",
+      });
+      folder.addBinding(m, "splash", {
+        min: 0,
+        max: 2,
+        label: "fling splash",
+      });
       folder.addBinding(m, "shapeSize", {
         min: 0.4,
         max: 1.6,
@@ -275,6 +291,11 @@ export function createPanel(opts: {
     max: 3,
     label: "particle glow",
   });
+  liquid.addBinding(C.interaction, "pointer", {
+    min: 0,
+    max: 2,
+    label: "cursor touch",
+  });
 
   const pools = pane.addFolder({ title: "Pools", expanded: false });
   pools.addBinding(C.pools, "heroHorizon", {
@@ -334,12 +355,35 @@ export function createPanel(opts: {
     max: 3,
     label: "speed chroma",
   });
+  atmosphere.addBinding(C.atmosphere, "dots", {
+    min: 0,
+    max: 1,
+    label: "LED dots",
+  });
+  atmosphere.addBinding(C.atmosphere, "dotSpacing", {
+    min: 2,
+    max: 14,
+    label: "dot pitch (px)",
+  });
 
   const palette = pane.addFolder({ title: "Theme + palette", expanded: false });
   palette.addBinding(C.theme, "override", {
     label: "theme",
     options: { "follow site": "auto", dark: "dark", light: "light" },
   });
+  // Looks fill the additive ("dark") palette plus their atmosphere in one go.
+  const lookOptions: Record<string, string> = { custom: "custom" };
+  for (const key of Object.keys(LOOKS)) lookOptions[key] = key;
+  palette
+    .addBinding(C.palette, "look", { options: lookOptions })
+    .on("change", (ev) => {
+      const look = LOOKS[ev.value as string];
+      if (!look) return;
+      Object.assign(C.palette.dark, look.palette);
+      Object.assign(C.atmosphere, look.atmosphere);
+      C.particles.glow = look.particleGlow;
+      pane.refresh();
+    });
   const addPalette = (title: string, pal: PaletteParams) => {
     const folder = palette.addFolder({ title, expanded: false });
     for (const key of Object.keys(PALETTE_LABELS) as (keyof PaletteParams)[]) {

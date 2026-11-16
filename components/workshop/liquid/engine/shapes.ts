@@ -80,15 +80,12 @@ const ICON_SEND: IconNode[] = [
   ["path", { d: "M22 2 11 13", cut: true }],
 ];
 
-/** The page's story, top to bottom (keys are what the panel's "shape" picker shows). */
+/**
+ * The scroll story, top to bottom (keys are what the panel's "shape" picker shows). Test
+ * shapes for now: the site's own lucide icons. (The round-3 TEAM RANDOM wordmark is gone:
+ * the user called it hideous. Text shapes still work, see ShapeSpec.)
+ */
 export const SHAPES: readonly ShapeSpec[] = [
-  {
-    key: "wordmark",
-    kind: "text",
-    text: "TEAM RANDOM",
-    font: "pixel",
-    weight: 700,
-  },
   { key: "code", kind: "icon", nodes: ICON_CODE, stroke: 2.4 },
   { key: "design", kind: "icon", nodes: ICON_PALETTE, stroke: 2.2 },
   { key: "web", kind: "icon", nodes: ICON_PANELS, stroke: 2.2 },

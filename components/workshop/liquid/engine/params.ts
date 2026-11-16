@@ -29,6 +29,8 @@ export interface PaletteParams {
 export interface CommonParams {
   theme: { override: "auto" | "dark" | "light" };
   palette: {
+    /** The look that last filled `dark` (panel picker); "custom" once a colour is edited. */
+    look: string;
     dark: PaletteParams;
     light: PaletteParams;
     hueDrift: number;
@@ -65,7 +67,13 @@ export interface CommonParams {
     chroma: number;
     exposure: number;
     whitePoint: number;
+    /** LED dot matrix: the light reads through a fine grid of dots (the reference's texture). */
+    dots: number;
+    /** Dot pitch in CSS px. */
+    dotSpacing: number;
   };
+  /** Touching the liquid with the pointer: pushes shapes aside, ripples the pools. */
+  interaction: { pointer: number };
   sections: {
     /** Workshop stage: false hides the site's header, sections and footer (keeps scroll length). */
     showContent: boolean;
@@ -97,16 +105,18 @@ export interface CascadeParams {
 
 /** Round 3: the cascade pours itself into silhouettes, section by section. */
 export interface FormParams extends CascadeParams {
-  /** "auto" follows the sections; a shape key pins one (for tuning). */
+  /** "auto" scrubs through the shapes with the scroll; a shape key pins one (for tuning). */
   shape: string;
-  /** Bumped by the panel's "Replay pour" button. */
-  replay: number;
   shapeSize: number;
   /** Vertical centre of the shape, as a fraction of the viewport. */
   shapeY: number;
-  /** Seconds to pour a shape in / to melt it. */
-  formTime: number;
-  meltTime: number;
+  /** Share of each shape's scroll slot spent pouring in / melting out (the rest it holds). */
+  pourLen: number;
+  meltLen: number;
+  /** Scrub smoothing: seconds the story takes to catch up with the scroll (0 = locked). */
+  scrub: number;
+  /** A hard fling bursts the shape into droplets that gather again as the scroll slows. */
+  splash: number;
   /** Surface-tension wobble while a shape holds (px). */
   wobble: number;
   glint: number;
@@ -151,21 +161,57 @@ export interface AllParams {
   drip: DripParams;
 }
 
+/**
+ * Looks for the additive ("dark") palette. vivid follows the user's reference (round 4): a
+ * saturated orange field, cream light rising through an LED dot matrix. ember is rounds
+ * 1-3: near-black with glowing red -> gold particles.
+ */
+export const LOOKS: Record<
+  string,
+  {
+    palette: PaletteParams;
+    atmosphere: Pick<
+      CommonParams["atmosphere"],
+      "glow" | "grain" | "vignette" | "dots"
+    >;
+    /** Particle brightness: on the bright orange field the liquid has to read as light. */
+    particleGlow: number;
+  }
+> = {
+  vivid: {
+    palette: {
+      base: "#EC6A34",
+      c0: "#FF934F",
+      c1: "#FFB872",
+      c2: "#FFDC97",
+      c3: "#FFF5DC",
+      accent: "#FF5C8A",
+    },
+    atmosphere: { glow: 1.1, grain: 0.035, vignette: 0.12, dots: 0.6 },
+    particleGlow: 1.9,
+  },
+  ember: {
+    palette: {
+      base: "#0C0A09",
+      c0: "#F5321E",
+      c1: "#EA580C",
+      c2: "#FFB224",
+      c3: "#FFD9A0",
+      accent: "#FF3DCB",
+    },
+    atmosphere: { glow: 1, grain: 0.05, vignette: 0.45, dots: 0 },
+    particleGlow: 1,
+  },
+};
+
 export function defaultParams(): AllParams {
   return {
     common: {
       theme: { override: "auto" },
       palette: {
-        // Dark: the site's own base (#0C0A09 = --background in .dark) and its primary
-        // orange (#EA580C), pushed toward red, amber and hot gold, with a magenta drift.
-        dark: {
-          base: "#0C0A09",
-          c0: "#F5321E",
-          c1: "#EA580C",
-          c2: "#FFB224",
-          c3: "#FFD9A0",
-          accent: "#FF3DCB",
-        },
+        // Additive palette: the vivid look by default (see LOOKS; "ember" is the old one).
+        look: "vivid",
+        dark: { ...LOOKS.vivid.palette },
         // Light: orange ink suspended in a cool porcelain liquid (deliberately not the
         // warm-cream default). Ramp runs light ink -> deep ink, so dense = darker.
         light: {
@@ -179,7 +225,7 @@ export function defaultParams(): AllParams {
         hueDrift: 0.3,
         jitterDeg: 6,
       },
-      particles: { size: 1, glow: 1 },
+      particles: { size: 1, glow: LOOKS.vivid.particleGlow },
       liquid: {
         response: 0.6,
         damping: 0.78,
@@ -200,13 +246,13 @@ export function defaultParams(): AllParams {
         rippleAmp: 1,
       },
       atmosphere: {
-        glow: 1,
-        grain: 0.05,
-        vignette: 0.45,
+        ...LOOKS.vivid.atmosphere,
         chroma: 0.6,
         exposure: 1,
         whitePoint: 4,
+        dotSpacing: 5,
       },
+      interaction: { pointer: 1 },
       sections: {
         showContent: false,
         seeThrough: true,
@@ -221,11 +267,12 @@ export function defaultParams(): AllParams {
       sway: 0.6,
       thinning: 0.35,
       shape: "auto",
-      replay: 0,
       shapeSize: 1,
       shapeY: 0.42,
-      formTime: 2.4,
-      meltTime: 1.6,
+      pourLen: 0.35,
+      meltLen: 0.35,
+      scrub: 0.35,
+      splash: 1,
       wobble: 2.5,
       glint: 1,
       drips: 1,

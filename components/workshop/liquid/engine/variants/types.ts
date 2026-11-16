@@ -83,6 +83,8 @@ export interface VariantSystem {
   glows?(out: GlowSpec[]): void;
   /** Extra light fields on top of the engine's own (form: the glow behind each shape). */
   extraGlows?(out: GlowSpec[]): void;
+  /** Variant state for __lw.state() and the panel's monitor (form: where the story is). */
+  debug?(): { story?: string };
   update(f: FrameState): void;
   focus(): PourFocus;
   /** Push this frame's impacts into `out` and clear them. */

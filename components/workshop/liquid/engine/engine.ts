@@ -132,6 +132,8 @@ export function createEngine(opts: EngineOptions): Engine {
     uJitter: { value: 0.1 },
     uSizeScale: { value: 1 },
     uGlowGain: { value: 1 },
+    // xy: pointer in screen px, z: how much it is touching the liquid (fades when idle).
+    uPointer: { value: new THREE.Vector3(-1e4, -1e4, 0) },
   };
 
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -291,6 +293,16 @@ export function createEngine(opts: EngineOptions): Engine {
   };
   document.addEventListener("visibilitychange", onVisibility);
 
+  // The pointer touches the liquid (the canvas itself is pointer-events: none).
+  const pointer = { x: -1e4, y: -1e4, px: -1e4, py: -1e4, moved: 0, touch: 0 };
+  const onPointer = (event: PointerEvent) => {
+    const r = opts.host.getBoundingClientRect();
+    pointer.x = event.clientX - r.left;
+    pointer.y = event.clientY - r.top;
+    pointer.moved = performance.now();
+  };
+  window.addEventListener("pointermove", onPointer, { passive: true });
+
   const onContextLost = (event: Event) => {
     event.preventDefault();
     lost = true;
@@ -326,6 +338,7 @@ export function createEngine(opts: EngineOptions): Engine {
     (common.uAccentD.value as THREE.Color).set(d.accent);
     (common.uAccentL.value as THREE.Color).set(l.accent);
     (background.material.uniforms.uBaseD.value as THREE.Color).set(d.base);
+    (finalMaterial.uniforms.uBase.value as THREE.Color).set(d.base);
     (background.material.uniforms.uBaseL.value as THREE.Color).set(l.base);
     // The light fields' faint tails: deep crimson leaning magenta (see BACKGROUND_FRAG).
     (background.material.uniforms.uEdgeCol.value as THREE.Color)
@@ -385,6 +398,7 @@ export function createEngine(opts: EngineOptions): Engine {
       ripples: Boolean(topRipple?.enabled),
       frozen: frozenAt,
       time,
+      ...variant.debug?.(),
     }),
     settle: () => {
       settleFrames = 2;
@@ -507,6 +521,47 @@ export function createEngine(opts: EngineOptions): Engine {
       }
       bottomRipple.step(dt);
     }
+    // Pointer: pushes the form variant's shapes aside, and ripples whichever pool is under
+    // it, scaled by how fast it moves.
+    const touching = now - pointer.moved < 140 ? 1 : 0;
+    pointer.touch = damp(pointer.touch, touching, touching ? 12 : 1.6, rawDt);
+    (common.uPointer.value as THREE.Vector3).set(
+      pointer.x,
+      pointer.y,
+      reduced ? 0 : pointer.touch * P.interaction.pointer,
+    );
+    const pointerSpeed = Math.hypot(
+      pointer.x - pointer.px,
+      pointer.y - pointer.py,
+    );
+    pointer.px = pointer.x;
+    pointer.py = pointer.y;
+    if (dt > 0 && touching && pointerSpeed > 2 && P.interaction.pointer > 0) {
+      const strength =
+        Math.min(0.5, pointerSpeed / 120) * P.interaction.pointer;
+      const drop = (
+        field: RippleField | null,
+        horizonY: number,
+        nearY: number,
+        depth: number,
+      ) => {
+        if (!field?.enabled || pointer.y < horizonY || pointer.y > nearY)
+          return;
+        const sn = (pointer.y - horizonY) / Math.max(1, nearY - horizonY);
+        const sDepth = sn * (1 - 1 / depth) + 1 / depth;
+        const v = (1 / sDepth - 1) / (depth - 1);
+        const lateral = FAR_WIDTH + (NEAR_WIDTH - FAR_WIDTH) * sn;
+        const u = (pointer.x - W / 2) / ((W / 2) * lateral);
+        field.addDrop(u * 0.5 + 0.5, v, 0.018, strength);
+      };
+      if (!owns) {
+        if (topAlpha > 0.05)
+          drop(topRipple, topHorizonY, topNearY, P.pools.heroDepth);
+        if (bottomAlpha > 0.05)
+          drop(bottomRipple, bottomHorizonY, bottomNearY, BOTTOM_DEPTH);
+      }
+    }
+
     if (topRipple?.enabled && dt > 0) {
       topDropClock -= dt;
       if (topDropClock <= 0) {
@@ -626,6 +681,11 @@ export function createEngine(opts: EngineOptions): Engine {
       }
     }
     background.material.uniforms.uGlowGain.value = P.atmosphere.glow;
+    background.material.uniforms.uDots.value = P.atmosphere.dots;
+    background.material.uniforms.uDotSpacing.value = Math.max(
+      2,
+      P.atmosphere.dotSpacing,
+    );
 
     const fu = finalMaterial.uniforms;
     fu.uExposure.value = P.atmosphere.exposure;
@@ -680,6 +740,7 @@ export function createEngine(opts: EngineOptions): Engine {
       st.particles = drawnTotal();
       st.scroll = scroll.y;
       st.velocity = scroll.velN;
+      st.story = variant.debug?.().story ?? "";
     }
   }
 
@@ -708,6 +769,7 @@ export function createEngine(opts: EngineOptions): Engine {
     themeObserver.disconnect();
     motionQuery.removeEventListener("change", onMotion);
     document.removeEventListener("visibilitychange", onVisibility);
+    window.removeEventListener("pointermove", onPointer);
     // Detach our loss handler first so tearing down doesn't flip the page to the fallback.
     canvas.removeEventListener("webglcontextlost", onContextLost);
     panel?.dispose();
