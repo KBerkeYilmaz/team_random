@@ -7,7 +7,7 @@
 //
 // Icon geometry below is copied from lucide-react 0.364.0 (already a dependency of the
 // site; ISC licence, https://lucide.dev/license): code-xml, palette, panels-top-left,
-// users, send.
+// send. (users, the CRM shape, was dropped in round 8: CRM is not a main area.)
 
 export interface Fonts {
   /** CSS font-family strings from next/font (app/fonts.ts). */
@@ -67,13 +67,6 @@ const ICON_PANELS: IconNode[] = [
   ["path", { d: "M9 21V9" }],
 ];
 
-const ICON_USERS: IconNode[] = [
-  ["path", { d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" }],
-  ["circle", { cx: 9, cy: 7, r: 4 }],
-  ["path", { d: "M22 21v-2a4 4 0 0 0-3-3.87" }],
-  ["path", { d: "M16 3.13a4 4 0 0 1 0 7.75" }],
-];
-
 const ICON_SEND: IconNode[] = [
   ["path", { d: "m22 2-7 20-4-9-9-4Z" }],
   // Filled, the plane's fold would vanish inside it: cut it back out as a crease.
@@ -89,7 +82,6 @@ export const SHAPES: readonly ShapeSpec[] = [
   { key: "code", kind: "icon", nodes: ICON_CODE, stroke: 2.4 },
   { key: "design", kind: "icon", nodes: ICON_PALETTE, stroke: 2.2 },
   { key: "web", kind: "icon", nodes: ICON_PANELS, stroke: 2.2 },
-  { key: "crm", kind: "icon", nodes: ICON_USERS, stroke: 2.2 },
   { key: "contact", kind: "icon", nodes: ICON_SEND, stroke: 2.2, fill: true },
 ];
 
