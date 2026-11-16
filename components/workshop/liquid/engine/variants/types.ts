@@ -4,6 +4,7 @@ import type * as THREE from "three";
 import type { AllParams, TierBudget, VariantKey } from "../params";
 import type { RippleField } from "../ripple";
 import type { SectionMetrics } from "../scroll";
+import type { Fonts } from "../shapes";
 
 /** Everything a variant needs for one frame. Screen px, origin top-left, y down. */
 export interface FrameState {
@@ -57,6 +58,8 @@ export interface VariantContext {
   budget: TierBudget;
   /** The engine's surface ripple tank (null when the device can't render float targets). */
   ripple: RippleField | null;
+  /** The site's next/font families, for shapes drawn from text. */
+  fonts: Fonts;
 }
 
 /** One of the background's light fields, in screen px. Colour in linear space. */
@@ -78,6 +81,8 @@ export interface VariantSystem {
    */
   readonly ownsScene?: boolean;
   glows?(out: GlowSpec[]): void;
+  /** Extra light fields on top of the engine's own (form: the glow behind each shape). */
+  extraGlows?(out: GlowSpec[]): void;
   update(f: FrameState): void;
   focus(): PourFocus;
   /** Push this frame's impacts into `out` and clear them. */

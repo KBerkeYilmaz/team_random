@@ -13,6 +13,7 @@ import {
   type PaletteParams,
   type VariantKey,
 } from "./params";
+import { SHAPES } from "./shapes";
 
 export interface PanelStats {
   variant: string;
@@ -111,7 +112,68 @@ export function createPanel(opts: {
       expanded: true,
       index: 1,
     });
-    if (key === "cup") {
+    if (key === "form") {
+      const m = params.form;
+      const shapeOptions: Record<string, string> = {
+        "auto (sections)": "auto",
+      };
+      for (const spec of SHAPES) shapeOptions[spec.key] = spec.key;
+      folder.addBinding(m, "shape", { options: shapeOptions });
+      folder.addButton({ title: "Replay pour" }).on("click", () => {
+        m.replay += 1;
+      });
+      folder.addBinding(m, "formTime", {
+        min: 0.6,
+        max: 6,
+        label: "pour-in (s)",
+      });
+      folder.addBinding(m, "meltTime", { min: 0.4, max: 4, label: "melt (s)" });
+      folder.addBinding(m, "shapeSize", {
+        min: 0.4,
+        max: 1.6,
+        label: "shape size",
+      });
+      folder.addBinding(m, "shapeY", {
+        min: 0.2,
+        max: 0.7,
+        label: "shape height",
+      });
+      folder.addBinding(m, "wobble", { min: 0, max: 8 });
+      folder.addBinding(m, "glint", { min: 0, max: 2 });
+      folder.addBinding(m, "drips", {
+        min: 0,
+        max: 2,
+        label: "drips + trickle",
+      });
+      folder.addBinding(m, "follow", {
+        min: 0,
+        max: 2,
+        label: "follow scroll",
+      });
+      folder.addBinding(m, "shapeGlow", {
+        min: 0,
+        max: 3,
+        label: "shape glow",
+      });
+      folder.addBinding(m, "sheetVeil", {
+        min: 0,
+        max: 1,
+        label: "dim cascade",
+      });
+      const behind = folder.addFolder({
+        title: "Cascade behind",
+        expanded: false,
+      });
+      behind.addBinding(m, "veil", { min: 0, max: 1, label: "centre veil" });
+      behind.addBinding(m, "veilWidth", {
+        min: 0.05,
+        max: 1,
+        label: "veil width",
+      });
+      behind.addBinding(m, "mist", { min: 0, max: 2 });
+      behind.addBinding(m, "sway", { min: 0, max: 2 });
+      behind.addBinding(m, "thinning", { min: 0, max: 1 });
+    } else if (key === "cup") {
       const c = params.cup;
       folder.addBinding(c, "fillStart", {
         min: 0,

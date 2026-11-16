@@ -22,9 +22,11 @@ import {
 import { QualityGovernor } from "./quality";
 import { RippleField } from "./ripple";
 import { ScrollTracker, clamp, damp, smoothstep } from "./scroll";
+import type { Fonts } from "./shapes";
 import { createCascade } from "./variants/cascade";
 import { createCup } from "./variants/cup";
 import { createDrip } from "./variants/drip";
+import { createForm } from "./variants/form";
 import { createStream } from "./variants/stream";
 import type {
   FrameState,
@@ -40,6 +42,8 @@ export interface EngineOptions {
   /** Pinned quality tier (`?lwq=`), or null to auto-detect + govern. */
   tier: TierKey | null;
   hud: boolean;
+  /** The site's next/font families (the form variant draws its wordmark with them). */
+  fonts?: Fonts;
   onFallback: () => void;
 }
 
@@ -62,6 +66,7 @@ export interface LiquidDebug {
 type LwGlobal = typeof globalThis & { __lwEngine?: Engine; __lw?: LiquidDebug };
 
 const FACTORIES: Record<VariantKey, (ctx: VariantContext) => VariantSystem> = {
+  form: createForm,
   cup: createCup,
   stream: createStream,
   cascade: createCascade,
@@ -176,7 +181,16 @@ export function createEngine(opts: EngineOptions): Engine {
 
   let variantKey = opts.variant;
   // The cup draws its surface on the engine's (otherwise hero-pool) ripple tank.
-  const variantContext: VariantContext = { common, budget, ripple: topRipple };
+  const variantContext: VariantContext = {
+    common,
+    budget,
+    ripple: topRipple,
+    fonts: opts.fonts ?? {
+      pixel: "monospace",
+      marker: "cursive",
+      sans: "sans-serif",
+    },
+  };
   let variant = FACTORIES[variantKey](variantContext);
   particles.add(variant.object);
 
@@ -603,7 +617,13 @@ export function createEngine(opts: EngineOptions): Engine {
         0.9 * bottomAlpha,
       );
       setGlow(3, focus.x, landY, W * 0.1, H * 0.06, rampD[2], impactGlow * 0.6);
-      for (let i = 4; i < GLOW_COUNT; i++) background.glowCol[i].w = 0;
+      glowList.length = 0;
+      variant.extraGlows?.(glowList);
+      for (let i = 4; i < GLOW_COUNT; i++) {
+        const gl = glowList[i - 4];
+        if (gl) setGlow(i, gl.x, gl.y, gl.rx, gl.ry, gl.color, gl.intensity);
+        else background.glowCol[i].w = 0;
+      }
     }
     background.material.uniforms.uGlowGain.value = P.atmosphere.glow;
 

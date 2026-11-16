@@ -13,9 +13,10 @@ export const WORKSHOP_VARIANTS: readonly {
   key: WorkshopVariant;
   label: string;
 }[] = [
+  { key: "form", label: "cascade pours into shapes, section by section" },
+  { key: "cascade", label: "full-width falling sheet" },
   { key: "cup", label: "filled cup, follows the screen" },
   { key: "stream", label: "one thick honey column" },
-  { key: "cascade", label: "full-width falling sheet" },
   { key: "drip", label: "gooey drips" },
   { key: "off", label: "current page (control)" },
 ];
@@ -24,7 +25,7 @@ export function parseVariant(value: string | null): WorkshopVariant {
   if (value === "off") return "off";
   return (VARIANT_KEYS as readonly string[]).includes(value ?? "")
     ? (value as VariantKey)
-    : "cup";
+    : "form";
 }
 
 export function parseTier(value: string | null): TierKey | null {

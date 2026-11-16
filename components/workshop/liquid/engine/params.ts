@@ -5,13 +5,14 @@
 // other engine file) keeps whatever was tuned in the panel. "Reset" in the panel
 // re-applies these defaults.
 
-export type VariantKey = "cup" | "stream" | "cascade" | "drip";
+export type VariantKey = "form" | "cascade" | "cup" | "stream" | "drip";
 export type TierKey = "desktop" | "mobile" | "low";
 
 export const VARIANT_KEYS: readonly VariantKey[] = [
+  "form",
+  "cascade",
   "cup",
   "stream",
-  "cascade",
   "drip",
 ];
 export const TIER_KEYS: readonly TierKey[] = ["desktop", "mobile", "low"];
@@ -94,6 +95,30 @@ export interface CascadeParams {
   thinning: number;
 }
 
+/** Round 3: the cascade pours itself into silhouettes, section by section. */
+export interface FormParams extends CascadeParams {
+  /** "auto" follows the sections; a shape key pins one (for tuning). */
+  shape: string;
+  /** Bumped by the panel's "Replay pour" button. */
+  replay: number;
+  shapeSize: number;
+  /** Vertical centre of the shape, as a fraction of the viewport. */
+  shapeY: number;
+  /** Seconds to pour a shape in / to melt it. */
+  formTime: number;
+  meltTime: number;
+  /** Surface-tension wobble while a shape holds (px). */
+  wobble: number;
+  glint: number;
+  /** Drips off the bottom edges + the trickle feeding the shape. */
+  drips: number;
+  /** How far a shape is dragged by the scroll before its spring catches it. */
+  follow: number;
+  /** How much a formed shape dims the cascade behind it. */
+  sheetVeil: number;
+  shapeGlow: number;
+}
+
 export interface CupParams {
   /** Fill (fraction of the viewport height) at the top and the bottom of the page. */
   fillStart: number;
@@ -119,6 +144,7 @@ export interface DripParams {
 
 export interface AllParams {
   common: CommonParams;
+  form: FormParams;
   cup: CupParams;
   stream: StreamParams;
   cascade: CascadeParams;
@@ -188,6 +214,25 @@ export function defaultParams(): AllParams {
         aboutBlendLight: "multiply",
       },
     },
+    form: {
+      veil: 0.55,
+      veilWidth: 0.42,
+      mist: 0.7,
+      sway: 0.6,
+      thinning: 0.35,
+      shape: "auto",
+      replay: 0,
+      shapeSize: 1,
+      shapeY: 0.42,
+      formTime: 2.4,
+      meltTime: 1.6,
+      wobble: 2.5,
+      glint: 1,
+      drips: 1,
+      follow: 1,
+      sheetVeil: 0.75,
+      shapeGlow: 1,
+    },
     cup: {
       fillStart: 0.42,
       fillEnd: 0.62,
@@ -221,9 +266,36 @@ export function defaultParams(): AllParams {
 
 type LwGlobal = typeof globalThis & { __lwParams?: AllParams };
 
+/** Adds any key the defaults have and `dst` lacks (a params object kept across HMR). */
+function fillMissing(
+  dst: Record<string, unknown>,
+  src: Record<string, unknown>,
+) {
+  for (const [key, value] of Object.entries(src)) {
+    const current = dst[key];
+    if (!(key in dst)) dst[key] = value;
+    else if (
+      current &&
+      typeof current === "object" &&
+      value &&
+      typeof value === "object"
+    ) {
+      fillMissing(
+        current as Record<string, unknown>,
+        value as Record<string, unknown>,
+      );
+    }
+  }
+}
+
 export function getParams(): AllParams {
   const g = globalThis as LwGlobal;
   if (!g.__lwParams) g.__lwParams = defaultParams();
+  else
+    fillMissing(
+      g.__lwParams as unknown as Record<string, unknown>,
+      defaultParams() as unknown as Record<string, unknown>,
+    );
   return g.__lwParams;
 }
 
@@ -255,6 +327,8 @@ export interface TierBudget {
   cascade: number;
   drip: number;
   cup: number;
+  /** Particles per silhouette layer (the form variant runs two). */
+  shape: number;
   ripple: number;
 }
 
@@ -267,6 +341,7 @@ export const TIERS: Record<TierKey, TierBudget> = {
     cascade: 30000,
     drip: 18000,
     cup: 26000,
+    shape: 14000,
     ripple: 256,
   },
   mobile: {
@@ -277,6 +352,7 @@ export const TIERS: Record<TierKey, TierBudget> = {
     cascade: 8000,
     drip: 5000,
     cup: 7000,
+    shape: 4500,
     ripple: 128,
   },
   low: {
@@ -287,6 +363,7 @@ export const TIERS: Record<TierKey, TierBudget> = {
     cascade: 4000,
     drip: 2500,
     cup: 3500,
+    shape: 2200,
     ripple: 0,
   },
 };

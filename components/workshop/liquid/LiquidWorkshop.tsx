@@ -1,7 +1,8 @@
 "use client";
 // PROTOTYPE, never merge (throwaway branch). Plan in one line: liquid-particle backgrounds
-// on the real landing route, switchable via ?variant=cup|stream|cascade|drip|off (cup, the
-// "filled cup" direction, is the default), tuned live in a Tweakpane panel, dark + light.
+// on the real landing route, switchable via ?variant=form|cascade|cup|stream|drip|off
+// (form, the cascade pouring itself into section silhouettes, is the default), tuned live
+// in a Tweakpane panel, dark + light.
 //
 // URL flags: ?hud=0 hides the chrome (also the H key), ?lwq=desktop|mobile|low pins the
 // quality tier, ?lwfallback=1 forces the no-WebGL fallback.

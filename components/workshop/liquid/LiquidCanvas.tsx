@@ -5,6 +5,8 @@
 // never rebuild the WebGL context.
 import { useEffect, useRef, useState } from "react";
 
+import { inter, permanentMarker, pixelify } from "@/app/fonts";
+
 import type { Engine } from "./engine/engine";
 import type { TierKey } from "./engine/params";
 import LiquidFallback from "./LiquidFallback";
@@ -51,6 +53,11 @@ export default function LiquidCanvas({
             variant: variantRef.current,
             tier,
             hud,
+            fonts: {
+              pixel: pixelify.style.fontFamily,
+              marker: permanentMarker.style.fontFamily,
+              sans: inter.style.fontFamily,
+            },
             onFallback: () => {
               if (!dead) setFallback(true);
             },

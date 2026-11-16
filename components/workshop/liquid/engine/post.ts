@@ -15,7 +15,7 @@ export function createFullscreenTriangle(): THREE.BufferGeometry {
   return g;
 }
 
-export const GLOW_COUNT = 4;
+export const GLOW_COUNT = 6;
 
 const BACKGROUND_FRAG = /* glsl */ `
 uniform vec2 uViewport;
