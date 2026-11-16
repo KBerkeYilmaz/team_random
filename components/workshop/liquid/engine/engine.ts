@@ -1,0 +1,718 @@
+// PROTOTYPE, never merge. Liquid Pour workshop: the engine. One WebGL context for the
+// lifetime of the page; variants swap only their own particle system, never the
+// renderer (Chrome evicts contexts past ~16, and dev Strict Mode double-mounts).
+//
+// Choreography, keyed to the real section anchors so it survives section redesigns:
+//   hero    -> a calm glowing liquid surface below the title (top pool)
+//   spill   -> scrolling out of the hero, the surface rises with the page and its lip spills
+//   pour    -> about/services: liquid falls from the top edge into a pool at the bottom,
+//              trailing you like honey (attach drag + springs); the pool level rises
+//   pool    -> contact/footer: the source runs dry and the pool settles, mirroring the hero
+import * as THREE from "three";
+
+import { createPanel, type Panel } from "./panel";
+import { getParams, TIERS, type TierKey, type VariantKey } from "./params";
+import { PoolSystem } from "./pool";
+import {
+  GLOW_COUNT,
+  createBackgroundMaterial,
+  createFinalMaterial,
+  createFullscreenTriangle,
+} from "./post";
+import { QualityGovernor } from "./quality";
+import { RippleField } from "./ripple";
+import { ScrollTracker, clamp, damp, smoothstep } from "./scroll";
+import { createCascade } from "./variants/cascade";
+import { createCup } from "./variants/cup";
+import { createDrip } from "./variants/drip";
+import { createStream } from "./variants/stream";
+import type {
+  FrameState,
+  GlowSpec,
+  Impact,
+  VariantContext,
+  VariantSystem,
+} from "./variants/types";
+
+export interface EngineOptions {
+  host: HTMLElement;
+  variant: VariantKey;
+  /** Pinned quality tier (`?lwq=`), or null to auto-detect + govern. */
+  tier: TierKey | null;
+  hud: boolean;
+  onFallback: () => void;
+}
+
+export interface Engine {
+  setVariant(key: VariantKey): void;
+  dispose(): void;
+}
+
+export interface LiquidDebug {
+  state(): Record<string, unknown>;
+  /** Snap every spring to rest for the current scroll position (next frame). */
+  settle(): void;
+  /** Stop the clock at `t` seconds (deterministic screenshots). */
+  freeze(t?: number): void;
+  unfreeze(): void;
+  /** Inject a synthetic scroll drag of `px` to show the honey lag while frozen. */
+  kick(px?: number): void;
+}
+
+type LwGlobal = typeof globalThis & { __lwEngine?: Engine; __lw?: LiquidDebug };
+
+const FACTORIES: Record<VariantKey, (ctx: VariantContext) => VariantSystem> = {
+  cup: createCup,
+  stream: createStream,
+  cascade: createCascade,
+  drip: createDrip,
+};
+
+/** Bottom-pool landing line, as a screen fraction between its horizon (0) and near edge (1). */
+const LAND_SN = 0.32;
+const BOTTOM_DEPTH = 6;
+const FAR_WIDTH = 1.15;
+const NEAR_WIDTH = 2.3;
+
+export function createEngine(opts: EngineOptions): Engine {
+  const g = globalThis as LwGlobal;
+  g.__lwEngine?.dispose();
+
+  const params = getParams();
+  const html = document.documentElement;
+
+  // A fresh canvas per engine: a context that was force-lost can never come back.
+  const canvas = document.createElement("canvas");
+  canvas.dataset.lw = "1";
+  canvas.style.cssText =
+    "position:absolute;inset:0;width:100%;height:100%;display:block";
+  opts.host.appendChild(canvas);
+
+  let renderer: THREE.WebGLRenderer;
+  try {
+    renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: false,
+      alpha: false,
+      depth: false,
+      stencil: false,
+      powerPreference: "high-performance",
+    });
+  } catch (err) {
+    canvas.remove();
+    throw err;
+  }
+  renderer.autoClear = false;
+  renderer.setClearColor(0x000000, 0);
+
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  const tierKey: TierKey = opts.tier ?? (coarse ? "mobile" : "desktop");
+  const budget = TIERS[tierKey];
+  const quality = new QualityGovernor(opts.tier !== null);
+  const floatTargets =
+    renderer.extensions.has("EXT_color_buffer_float") ||
+    renderer.extensions.has("EXT_color_buffer_half_float");
+
+  const common: Record<string, THREE.IUniform> = {
+    uViewport: { value: new THREE.Vector2(1, 1) },
+    uPixelRatio: { value: 1 },
+    uTime: { value: 0 },
+    uTheme: { value: 0 },
+    uVelN: { value: 0 },
+    uRampD: { value: [0, 1, 2, 3].map(() => new THREE.Color()) },
+    uAccentD: { value: new THREE.Color() },
+    uRampL: { value: [0, 1, 2, 3].map(() => new THREE.Color()) },
+    uAccentL: { value: new THREE.Color() },
+    uHueDrift: { value: 0.3 },
+    uJitter: { value: 0.1 },
+    uSizeScale: { value: 1 },
+    uGlowGain: { value: 1 },
+  };
+
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const triangle = createFullscreenTriangle();
+  const background = createBackgroundMaterial(common);
+  const bgScene = new THREE.Scene();
+  const bgMesh = new THREE.Mesh(triangle, background.material);
+  bgMesh.frustumCulled = false;
+  bgScene.add(bgMesh);
+
+  const sceneRT = new THREE.WebGLRenderTarget(1, 1, {
+    type: floatTargets ? THREE.HalfFloatType : THREE.UnsignedByteType,
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    depthBuffer: false,
+    stencilBuffer: false,
+  });
+  const finalMaterial = createFinalMaterial(common);
+  finalMaterial.uniforms.uScene.value = sceneRT.texture;
+  const finalScene = new THREE.Scene();
+  const finalMesh = new THREE.Mesh(triangle, finalMaterial);
+  finalMesh.frustumCulled = false;
+  finalScene.add(finalMesh);
+
+  const particles = new THREE.Scene();
+  const topPool = new PoolSystem(
+    common,
+    budget.topPool[0],
+    budget.topPool[1],
+    0,
+  );
+  const bottomPool = new PoolSystem(
+    common,
+    budget.bottomPool[0],
+    budget.bottomPool[1],
+    7.3,
+  );
+  particles.add(topPool.points, bottomPool.points);
+
+  const rippleCapable = floatTargets && budget.ripple > 0;
+  const topRipple = rippleCapable
+    ? new RippleField(renderer, budget.ripple)
+    : null;
+  const bottomRipple = rippleCapable
+    ? new RippleField(renderer, budget.ripple)
+    : null;
+
+  let variantKey = opts.variant;
+  // The cup draws its surface on the engine's (otherwise hero-pool) ripple tank.
+  const variantContext: VariantContext = { common, budget, ripple: topRipple };
+  let variant = FACTORIES[variantKey](variantContext);
+  particles.add(variant.object);
+
+  const scroll = new ScrollTracker();
+  let W = 1;
+  let H = 1;
+  let dpr = 1;
+  let dirty = true;
+  let disposed = false;
+  let lost = false;
+
+  const panel: Panel | null = opts.hud
+    ? createPanel({
+        params,
+        variant: variantKey,
+        getExport: () => ({
+          workshop: "liquid-pour",
+          variant: variantKey,
+          tier: tierKey,
+          params: { common: params.common, [variantKey]: params[variantKey] },
+        }),
+        onStructural: () => applyQuality(),
+      })
+    : null;
+
+  // ---- Theme (follows next-themes' class on <html>, crossfaded) ----------------------
+  let isDark = html.classList.contains("dark");
+  const themeObserver = new MutationObserver(() => {
+    isDark = html.classList.contains("dark");
+    dirty = true;
+  });
+  themeObserver.observe(html, { attributes: true, attributeFilter: ["class"] });
+  const themeTarget = () => {
+    const o = params.common.theme.override;
+    if (o === "dark") return 0;
+    if (o === "light") return 1;
+    return isDark ? 0 : 1;
+  };
+  let theme = themeTarget();
+
+  // ---- Reduced motion -----------------------------------------------------------------
+  const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let reduced = motionQuery.matches;
+  const onMotion = () => {
+    reduced = motionQuery.matches;
+    dirty = true;
+  };
+  motionQuery.addEventListener("change", onMotion);
+
+  // ---- Size + quality -----------------------------------------------------------------
+  function resize() {
+    W = Math.max(1, opts.host.clientWidth);
+    H = Math.max(1, opts.host.clientHeight);
+    const cap = Math.max(0.5, budget.dprCap - quality.settings.dprDelta);
+    dpr = Math.min(window.devicePixelRatio || 1, cap);
+    renderer.setPixelRatio(dpr);
+    renderer.setSize(W, H, false);
+    const pw = Math.max(1, Math.round(W * dpr));
+    const ph = Math.max(1, Math.round(H * dpr));
+    sceneRT.setSize(pw, ph);
+    (finalMaterial.uniforms.uResolution.value as THREE.Vector2).set(pw, ph);
+    (common.uViewport.value as THREE.Vector2).set(W, H);
+    common.uPixelRatio.value = dpr;
+    scroll.measure();
+    dirty = true;
+  }
+
+  function applyQuality() {
+    const q = quality.settings;
+    topPool.setDrawFraction(q.frac);
+    bottomPool.setDrawFraction(q.frac);
+    variant.setDrawFraction(q.frac);
+    const ripplesOn = q.ripples && params.common.pools.ripples;
+    if (topRipple) topRipple.enabled = ripplesOn;
+    if (bottomRipple) bottomRipple.enabled = ripplesOn;
+    resize();
+  }
+
+  const hostObserver = new ResizeObserver(() => resize());
+  hostObserver.observe(opts.host);
+  const mainEl = document.querySelector("main");
+  const layoutObserver = new ResizeObserver(() => scroll.measure());
+  if (mainEl) layoutObserver.observe(mainEl);
+  void document.fonts?.ready.then(() => {
+    if (!disposed) scroll.measure();
+  });
+  applyQuality();
+
+  // ---- Lifecycle events ---------------------------------------------------------------
+  let paused = document.hidden;
+  let last = performance.now();
+  const onVisibility = () => {
+    paused = document.hidden;
+    if (!paused) {
+      last = performance.now();
+      quality.warmUp();
+    }
+  };
+  document.addEventListener("visibilitychange", onVisibility);
+
+  const onContextLost = (event: Event) => {
+    event.preventDefault();
+    lost = true;
+    opts.onFallback();
+  };
+  canvas.addEventListener("webglcontextlost", onContextLost);
+
+  // ---- Palette sync (only re-parses colours when a hex actually changed) --------------
+  let paletteKey = "";
+  const rampD = common.uRampD.value as THREE.Color[];
+  const rampL = common.uRampL.value as THREE.Color[];
+  function syncPalette() {
+    const d = params.common.palette.dark;
+    const l = params.common.palette.light;
+    const key = [
+      d.base,
+      d.c0,
+      d.c1,
+      d.c2,
+      d.c3,
+      d.accent,
+      l.base,
+      l.c0,
+      l.c1,
+      l.c2,
+      l.c3,
+      l.accent,
+    ].join();
+    if (key === paletteKey) return;
+    paletteKey = key;
+    [d.c0, d.c1, d.c2, d.c3].forEach((hex, i) => rampD[i].set(hex));
+    [l.c0, l.c1, l.c2, l.c3].forEach((hex, i) => rampL[i].set(hex));
+    (common.uAccentD.value as THREE.Color).set(d.accent);
+    (common.uAccentL.value as THREE.Color).set(l.accent);
+    (background.material.uniforms.uBaseD.value as THREE.Color).set(d.base);
+    (background.material.uniforms.uBaseL.value as THREE.Color).set(l.base);
+    // The light fields' faint tails: deep crimson leaning magenta (see BACKGROUND_FRAG).
+    (background.material.uniforms.uEdgeCol.value as THREE.Color)
+      .copy(rampD[0])
+      .lerp(common.uAccentD.value as THREE.Color, 0.25)
+      .multiplyScalar(0.7);
+    dirty = true;
+  }
+
+  const glowTmp = new THREE.Color();
+  function setGlow(
+    i: number,
+    x: number,
+    y: number,
+    rx: number,
+    ry: number,
+    color: THREE.Color,
+    a: number,
+  ) {
+    background.glowPos[i].set(x, y, rx, ry);
+    background.glowCol[i].set(color.r, color.g, color.b, Math.max(0, a));
+  }
+
+  // ---- Debug API (screenshots, verification) -----------------------------------------
+  let frozenAt: number | null = null;
+  let settleFrames = 0;
+  let kick = 0;
+  let impactGlow = 0;
+  let time = 0;
+  let raf = 0;
+  let lastRender = 0;
+  let readyKey = "";
+  let lastSee = "";
+  let lastContent = "";
+  const glowList: GlowSpec[] = [];
+  let lastBlend = "";
+  let topDropClock = 0;
+  const impacts: Impact[] = [];
+  const beats = { heroExit: 0, spill: 0, pour: 0, poolT: 0, calm: 0 };
+
+  const drawnTotal = () =>
+    topPool.drawn() + bottomPool.drawn() + variant.drawn();
+
+  const debug: LiquidDebug = {
+    state: () => ({
+      variant: variantKey,
+      tier: tierKey,
+      qualityStep: quality.level,
+      dpr,
+      viewport: [W, H],
+      particles: drawnTotal(),
+      scrollY: scroll.y,
+      beats: { ...beats },
+      theme,
+      reduced,
+      floatTargets,
+      ripples: Boolean(topRipple?.enabled),
+      frozen: frozenAt,
+      time,
+    }),
+    settle: () => {
+      settleFrames = 2;
+    },
+    freeze: (t = 12) => {
+      frozenAt = t;
+    },
+    unfreeze: () => {
+      frozenAt = null;
+      last = performance.now();
+    },
+    kick: (px = 420) => {
+      kick += px;
+    },
+  };
+  g.__lw = debug;
+
+  // ---- The frame ----------------------------------------------------------------------
+  function frame(now: number) {
+    raf = requestAnimationFrame(frame);
+    if (paused || lost || disposed) return;
+    const frameMs = now - last;
+    const rawDt = Math.min(0.05, Math.max(0, frameMs / 1000));
+    last = now;
+    panel?.fpsBegin();
+
+    const animate = frozenAt === null && !reduced;
+    const dt = animate ? rawDt : 0;
+    time = frozenAt ?? (time + dt) % 3600;
+    scroll.update(rawDt, H);
+    const s = scroll.sections;
+    const P = params.common;
+
+    const target = themeTarget();
+    theme = reduced ? target : damp(theme, target, 9, rawDt);
+    if (Math.abs(theme - target) < 0.002) theme = target;
+
+    // Beats.
+    const heroH = Math.max(1, s.heroBottom - s.heroTop);
+    let heroExit = clamp(scroll.y / heroH, 0, 1);
+    let spill = smoothstep(0.02, 0.3, heroExit);
+    const calmEnd = s.ctaTop - H * 0.35;
+    let calm = smoothstep(s.ctaTop - H, calmEnd, scroll.y);
+    let poolT = smoothstep(
+      heroH * 0.3,
+      Math.max(heroH * 0.3 + 1, calmEnd),
+      scroll.y,
+    );
+    if (reduced) {
+      heroExit = 1;
+      spill = 1;
+      calm = 0;
+      poolT = 0.6;
+    }
+    const pour = spill * (1 - calm);
+    Object.assign(beats, { heroExit, spill, pour, poolT, calm });
+
+    // Pools in screen px. The top pool is attached to the hero (scrolls with the page).
+    const topHorizonY = s.heroTop + heroH * P.pools.heroHorizon - scroll.y;
+    const topNearY = s.heroBottom + heroH * 0.06 - scroll.y;
+    const topAlpha = reduced
+      ? 0
+      : smoothstep(-heroH * 0.2, heroH * 0.05, topNearY);
+    const level = poolT * P.pools.poolMax * H;
+    const bottomHorizonY = H - level;
+    const bottomNearY = H * 1.08;
+    const bottomAlpha = smoothstep(2, 24, level);
+    const sourceY = Math.max(topNearY - 6, -40);
+    const landY = Math.min(
+      H + 12,
+      bottomHorizonY + (bottomNearY - bottomHorizonY) * LAND_SN,
+    );
+
+    const progress = reduced
+      ? 0.5
+      : clamp(scroll.y / Math.max(1, s.docH - H), 0, 1);
+    const owns = Boolean(variant.ownsScene);
+    const dragDy = reduced ? 0 : scroll.dy + kick;
+    kick = 0;
+    const f: FrameState = {
+      t: time,
+      dt,
+      W,
+      H,
+      scrollY: scroll.y,
+      progress,
+      dy: dragDy,
+      velN: reduced ? 0 : scroll.velN,
+      accN: reduced ? 0 : scroll.accN,
+      reduced,
+      heroExit,
+      pour,
+      poolT,
+      sourceY,
+      landY,
+      sections: s,
+      params,
+      settle: settleFrames > 0,
+    };
+    variant.update(f);
+    if (settleFrames > 0) settleFrames--;
+
+    // Ripples: the pour's impacts hit the bottom pool; the hero pool gets gentle rain.
+    impacts.length = 0;
+    variant.drainImpacts(impacts);
+    let impactEnergy = 0;
+    if (!owns && bottomRipple?.enabled && dt > 0) {
+      const lateral = FAR_WIDTH + (NEAR_WIDTH - FAR_WIDTH) * LAND_SN;
+      const sLand = LAND_SN * (1 - 1 / BOTTOM_DEPTH) + 1 / BOTTOM_DEPTH;
+      const vLand = (1 / sLand - 1) / (BOTTOM_DEPTH - 1);
+      for (const im of impacts) {
+        const u = (im.x - W / 2) / ((W / 2) * lateral);
+        bottomRipple.addDrop(
+          u * 0.5 + 0.5,
+          vLand,
+          im.radius,
+          im.strength * P.pools.rippleAmp,
+        );
+        impactEnergy += im.strength;
+      }
+      bottomRipple.step(dt);
+    }
+    if (topRipple?.enabled && dt > 0) {
+      topDropClock -= dt;
+      if (topDropClock <= 0) {
+        topDropClock = 0.45 + Math.random() * 0.9;
+        topRipple.addDrop(
+          0.2 + Math.random() * 0.6,
+          0.1 + Math.random() * 0.55,
+          0.016 + Math.random() * 0.02,
+          0.22 + Math.random() * 0.3,
+        );
+      }
+      topRipple.step(dt);
+    }
+
+    if (owns) {
+      // The variant (cup) draws its own surfaces.
+      topPool.points.visible = false;
+      bottomPool.points.visible = false;
+    } else {
+      topPool.set({
+        horizonY: topHorizonY,
+        nearY: topNearY,
+        alpha: topAlpha,
+        amp: P.pools.heroSwell,
+        depth: P.pools.heroDepth,
+        farWidth: FAR_WIDTH,
+        nearWidth: NEAR_WIDTH,
+        swellSpeed: P.pools.swellSpeed,
+        chop: P.pools.chop,
+        size: 3.4,
+        colorBias: 0,
+        ripple: topRipple?.enabled ? topRipple.texture : null,
+        rippleAmp: P.pools.rippleAmp,
+      });
+      bottomPool.set({
+        horizonY: bottomHorizonY,
+        nearY: bottomNearY,
+        alpha: bottomAlpha,
+        amp: P.pools.poolSwell * (1 - 0.4 * calm),
+        depth: BOTTOM_DEPTH,
+        farWidth: FAR_WIDTH,
+        nearWidth: NEAR_WIDTH,
+        swellSpeed: P.pools.swellSpeed,
+        chop: P.pools.chop,
+        size: 3.2,
+        colorBias: 0.05,
+        ripple: bottomRipple?.enabled ? bottomRipple.texture : null,
+        rippleAmp: P.pools.rippleAmp,
+      });
+    }
+
+    // Shared uniforms.
+    common.uTime.value = time;
+    common.uTheme.value = theme;
+    common.uVelN.value = f.velN;
+    common.uSizeScale.value = P.particles.size;
+    common.uGlowGain.value = P.particles.glow;
+    common.uHueDrift.value = P.palette.hueDrift;
+    common.uJitter.value = (P.palette.jitterDeg * Math.PI) / 180;
+    syncPalette();
+
+    // Light fields: the glow rides with the liquid, so the light follows you down.
+    const focus = variant.focus();
+    impactGlow = damp(
+      impactGlow,
+      Math.min(1.2, impactEnergy * 3),
+      impactEnergy > 0 ? 30 : 4,
+      rawDt,
+    );
+    if (owns && variant.glows) {
+      glowList.length = 0;
+      variant.glows(glowList);
+      for (let i = 0; i < GLOW_COUNT; i++) {
+        const gl = glowList[i];
+        if (gl) setGlow(i, gl.x, gl.y, gl.rx, gl.ry, gl.color, gl.intensity);
+        else background.glowCol[i].w = 0;
+      }
+    } else {
+      // Cores are orange -> amber; the magenta lives only in the tails (uEdgeCol).
+      glowTmp.copy(rampD[1]).lerp(rampD[2], 0.35);
+      setGlow(
+        0,
+        W / 2,
+        topHorizonY + 8,
+        W * 0.55,
+        H * 0.13,
+        glowTmp,
+        1.0 * topAlpha,
+      );
+      const span = Math.max(1, focus.yBottom - focus.yTop);
+      setGlow(
+        1,
+        focus.x,
+        focus.yTop + span * 0.55,
+        Math.max(W * 0.1, focus.width * 2.2),
+        Math.max(H * 0.18, span * 0.45),
+        rampD[1],
+        0.4 * focus.intensity,
+      );
+      glowTmp.copy(rampD[1]).lerp(rampD[2], 0.2);
+      setGlow(
+        2,
+        W / 2,
+        bottomHorizonY + level * 0.2,
+        W * 0.6,
+        Math.max(level, 30) + H * 0.1,
+        glowTmp,
+        0.9 * bottomAlpha,
+      );
+      setGlow(3, focus.x, landY, W * 0.1, H * 0.06, rampD[2], impactGlow * 0.6);
+      for (let i = 4; i < GLOW_COUNT; i++) background.glowCol[i].w = 0;
+    }
+    background.material.uniforms.uGlowGain.value = P.atmosphere.glow;
+
+    const fu = finalMaterial.uniforms;
+    fu.uExposure.value = P.atmosphere.exposure;
+    fu.uWhite.value = P.atmosphere.whitePoint;
+    fu.uGrain.value = P.atmosphere.grain;
+    fu.uVignette.value = P.atmosphere.vignette;
+    fu.uChroma.value = reduced ? 0 : P.atmosphere.chroma;
+
+    // Workshop stage (site content hidden or shown), section see-through and the lamp's
+    // blend follow the panel and the theme.
+    const content = P.sections.showContent ? "on" : "off";
+    if (content !== lastContent) {
+      html.dataset.lwContent = content;
+      lastContent = content;
+    }
+    const see = P.sections.seeThrough ? "on" : "off";
+    if (see !== lastSee) {
+      html.dataset.lwSee = see;
+      lastSee = see;
+    }
+    const blend =
+      theme < 0.5 ? P.sections.aboutBlendDark : P.sections.aboutBlendLight;
+    if (blend !== lastBlend) {
+      html.style.setProperty("--lw-about-blend", blend);
+      lastBlend = blend;
+    }
+
+    // Under reduced motion the scene is static: repaint ~4x/s to pick up panel edits.
+    if (!reduced || dirty || now - lastRender > 250) {
+      renderer.setRenderTarget(sceneRT);
+      renderer.clear(true, false, false);
+      renderer.render(bgScene, camera);
+      renderer.render(particles, camera);
+      renderer.setRenderTarget(null);
+      renderer.render(finalScene, camera);
+      lastRender = now;
+      dirty = false;
+      if (readyKey !== variantKey) {
+        readyKey = variantKey;
+        html.dataset.lwReady = variantKey;
+      }
+    }
+
+    if (quality.update(frameMs, rawDt)) applyQuality();
+    panel?.fpsEnd();
+    if (panel) {
+      const st = panel.stats;
+      st.variant = variantKey;
+      st.tier = tierKey;
+      st.level = quality.level;
+      st.dpr = dpr;
+      st.particles = drawnTotal();
+      st.scroll = scroll.y;
+      st.velocity = scroll.velN;
+    }
+  }
+
+  function setVariant(key: VariantKey) {
+    if (disposed || key === variantKey) return;
+    particles.remove(variant.object);
+    variant.dispose();
+    variantKey = key;
+    variant = FACTORIES[key](variantContext);
+    variant.setDrawFraction(quality.settings.frac);
+    particles.add(variant.object);
+    delete html.dataset.lwReady;
+    readyKey = "";
+    bottomRipple?.clear();
+    quality.warmUp();
+    panel?.setVariant(key);
+    dirty = true;
+  }
+
+  function dispose() {
+    if (disposed) return;
+    disposed = true;
+    cancelAnimationFrame(raf);
+    hostObserver.disconnect();
+    layoutObserver.disconnect();
+    themeObserver.disconnect();
+    motionQuery.removeEventListener("change", onMotion);
+    document.removeEventListener("visibilitychange", onVisibility);
+    // Detach our loss handler first so tearing down doesn't flip the page to the fallback.
+    canvas.removeEventListener("webglcontextlost", onContextLost);
+    panel?.dispose();
+    variant.dispose();
+    topPool.dispose();
+    bottomPool.dispose();
+    topRipple?.dispose();
+    bottomRipple?.dispose();
+    background.material.dispose();
+    finalMaterial.dispose();
+    triangle.dispose();
+    sceneRT.dispose();
+    renderer.dispose();
+    renderer.forceContextLoss();
+    canvas.remove();
+    delete html.dataset.lwReady;
+    delete html.dataset.lwSee;
+    delete html.dataset.lwContent;
+    html.style.removeProperty("--lw-about-blend");
+    if (g.__lw === debug) delete g.__lw;
+    if (g.__lwEngine === engine) delete g.__lwEngine;
+  }
+
+  const engine: Engine = { setVariant, dispose };
+  g.__lwEngine = engine;
+  raf = requestAnimationFrame(frame);
+  return engine;
+}

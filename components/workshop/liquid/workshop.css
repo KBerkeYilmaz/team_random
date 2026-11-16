@@ -1,0 +1,82 @@
+/* PROTOTYPE, never merge. Liquid Pour workshop: everything here is scoped to
+   html[data-liquid-workshop], which only exists while a workshop variant is active.
+
+   Section see-through is targeted per section on purpose. A global --background override
+   would also turn the contact inputs, mobile Sheet, Toast and Dialog transparent. */
+
+/* Workshop stage: the user will replace the header, sections and footer, so by default the
+   workshop hides them and shows only the liquid. visibility (not display) keeps the page's
+   full scroll length and the section anchors the choreography is keyed to. The panel's
+   "show site content" toggle brings them back. */
+html[data-liquid-workshop][data-lw-content="off"] main > section,
+html[data-liquid-workshop][data-lw-content="off"] nav,
+html[data-liquid-workshop][data-lw-content="off"] footer {
+  visibility: hidden;
+}
+
+/* Hero: hide the 2D WavyBackground canvas (its loop also idles; see wavy-background.tsx). */
+html[data-liquid-workshop] #hero canvas {
+  display: none;
+}
+
+/* About (lamp): composite the lamp in its own group over the liquid. In dark, `screen`
+   drops the near-black and keeps its bg-background masks hiding the cones' hard edges. */
+html[data-liquid-workshop][data-lw-see="on"] #about {
+  mix-blend-mode: var(--lw-about-blend, screen);
+  /* Repoint the lamp's own bg-background masks at the blend's identity colour (black for
+     screen, white for multiply) so the section's box leaves no seam over the liquid. */
+  --background: 0 0% 0%;
+}
+html[data-liquid-workshop][data-lw-see="on"]:not(.dark) #about {
+  --background: 0 0% 100%;
+}
+
+/* Services: drop the opaque bg + grid and the radial vignette panel. The cards keep their
+   backdrop-blur, which now frosts the liquid behind them. */
+html[data-liquid-workshop][data-lw-see="on"] #services > div {
+  background: transparent;
+}
+html[data-liquid-workshop][data-lw-see="on"] #services > div > div:first-child {
+  display: none;
+}
+
+/* Footer: let the bottom pool glow through. */
+html[data-liquid-workshop][data-lw-see="on"] footer > div {
+  background: transparent;
+}
+
+html[data-lw-hud="off"] .lw-hud {
+  display: none !important;
+}
+
+.lw-panel {
+  position: fixed;
+  top: 5.5rem;
+  right: 0.75rem;
+  z-index: 60;
+  width: 300px;
+  max-height: calc(100vh - 9rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 8px;
+}
+
+.lw-fallback {
+  background:
+    radial-gradient(
+      ellipse 80% 45% at 50% 100%,
+      rgb(226 71 11 / 0.18),
+      transparent 70%
+    ),
+    #eef0f3;
+}
+.dark .lw-fallback {
+  background:
+    radial-gradient(
+      ellipse 85% 50% at 50% 100%,
+      rgb(234 88 12 / 0.55),
+      rgb(255 61 203 / 0.12) 45%,
+      transparent 75%
+    ),
+    #0c0a09;
+}
