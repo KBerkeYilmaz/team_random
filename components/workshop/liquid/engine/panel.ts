@@ -124,6 +124,12 @@ export function createPanel(opts: {
       };
       for (const spec of SHAPES) shapeOptions[spec.key] = spec.key;
       folder.addBinding(m, "shape", { options: shapeOptions });
+      folder.addBinding(m, "fromPool", { label: "first shape from pool" });
+      folder.addBinding(m, "poolToFalls", {
+        min: 0,
+        max: 1,
+        label: "pool → falls",
+      });
       folder.addBinding(m, "handover", {
         label: "hand-over",
         options: { "morph (puddle, rise)": "morph", "melt + pour": "melt" },

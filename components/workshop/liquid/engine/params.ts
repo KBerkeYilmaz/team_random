@@ -101,6 +101,8 @@ export interface CascadeParams {
   mist: number;
   sway: number;
   thinning: number;
+  /** Share of the fall over which the sheet fades in (form sets it; the panel doesn't). */
+  fadeIn?: number;
 }
 
 /** Round 3: the cascade pours itself into silhouettes, section by section. */
@@ -126,6 +128,10 @@ export interface FormParams extends CascadeParams {
   puddle: string;
   /** Reflections of the shapes in the bottom pool (0 = off). */
   reflect: number;
+  /** The first shape is made of the hero pool's liquid (pours out of it), not poured from above. */
+  fromPool: boolean;
+  /** Share of the hero pool that spills into the falls before the first shape takes the rest. */
+  poolToFalls: number;
   /** Surface-tension wobble while a shape holds (px). */
   wobble: number;
   glint: number;
@@ -277,7 +283,8 @@ export function defaultParams(): AllParams {
       thinning: 0.35,
       shape: "auto",
       shapeSize: 1,
-      shapeY: 0.42,
+      // Lower than round 4 (0.42): the pool pours down into the first shape (user, round 6).
+      shapeY: 0.5,
       pourLen: 0.35,
       meltLen: 0.35,
       scrub: 0.35,
@@ -285,6 +292,8 @@ export function defaultParams(): AllParams {
       handover: "morph",
       puddle: "base",
       reflect: 1,
+      fromPool: true,
+      poolToFalls: 0.45,
       wobble: 2.5,
       glint: 1,
       drips: 1,

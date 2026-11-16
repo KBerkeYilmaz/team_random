@@ -192,6 +192,7 @@ export function createEngine(opts: EngineOptions): Engine {
       marker: "cursive",
       sans: "sans-serif",
     },
+    topPool,
   };
   let variant = FACTORIES[variantKey](variantContext);
   particles.add(variant.object);
@@ -642,14 +643,17 @@ export function createEngine(opts: EngineOptions): Engine {
     } else {
       // Cores are orange -> amber; the magenta lives only in the tails (uEdgeCol).
       glowTmp.copy(rampD[1]).lerp(rampD[2], 0.35);
+      // The hero pool's light rides the back edge of its liquid, and dims as it drains
+      // (form pours it into the falls and the first shape).
+      const drain = variant.poolDrain?.() ?? 0;
       setGlow(
         0,
         W / 2,
-        topHorizonY + 8,
+        topHorizonY + (topNearY - topHorizonY) * clamp(drain, 0, 1) + 8,
         W * 0.55,
         H * 0.13,
         glowTmp,
-        1.0 * topAlpha,
+        1.0 * topAlpha * (1 - smoothstep(0.5, 1.1, drain)),
       );
       const span = Math.max(1, focus.yBottom - focus.yTop);
       setGlow(

@@ -39,6 +39,7 @@ uniform float uMist;
 uniform float uSway;
 uniform float uThin;
 uniform float uSize;
+uniform float uFadeIn;
 
 float lagAt(float u) {
   float fu = clamp(u, 0.0, 1.0) * float(${M - 1});
@@ -64,7 +65,9 @@ void main() {
   float speed = 1.0 + min(abs(uVelN), 2.0);
   x += n.x * uTurb * (6.0 + 46.0 * s) * speed;
   y += n.y * uTurb * 12.0 * s;
-  float alpha = smoothstep(0.0, 0.03, s) * (1.0 - smoothstep(0.965, 1.0, s));
+  // Fade in below the source. form widens this so the falls cross-fade with the hero
+  // pool's own particles pouring over its edge (one continuous liquid).
+  float alpha = smoothstep(0.0, uFadeIn, s) * (1.0 - smoothstep(0.965, 1.0, s));
   if (aSeed.y > 0.5 && s > 0.78) {
     float k = (s - 0.78) / 0.22;
     y = uLandY - (50.0 + 90.0 * fract(aSeed.x * 5.13)) * sin(k * 3.14159) * uMist;
@@ -119,6 +122,7 @@ export function createCascade(ctx: VariantContext): VariantSystem {
       uSway: { value: 0 },
       uThin: { value: 0.35 },
       uSize: { value: 2.4 },
+      uFadeIn: { value: 0.03 },
     },
     vertexShader: CASCADE_VERT,
     fragmentShader: SPRITE_FRAG,
@@ -188,6 +192,7 @@ export function createCascade(ctx: VariantContext): VariantSystem {
       u.uMist.value = p.mist * f.pour;
       u.uSway.value = sway;
       u.uThin.value = p.thinning;
+      u.uFadeIn.value = p.fadeIn ?? 0.03;
 
       impactClock += f.dt;
       if (visible && impactClock > 0.09) {

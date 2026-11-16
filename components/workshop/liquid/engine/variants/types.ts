@@ -2,6 +2,7 @@
 import type * as THREE from "three";
 
 import type { AllParams, TierBudget, VariantKey } from "../params";
+import type { PoolSystem } from "../pool";
 import type { RippleField } from "../ripple";
 import type { SectionMetrics } from "../scroll";
 import type { Fonts } from "../shapes";
@@ -60,6 +61,8 @@ export interface VariantContext {
   ripple: RippleField | null;
   /** The site's next/font families, for shapes drawn from text. */
   fonts: Fonts;
+  /** The hero pool (engine-owned). form drains it into the falls and the first shape. */
+  topPool: PoolSystem;
 }
 
 /** One of the background's light fields, in screen px. Colour in linear space. */
@@ -85,6 +88,12 @@ export interface VariantSystem {
   extraGlows?(out: GlowSpec[]): void;
   /** Variant state for __lw.state() and the panel's monitor (form: where the story is). */
   debug?(): { story?: string };
+  /**
+   * How far the hero pool has drained (form): where its liquid's back edge is, as a share
+   * of its depth on screen (0 full, 1 at the near edge, beyond that empty). Moves + dims
+   * its light.
+   */
+  poolDrain?(): number;
   update(f: FrameState): void;
   focus(): PourFocus;
   /** Push this frame's impacts into `out` and clear them. */
