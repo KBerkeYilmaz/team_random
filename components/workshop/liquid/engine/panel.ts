@@ -124,6 +124,19 @@ export function createPanel(opts: {
       };
       for (const spec of SHAPES) shapeOptions[spec.key] = spec.key;
       folder.addBinding(m, "shape", { options: shapeOptions });
+      folder.addBinding(m, "handover", {
+        label: "hand-over",
+        options: { "morph (puddle, rise)": "morph", "melt + pour": "melt" },
+      });
+      folder.addBinding(m, "puddle", {
+        label: "morph puddle",
+        options: { "under the shape": "base", "dives into the pool": "pool" },
+      });
+      folder.addBinding(m, "reflect", {
+        min: 0,
+        max: 1.5,
+        label: "reflections",
+      });
       folder.addBinding(m, "pourLen", {
         min: 0.1,
         max: 0.6,

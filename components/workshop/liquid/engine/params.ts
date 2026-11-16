@@ -117,6 +117,15 @@ export interface FormParams extends CascadeParams {
   scrub: number;
   /** A hard fling bursts the shape into droplets that gather again as the scroll slows. */
   splash: number;
+  /**
+   * How one shape hands over to the next: "morph" (the same liquid slumps into a puddle
+   * and rises into the next shape) or "melt" (drains into the pool, the next pours in).
+   */
+  handover: string;
+  /** Where a morph's liquid gathers: "base" (a puddle under the shape) or "pool". */
+  puddle: string;
+  /** Reflections of the shapes in the bottom pool (0 = off). */
+  reflect: number;
   /** Surface-tension wobble while a shape holds (px). */
   wobble: number;
   glint: number;
@@ -273,6 +282,9 @@ export function defaultParams(): AllParams {
       meltLen: 0.35,
       scrub: 0.35,
       splash: 1,
+      handover: "morph",
+      puddle: "base",
+      reflect: 1,
       wobble: 2.5,
       glint: 1,
       drips: 1,

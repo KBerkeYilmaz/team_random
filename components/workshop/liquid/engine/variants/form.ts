@@ -5,19 +5,26 @@
 // animation ... more activity ... cascades should form up images or silhouettes" (round 3,
 // time-played shapes + a TEAM RANDOM wordmark intro). Round 4: "scrub yeah", "make sure
 // the flow is good", the wordmark is gone ("hideous"), more vibrant colours (LOOKS.vivid).
+// Round 5 (after "going really good"): the liquid morph hand-over and pool reflections.
 //
 // The story. Scroll position, smoothed by a critically damped spring so wheel steps glide:
 //   hero   -> only the pool and its light; scrolling out spills it into the cascade
-//   then   -> the shapes take turns, evenly paced down the rest of the page. Each one gets a
-//             slot: pour in (falls from above, the bottom of the shape first, like a mould
-//             filling) -> hold -> melt (drains down into the pool) while the next one is
-//             already pouring. Scroll back up and everything runs backwards.
+//   then   -> the shapes take turns, evenly paced down the rest of the page. The first one
+//             pours in from above (the bottom of the shape first, like a mould filling).
+//             Each hand-over is either:
+//               morph (default): the same liquid slumps into a glowing puddle under the
+//                 shape, then rises out of it into the next shape, bottom first;
+//               melt: it drains down into the pool while the next one pours in from above.
+//             Scroll back up and everything runs backwards.
 //   always -> held shapes stay alive in time (wobble, gliding highlights, drops dripping
 //             off, a trickle feeding them), lag the scroll on a spring, burst into
-//             droplets on a hard fling and gather again, and part around the pointer.
+//             droplets on a hard fling and gather again, part around the pointer, and
+//             reflect in the bottom pool once it has filled enough to hold them.
 //
-// Two shape layers alternate (shape k draws on layer k % 2), so a melt and the next pour
-// overlap. All motion is analytic in the vertex shader; the CPU only sets progress.
+// Melt draws shape k on layer k % 2 so a melt and the next pour overlap. Morph uses one
+// layer carrying two target sets (this shape and the next), paired bottom-to-top so each
+// droplet has a partner. All motion is analytic in the vertex shader; the CPU only sets
+// progress.
 import * as THREE from "three";
 
 import { NOISE, PARTICLE_COMMON, SPRITE_FRAG } from "../glsl";
@@ -38,15 +45,23 @@ import type {
 const SHAPE_VERT = /* glsl */ `
 ${PARTICLE_COMMON}
 ${NOISE}
-attribute vec4 aTarget;   // x, y (shape units: height 1, y up), h (0 bottom..1 top), edge
-attribute vec4 aShade;    // x: thickness (0 edge..1 core), yz: inward direction (y up)
+attribute vec4 aTarget;   // shape A: x, y (shape units: height 1, y up), h (0 bottom..1 top), edge
+attribute vec4 aShade;    // shape A: thickness (0 edge..1 core), inward direction (y up)
+attribute vec4 aTargetB;  // shape B (the morph's destination), same layout
+attribute vec4 aShadeB;
 attribute vec4 aSeed;     // four independent randoms
 uniform vec2 uCenter;     // px
-uniform float uScale;     // px per shape unit
+uniform float uScale;     // px per shape unit (A)
+uniform float uScaleB;    // px per shape unit (B)
 uniform vec2 uStretch;    // squash + stretch from the follow spring
 uniform float uOffset;    // follow-spring offset (px, +down)
 uniform float uForm;      // 0..1 poured in (scrubbed)
 uniform float uRelease;   // 0..1 melted out (scrubbed)
+uniform float uMorphOn;   // 1: hand-overs morph A -> B instead of melting
+uniform float uMorph;     // 0..1 slump into the puddle, then rise into B (scrubbed)
+uniform float uPuddleY;   // the puddle's surface line (px, before the follow offset)
+uniform float uPuddleW;   // its half width (px)
+uniform float uPuddleT;   // its thickness (px)
 uniform float uSplash;    // 0..1 burst apart by a hard fling
 uniform vec3 uPointer;    // xy: pointer (px), z: how much it is touching the liquid
 uniform float uLandY;     // melted liquid vanishes into the pool here
@@ -57,35 +72,58 @@ uniform float uClock;
 uniform float uSize;
 uniform float uAlphaK;
 uniform vec3 uLight;      // light direction (shape space, z towards the viewer)
+#ifdef MIRROR
+uniform float uMirrorY;   // the bottom pool's surface line (px)
+uniform float uReflect;   // reflection strength (0 hides it)
+#endif
+
+// A target's slot on screen. The bottom follows the page drag more than the top: a
+// jelly-like shear.
+vec2 slotOf(vec4 T, float scale) {
+  vec2 local = T.xy * uStretch;
+  vec2 p = uCenter + vec2(local.x, -local.y) * scale;
+  p.y += uOffset * (1.15 - 0.3 * T.z);
+  return p;
+}
 
 void main() {
   float r1 = aSeed.x;
   float r2 = aSeed.y;
   float r3 = aSeed.z;
   float r4 = aSeed.w;
-  float h = aTarget.z;
-  float edge = aTarget.w;
-  float tau = aShade.x;
 
-  // The slot. The bottom follows the page drag more than the top: a jelly-like shear.
-  vec2 local = aTarget.xy * uStretch;
-  vec2 pos = uCenter + vec2(local.x, -local.y) * uScale;
-  pos.y += uOffset * (1.15 - 0.3 * h);
+  // Morph timing (both 0 outside a morph). t1: A slumps into the puddle (all together,
+  // like a collapse). t2: rises out of it into B, the bottom of B first.
+  float t1 = 0.0;
+  float t2 = 0.0;
+  if (uMorphOn > 0.5) {
+    t1 = clamp((uMorph - 0.08 * r1) / 0.42, 0.0, 1.0);
+    t2 = clamp((uMorph - 0.48 - 0.28 * aTargetB.z - 0.04 * r1) / 0.2, 0.0, 1.0);
+  }
+  bool onB = t2 > 0.0;
+  vec4 T = onB ? aTargetB : aTarget;
+  vec4 S = onB ? aShadeB : aShade;
+  float h = T.z;
+  float edge = T.w;
+  float tau = S.x;
+
+  vec2 pos = slotOf(T, onB ? uScaleB : uScale);
 
   // Holding: surface-tension wobble.
   float wt = uTime * 0.45;
-  pos += vec2(
-    snoise(vec3(aTarget.xy * 2.2, wt + r1 * 3.0)),
-    snoise(vec3(aTarget.xy * 2.2 + 11.0, wt))
+  vec2 wobble = vec2(
+    snoise(vec3(T.xy * 2.2, wt + r1 * 3.0)),
+    snoise(vec3(T.xy * 2.2 + 11.0, wt))
   ) * uWobble;
+  pos += wobble;
 
   // The silhouette as a liquid surface: rounded over its thickness, rippling, lit by a
   // light that slowly orbits, so highlights glide across it and the rims catch light.
   vec2 ripple = vec2(
-    snoise(vec3(aTarget.xy * 5.0, uTime * 0.6 + 3.0)),
-    snoise(vec3(aTarget.xy * 5.0 + 5.0, uTime * 0.6))
+    snoise(vec3(T.xy * 5.0, uTime * 0.6 + 3.0)),
+    snoise(vec3(T.xy * 5.0 + 5.0, uTime * 0.6))
   ) * 0.25 * uGlint;
-  vec3 nrm = normalize(vec3(-aShade.yz * (1.0 - tau) * 1.6 + ripple, 0.25 + tau));
+  vec3 nrm = normalize(vec3(-S.yz * (1.0 - tau) * 1.6 + ripple, 0.25 + tau));
   float diff = max(dot(nrm, uLight), 0.0);
   float spec = pow(max(dot(nrm, normalize(uLight + vec3(0.0, 0.0, 1.0))), 0.0), 28.0) * uGlint;
   float rim = pow(1.0 - nrm.z, 3.0);
@@ -114,7 +152,34 @@ void main() {
     pos.x += (1.0 - q) * sin(r4 * 6.2831 + uTime * 2.0) * 5.0;
   }
 
-  bool held = q >= 1.0 && uRelease <= 0.0;
+  // Liquid morph: the same droplets slump into a glowing puddle under the shapes (a lens
+  // of liquid with a rippling top), then rise out of it into the next shape.
+  bool morphing = t1 > 0.0 && t2 < 1.0;
+  if (morphing) {
+    vec2 slotA = slotOf(aTarget, uScale) + wobble;
+    vec2 slotB = slotOf(aTargetB, uScaleB) + wobble;
+    float px = uCenter.x + (mix(slotA.x, slotB.x, 0.5) - uCenter.x) * 0.9;
+    float xr = (px - uCenter.x) / max(uPuddleW, 1.0);
+    float lens = sqrt(max(1.0 - xr * xr, 0.0));
+    vec2 puddle = vec2(
+      px,
+      uPuddleY + uOffset * 1.15 - lens * uPuddleT * (0.15 + 0.85 * r2)
+        + sin(px * 0.035 + uTime * 2.4) * 2.5 * lens
+    );
+    // Rising starts from wherever the droplet is on its way down (not the puddle), so a
+    // droplet that starts rising before it has fully slumped never jumps.
+    vec2 fromA = mix(slotA, puddle, t1 * t1);
+    if (onB) {
+      float e = 1.0 - (1.0 - t2) * (1.0 - t2);
+      pos = mix(fromA, slotB, e);
+      tcol = mix(mix(0.8, 0.55, uTheme), tcol, e);
+    } else {
+      pos = fromA;
+      tcol = mix(tcol, mix(0.8, 0.55, uTheme), t1);
+    }
+  }
+
+  bool held = q >= 1.0 && uRelease <= 0.0 && !morphing;
   if (held && edge > 1.5 && r2 < 0.35 * uDrips) {
     // Drips: a drop swells on a bottom edge, lets go, falls into the pool, then the
     // mould refills it.
@@ -162,6 +227,20 @@ void main() {
   pos += normalize(dp + 1e-4) * touch * 48.0;
   tcol += touch * 0.3 * (1.0 - uTheme);
 
+#ifdef MIRROR
+  // The reflection in the bottom pool: mirrored about its surface line, squashed by the
+  // low viewing angle, broken by the swell into shimmering bands, fading with depth.
+  // Only what is above the surface reflects.
+  float above = uMirrorY - pos.y;
+  alpha *= step(0.0, above);
+  pos.y = uMirrorY + above * 0.6;
+  pos.x += sin(pos.y * 0.09 + uTime * 2.2) * (2.0 + above * 0.02)
+    + snoise(vec3(pos * 0.02, uTime * 0.5)) * 3.0;
+  alpha *= uReflect * 0.45
+    * (1.0 - smoothstep(0.0, uViewport.y * 0.3, above * 0.6))
+    * (0.55 + 0.45 * sin(pos.y * 0.6 + uTime * 3.0));
+#endif
+
   float hueN = snoise(vec3(pos * 0.002, uTime * 0.05)) * 0.5 + 0.5;
   vColor = liquidColor(clamp(tcol, 0.0, 1.0), hueN, r1);
   vAlpha = alpha * uAlphaK * mix(0.6, 1.0, r3);
@@ -173,12 +252,18 @@ void main() {
 
 interface Layer {
   points: THREE.Points;
+  /** The same particles, mirrored into the bottom pool. */
+  mirror: THREE.Points;
   geometry: THREE.BufferGeometry;
   material: THREE.ShaderMaterial;
+  mirrorMaterial: THREE.ShaderMaterial;
   target: THREE.BufferAttribute;
   shade: THREE.BufferAttribute;
-  /** Index into SHAPES currently uploaded, -1 when none. */
+  targetB: THREE.BufferAttribute;
+  shadeB: THREE.BufferAttribute;
+  /** Shapes uploaded as A and B (indices into SHAPES), -1 when none. */
   shape: number;
+  shapeB: number;
   off: number;
   offV: number;
 }
@@ -190,6 +275,39 @@ function storyLayout(f: FrameState, n: number) {
   const start = Math.max(f.H * 0.25, s.heroBottom - f.H * 0.45);
   const end = Math.max(start + n * f.H * 0.3, s.docH - f.H);
   return { start, slot: (end - start) / n };
+}
+
+/**
+ * Sorts a shape's targets bottom-to-top (in bands, left to right within a band), then
+ * applies one permutation shared by every shape. Particle j is then the same rank in every
+ * shape (so a morph pairs bottom with bottom, left with left), while any prefix of the
+ * buffer is still an even subsample (the quality governor draws prefixes).
+ */
+function pairForMorph(t: ShapeTargets, perm: Uint32Array): ShapeTargets {
+  const count = t.count;
+  let minX = Infinity;
+  let maxX = -Infinity;
+  for (let i = 0; i < count; i++) {
+    minX = Math.min(minX, t.points[i * 4]);
+    maxX = Math.max(maxX, t.points[i * 4]);
+  }
+  const key = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    key[i] =
+      Math.floor(t.points[i * 4 + 2] * 40) +
+      ((t.points[i * 4] - minX) / (maxX - minX + 1e-6)) * 0.999;
+  }
+  const order = Array.from({ length: count }, (_, i) => i).sort(
+    (a, b) => key[a] - key[b],
+  );
+  const points = new Float32Array(count * 4);
+  const shade = new Float32Array(count * 4);
+  for (let j = 0; j < count; j++) {
+    const src = order[perm[j]] * 4;
+    points.set(t.points.subarray(src, src + 4), j * 4);
+    shade.set(t.shade.subarray(src, src + 4), j * 4);
+  }
+  return { ...t, points, shade };
 }
 
 export function createForm(ctx: VariantContext): VariantSystem {
@@ -210,11 +328,17 @@ export function createForm(ctx: VariantContext): VariantSystem {
   const group = new THREE.Group();
   group.add(sheet.object);
 
+  const dynamicAttr = () => {
+    const attr = new THREE.BufferAttribute(new Float32Array(capacity * 4), 4);
+    attr.setUsage(THREE.DynamicDrawUsage);
+    return attr;
+  };
+
   const makeLayer = (): Layer => {
-    const target = new THREE.BufferAttribute(new Float32Array(capacity * 4), 4);
-    target.setUsage(THREE.DynamicDrawUsage);
-    const shade = new THREE.BufferAttribute(new Float32Array(capacity * 4), 4);
-    shade.setUsage(THREE.DynamicDrawUsage);
+    const target = dynamicAttr();
+    const shade = dynamicAttr();
+    const targetB = dynamicAttr();
+    const shadeB = dynamicAttr();
     const seeds = new Float32Array(capacity * 4);
     for (let i = 0; i < seeds.length; i++) seeds[i] = Math.random();
     const geometry = new THREE.BufferGeometry();
@@ -225,54 +349,94 @@ export function createForm(ctx: VariantContext): VariantSystem {
     );
     geometry.setAttribute("aTarget", target);
     geometry.setAttribute("aShade", shade);
+    geometry.setAttribute("aTargetB", targetB);
+    geometry.setAttribute("aShadeB", shadeB);
     geometry.setAttribute("aSeed", new THREE.BufferAttribute(seeds, 4));
+    // One uniforms object for the shape and its reflection, so they never drift apart.
+    const uniforms: Record<string, THREE.IUniform> = {
+      ...ctx.common,
+      uCenter: { value: new THREE.Vector2() },
+      uScale: { value: 100 },
+      uScaleB: { value: 100 },
+      uStretch: { value: new THREE.Vector2(1, 1) },
+      uOffset: { value: 0 },
+      uForm: { value: 0 },
+      uRelease: { value: 0 },
+      uMorphOn: { value: 0 },
+      uMorph: { value: 0 },
+      uPuddleY: { value: 0 },
+      uPuddleW: { value: 1 },
+      uPuddleT: { value: 1 },
+      uSplash: { value: 0 },
+      uLandY: { value: 0 },
+      uWobble: { value: 2.5 },
+      uGlint: { value: 1 },
+      uDrips: { value: 1 },
+      uClock: { value: 0 },
+      uSize: { value: 2.4 },
+      uAlphaK: { value: 0.5 },
+      uLight: { value: new THREE.Vector3(0, 0.6, 0.8) },
+      uMirrorY: { value: 0 },
+      uReflect: { value: 0 },
+    };
     const material = new THREE.ShaderMaterial({
-      uniforms: {
-        ...ctx.common,
-        uCenter: { value: new THREE.Vector2() },
-        uScale: { value: 100 },
-        uStretch: { value: new THREE.Vector2(1, 1) },
-        uOffset: { value: 0 },
-        uForm: { value: 0 },
-        uRelease: { value: 0 },
-        uSplash: { value: 0 },
-        uLandY: { value: 0 },
-        uWobble: { value: 2.5 },
-        uGlint: { value: 1 },
-        uDrips: { value: 1 },
-        uClock: { value: 0 },
-        uSize: { value: 2.4 },
-        uAlphaK: { value: 0.5 },
-        uLight: { value: new THREE.Vector3(0, 0.6, 0.8) },
-      },
+      uniforms,
+      vertexShader: SHAPE_VERT,
+      fragmentShader: SPRITE_FRAG,
+      ...particleBlending,
+    });
+    const mirrorMaterial = new THREE.ShaderMaterial({
+      uniforms,
+      defines: { MIRROR: "" },
       vertexShader: SHAPE_VERT,
       fragmentShader: SPRITE_FRAG,
       ...particleBlending,
     });
     const points = new THREE.Points(geometry, material);
-    points.frustumCulled = false;
-    points.visible = false;
+    const mirror = new THREE.Points(geometry, mirrorMaterial);
+    for (const p of [points, mirror]) {
+      p.frustumCulled = false;
+      p.visible = false;
+    }
     points.renderOrder = 2;
-    group.add(points);
+    mirror.renderOrder = 1;
+    group.add(mirror, points);
     return {
       points,
+      mirror,
       geometry,
       material,
+      mirrorMaterial,
       target,
       shade,
+      targetB,
+      shadeB,
       shape: -1,
+      shapeB: -1,
       off: 0,
       offV: 0,
     };
   };
   const layers: [Layer, Layer] = [makeLayer(), makeLayer()];
 
+  // One shared permutation pairs every shape's droplets (see pairForMorph).
+  const perm = new Uint32Array(capacity);
+  for (let i = 0; i < capacity; i++) perm[i] = i;
+  for (let i = capacity - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = perm[i];
+    perm[i] = perm[j];
+    perm[j] = t;
+  }
+
   // Shapes are sampled once the site's fonts are in (text shapes draw with them).
   let targets: ShapeTargets[] | null = null;
   let disposed = false;
   void loadFonts(ctx.fonts).then(() => {
     if (disposed) return;
-    targets = SHAPES.map((spec) => sampleShape(spec, capacity, ctx.fonts));
+    targets = SHAPES.map((spec) =>
+      pairForMorph(sampleShape(spec, capacity, ctx.fonts), perm),
+    );
   });
 
   const n = SHAPES.length;
@@ -292,13 +456,24 @@ export function createForm(ctx: VariantContext): VariantSystem {
   const rampD = ctx.common.uRampD.value as THREE.Color[];
   const glowSpecs: GlowSpec[] = [];
 
-  const upload = (layer: Layer, shape: number) => {
-    const t = targets![shape];
-    (layer.target.array as Float32Array).set(t.points);
-    layer.target.needsUpdate = true;
-    (layer.shade.array as Float32Array).set(t.shade);
-    layer.shade.needsUpdate = true;
-    layer.shape = shape;
+  const upload = (layer: Layer, a: number, b: number) => {
+    if (layer.shape !== a) {
+      (layer.target.array as Float32Array).set(targets![a].points);
+      (layer.shade.array as Float32Array).set(targets![a].shade);
+      layer.target.needsUpdate = layer.shade.needsUpdate = true;
+      layer.shape = a;
+    }
+    if (b >= 0 && layer.shapeB !== b) {
+      (layer.targetB.array as Float32Array).set(targets![b].points);
+      (layer.shadeB.array as Float32Array).set(targets![b].shade);
+      layer.targetB.needsUpdate = layer.shadeB.needsUpdate = true;
+      layer.shapeB = b;
+    }
+  };
+
+  const hide = (layer: Layer) => {
+    layer.points.visible = false;
+    layer.mirror.visible = false;
   };
 
   return {
@@ -308,6 +483,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
     update(f) {
       const p = f.params.form;
       const L = f.params.common.liquid;
+      const P = f.params.common.pools;
       clock += f.dt;
 
       // A formed shape pushes the cascade behind it back a little (last frame's value).
@@ -323,6 +499,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
       label = "";
 
       if (!targets) return;
+      const shapes = targets;
 
       // The story position: the scroll, smoothed so wheel steps and flicks glide.
       const snap = f.reduced || f.settle || storyY === null || p.scrub < 0.02;
@@ -341,10 +518,175 @@ export function createForm(ctx: VariantContext): VariantSystem {
       }
       storyY = y;
 
-      // Progress per shape: pour in over the first part of its slot, melt out across the
-      // end of it (overlapping the next shape's pour); the last one never melts.
       const { start, slot } = storyLayout(f, n);
       const pinned = SHAPES.findIndex((s) => s.key === p.shape);
+      const morph = p.handover === "morph" && !f.reduced && pinned < 0;
+
+      // A hard fling bursts the shapes; they gather again as the scroll slows.
+      const fling = f.reduced
+        ? 0
+        : clamp((Math.abs(f.velN) - 0.5) / 2, 0, 1) * p.splash;
+      splash = snap
+        ? fling
+        : damp(splash, fling, fling > splash ? 14 : 2.2, f.dt);
+
+      // Melted liquid (and drips) vanish into the hero pool while it is on screen below
+      // the shape, otherwise into the bottom pool.
+      const s = f.sections;
+      const heroH = Math.max(1, s.heroBottom - s.heroTop);
+      const heroHorizon = s.heroTop + heroH * P.heroHorizon - f.scrollY;
+      const heroNear = s.heroBottom + heroH * 0.06 - f.scrollY;
+      const heroLand =
+        heroNear > 0
+          ? heroHorizon + (heroNear - heroHorizon) * 0.3
+          : Number.POSITIVE_INFINITY;
+      // The bottom pool's surface (same as the engine's) is the reflections' mirror.
+      const level = f.poolT * P.poolMax * f.H;
+      const mirrorY = f.H - level;
+      const reflect = p.reflect * smoothstep(2, 24, level);
+
+      const follow = springConstants(L.response, L.damping);
+      const sub = Math.max(1, Math.ceil(f.dt / (1 / 120)));
+      const hStep = f.dt / sub;
+      const a = clock * 0.35;
+      const cx = f.W / 2;
+      const cy = f.H * p.shapeY;
+      const scaleOf = (k: number) =>
+        Math.min(f.H * 0.4, (f.W * 0.84) / Math.max(0.2, shapes[k].aspect)) *
+        p.shapeSize;
+
+      // Shared per-layer state: the follow spring, light, splash, pointer, reflection.
+      const drive = (l: Layer, landBelow: number) => {
+        if (snap) {
+          l.off = l.offV = 0;
+        } else {
+          // The page drags the liquid along, a spring brings it back (with a wobble).
+          l.off -= f.dy * L.attach * 0.45 * p.follow;
+          for (let i = 0; i < sub; i++) {
+            l.offV += (-follow.k * l.off - follow.c * l.offV) * hStep;
+            l.off += l.offV * hStep;
+          }
+          l.off = clamp(l.off, -f.H * 0.18, f.H * 0.18);
+        }
+        const stretch = 1 + clamp((Math.abs(l.offV) / f.H) * 0.25, 0, 0.25);
+        const u = l.material.uniforms;
+        (u.uCenter.value as THREE.Vector2).set(cx, cy);
+        (u.uStretch.value as THREE.Vector2).set(
+          1 / Math.sqrt(stretch),
+          stretch,
+        );
+        u.uOffset.value = l.off;
+        u.uSplash.value = splash;
+        u.uLandY.value =
+          heroLand > landBelow ? Math.min(heroLand, f.landY) : f.landY;
+        u.uWobble.value = f.reduced ? 0 : p.wobble;
+        u.uGlint.value = p.glint;
+        u.uDrips.value = f.reduced ? 0 : p.drips;
+        u.uClock.value = clock;
+        // The light orbits slowly, so highlights glide over the liquid.
+        (u.uLight.value as THREE.Vector3)
+          .set(Math.cos(a) * 0.55, 0.5 + 0.2 * Math.sin(a * 0.7), 0.75)
+          .normalize();
+        u.uMirrorY.value = mirrorY;
+        u.uReflect.value = reflect;
+        l.points.visible = true;
+        l.mirror.visible = reflect > 0.01;
+      };
+
+      const glowFor = (
+        l: Layer,
+        width: number,
+        height: number,
+        intensity: number,
+        y0 = cy,
+      ) => {
+        glowColor.copy(rampD[1]).lerp(rampD[2], 0.3);
+        glowSpecs.push({
+          x: cx,
+          y: y0 + l.off,
+          rx: width * 0.5 + 60,
+          ry: height * 0.75 + 40,
+          color: glowColor,
+          intensity: 0.6 * p.shapeGlow * intensity,
+        });
+        if (p.sheetVeil * intensity > shapeVeil) {
+          shapeVeil = p.sheetVeil * intensity;
+          shapeVeilW = Math.min(1, (width / f.W) * 1.15);
+        }
+      };
+
+      if (morph) {
+        // Which hand-over the story is in: pair k -> k + 1, progress M. Before the first
+        // hand-over, the first shape pours in from above; after the last, it holds.
+        let pair = 0;
+        let M = 0;
+        for (let k = 0; k < n - 1; k++) {
+          const m0 = start + (k + 1) * slot - 0.45 * p.meltLen * slot;
+          const m1 = start + (k + 1) * slot + p.pourLen * slot;
+          if (y >= m0) {
+            pair = k;
+            M = clamp((y - m0) / (m1 - m0), 0, 1);
+          }
+        }
+        const pour = clamp((y - start) / (p.pourLen * slot), 0, 1);
+        const l = layers[0];
+        hide(layers[1]);
+        for (let k = 0; k < n; k++) lastRelease[k] = 0;
+        if (pour <= 0) {
+          hide(l);
+        } else {
+          upload(l, pair, Math.min(pair + 1, n - 1));
+          const scaleA = scaleOf(pair);
+          const scaleB = scaleOf(Math.min(pair + 1, n - 1));
+          const wA = scaleA * shapes[pair].aspect;
+          const wB = scaleB * shapes[Math.min(pair + 1, n - 1)].aspect;
+          // The puddle either gathers under the shapes, or (puddle: "pool") the liquid
+          // dives into the lake below and the next shape rises out of it.
+          const intoPool = p.puddle === "pool" && level > 2;
+          const puddleY = intoPool
+            ? Math.max(mirrorY + 4, cy + 0.5 * Math.max(scaleA, scaleB))
+            : cy + 0.5 * Math.max(scaleA, scaleB) + 12;
+          drive(l, puddleY);
+          const u = l.material.uniforms;
+          u.uScale.value = scaleA;
+          u.uScaleB.value = scaleB;
+          u.uForm.value = pair === 0 && M === 0 ? pour : 1;
+          u.uRelease.value = 0;
+          u.uMorphOn.value = 1;
+          u.uMorph.value = M;
+          u.uPuddleY.value = puddleY;
+          u.uPuddleW.value = 0.5 * Math.max(wA, wB) * (intoPool ? 1.5 : 0.95);
+          u.uPuddleT.value =
+            (intoPool ? 0.05 : 0.09) * Math.max(scaleA, scaleB);
+
+          // The light follows the liquid down into the puddle and back up.
+          const puddled =
+            smoothstep(0.15, 0.45, M) * (1 - smoothstep(0.55, 0.85, M));
+          const formed = pair === 0 && M === 0 ? smoothstep(0.2, 1, pour) : 1;
+          const width = M < 0.5 ? wA : wB;
+          const height = M < 0.5 ? scaleA : scaleB;
+          glowFor(
+            l,
+            width + (Math.max(wA, wB) - width) * puddled,
+            height * (1 - 0.8 * puddled),
+            formed * (1 + 0.3 * puddled),
+            cy + (puddleY - cy) * puddled,
+          );
+          const from = SHAPES[pair].key;
+          const to = SHAPES[Math.min(pair + 1, n - 1)].key;
+          label =
+            M <= 0
+              ? `${from} ${pour < 1 ? `pouring ${Math.round(pour * 100)}%` : "holding"}`
+              : M >= 1
+                ? `${to} holding`
+                : `${from} -> ${to} ${Math.round(M * 100)}%`;
+        }
+        return;
+      }
+
+      // Melt mode (and reduced motion / a pinned shape): pour in over the first part of
+      // each slot, melt out across the end of it (overlapping the next shape's pour); the
+      // last one never melts.
       for (let k = 0; k < n; k++) {
         const s0 = start + k * slot;
         release[k] = 0;
@@ -363,100 +705,28 @@ export function createForm(ctx: VariantContext): VariantSystem {
         }
       }
 
-      // A hard fling bursts the shapes; they gather again as the scroll slows.
-      const fling = f.reduced
-        ? 0
-        : clamp((Math.abs(f.velN) - 0.5) / 2, 0, 1) * p.splash;
-      splash = snap
-        ? fling
-        : damp(splash, fling, fling > splash ? 14 : 2.2, f.dt);
-
-      // Melted liquid (and drips) vanish into the hero pool while it is on screen below
-      // the shape, otherwise into the bottom pool.
-      const s = f.sections;
-      const heroH = Math.max(1, s.heroBottom - s.heroTop);
-      const P = f.params.common.pools;
-      const heroHorizon = s.heroTop + heroH * P.heroHorizon - f.scrollY;
-      const heroNear = s.heroBottom + heroH * 0.06 - f.scrollY;
-      const heroLand =
-        heroNear > 0
-          ? heroHorizon + (heroNear - heroHorizon) * 0.3
-          : Number.POSITIVE_INFINITY;
-
-      const follow = springConstants(L.response, L.damping);
-      const sub = Math.max(1, Math.ceil(f.dt / (1 / 120)));
-      const hStep = f.dt / sub;
-      const a = clock * 0.35;
       const shown = [false, false];
-
       for (let k = 0; k < n; k++) {
         const dR = release[k] - lastRelease[k];
         lastRelease[k] = release[k];
         if (form[k] <= 0 || release[k] >= 1) continue;
         const l = layers[k % 2];
-        if (l.shape !== k) upload(l, k);
+        upload(l, k, -1);
         shown[k % 2] = true;
-        l.points.visible = true;
-
-        const aspect = targets[k].aspect;
-        const scale =
-          Math.min(f.H * 0.4, (f.W * 0.84) / Math.max(0.2, aspect)) *
-          p.shapeSize;
-        const cx = f.W / 2;
-        const cy = f.H * p.shapeY;
-
-        // Follow: the page drags the liquid along, a spring brings it back (with a wobble).
-        if (snap) {
-          l.off = l.offV = 0;
-        } else {
-          l.off -= f.dy * L.attach * 0.45 * p.follow;
-          for (let i = 0; i < sub; i++) {
-            l.offV += (-follow.k * l.off - follow.c * l.offV) * hStep;
-            l.off += l.offV * hStep;
-          }
-          l.off = clamp(l.off, -f.H * 0.18, f.H * 0.18);
-        }
-        const stretch = 1 + clamp((Math.abs(l.offV) / f.H) * 0.25, 0, 0.25);
-
+        const scale = scaleOf(k);
+        drive(l, cy + scale * 0.6);
         const u = l.material.uniforms;
-        (u.uCenter.value as THREE.Vector2).set(cx, cy);
         u.uScale.value = scale;
-        (u.uStretch.value as THREE.Vector2).set(
-          1 / Math.sqrt(stretch),
-          stretch,
-        );
-        u.uOffset.value = l.off;
         u.uForm.value = form[k];
         u.uRelease.value = release[k];
-        u.uSplash.value = splash;
-        u.uLandY.value =
-          heroLand > cy + scale * 0.6 ? Math.min(heroLand, f.landY) : f.landY;
-        u.uWobble.value = f.reduced ? 0 : p.wobble;
-        u.uGlint.value = p.glint;
-        u.uDrips.value = f.reduced ? 0 : p.drips;
-        u.uClock.value = clock;
-        // The light orbits slowly, so highlights glide over the liquid.
-        (u.uLight.value as THREE.Vector3)
-          .set(Math.cos(a) * 0.55, 0.5 + 0.2 * Math.sin(a * 0.7), 0.75)
-          .normalize();
+        u.uMorphOn.value = 0;
+        u.uMorph.value = 0;
 
         // Light behind the shape, so the silhouette glows like the pools do.
         const formed =
           smoothstep(0.2, 1, form[k]) * (1 - smoothstep(0, 0.7, release[k]));
-        const shapeW = scale * aspect;
-        glowColor.copy(rampD[1]).lerp(rampD[2], 0.3);
-        glowSpecs.push({
-          x: cx,
-          y: cy + l.off,
-          rx: shapeW * 0.5 + 60,
-          ry: scale * 0.75 + 40,
-          color: glowColor,
-          intensity: 0.6 * p.shapeGlow * formed,
-        });
-        if (p.sheetVeil * formed > shapeVeil) {
-          shapeVeil = p.sheetVeil * formed;
-          shapeVeilW = Math.min(1, (shapeW / f.W) * 1.15);
-        }
+        const shapeW = scale * shapes[k].aspect;
+        glowFor(l, shapeW, scale, formed);
         // Melting forward splashes the pool across the shape's width.
         if (dR > 0) {
           meltAcc += dR;
@@ -475,7 +745,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
         label += `${label ? " + " : ""}${SHAPES[k].key} ${phase} ${pct}%`;
       }
       for (let i = 0; i < 2; i++) {
-        if (!shown[i]) layers[i].points.visible = false;
+        if (!shown[i]) hide(layers[i]);
       }
     },
 
@@ -505,9 +775,8 @@ export function createForm(ctx: VariantContext): VariantSystem {
       layers.reduce(
         (sum, l) =>
           sum +
-          (l.points.visible
-            ? Math.min(capacity, l.geometry.drawRange.count)
-            : 0),
+          ((l.points.visible ? 1 : 0) + (l.mirror.visible ? 1 : 0)) *
+            Math.min(capacity, l.geometry.drawRange.count),
         0,
       ),
 
@@ -517,6 +786,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
       for (const l of layers) {
         l.geometry.dispose();
         l.material.dispose();
+        l.mirrorMaterial.dispose();
       }
     },
   };
