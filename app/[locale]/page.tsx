@@ -1,14 +1,21 @@
-import { HeroWavy } from "@/components/HeroWavy";
-import { TracingBeam } from "@/components/ui/tracing-beam";
-import { LampDemo } from "@/components/ui/lamp";
-import { permanentMarker, pixelify } from "@/app/fonts";
-import Parallax from "@/components/Parallax";
 import { Globe, Palette, PanelsTopLeft, Users } from "lucide-react";
+
+import { permanentMarker, pixelify } from "@/app/fonts";
 import ContactForm from "@/components/forms/ContactForm";
+import { HeroWavy } from "@/components/HeroWavy";
+import Parallax from "@/components/Parallax";
+import { LampDemo } from "@/components/ui/lamp";
+import { TracingBeam } from "@/components/ui/tracing-beam";
+import LiquidWorkshop from "@/components/workshop/liquid/LiquidWorkshop";
 
 export default function Home() {
   return (
     <main className="flex w-full animate-fadeIn flex-col">
+      {/* PROTOTYPE (liquid workshop, throwaway branch, never merge): dev-only background
+          workshop over the real sections. See components/workshop/liquid/LiquidWorkshop.tsx.
+          NODE_ENV is a Next-inlined build constant, not app config (lib/env.ts is
+          server-only and fails fast on this workspace's blank secrets). */}
+      {process.env.NODE_ENV !== "production" && <LiquidWorkshop />}
       <section
         id="hero"
         className="flex h-screen w-full items-center justify-center"

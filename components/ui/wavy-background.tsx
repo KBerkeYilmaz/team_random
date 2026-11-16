@@ -1,7 +1,8 @@
 "use client";
-import { cn } from "@/lib/utils";
 import React, { useEffect, useRef, useState } from "react";
 import { createNoise3D } from "simplex-noise";
+
+import { cn } from "@/lib/utils";
 
 export const WavyBackground = ({
   children,
@@ -81,6 +82,12 @@ export const WavyBackground = ({
 
   let animationId: number;
   const render = () => {
+    // PROTOTYPE (liquid workshop, never merge): idle the 2D wave loop while the WebGL
+    // workshop owns the background, so its full-screen blur doesn't skew FPS readings.
+    if (document.documentElement.hasAttribute("data-liquid-workshop")) {
+      animationId = requestAnimationFrame(render);
+      return;
+    }
     ctx.fillStyle = backgroundFill || "black";
     ctx.globalAlpha = waveOpacity || 0.5;
     ctx.fillRect(0, 0, w, h);
