@@ -498,11 +498,12 @@ export function createEngine(opts: EngineOptions): Engine {
     let spill = smoothstep(0.02, 0.3, heroExit);
     const calmEnd = s.ctaTop - H * 0.35;
     let calm = smoothstep(s.ctaTop - H, calmEnd, scroll.y);
-    let poolT = smoothstep(
-      heroH * 0.3,
-      Math.max(heroH * 0.3 + 1, calmEnd),
-      scroll.y,
-    );
+    // Round 11 ("footer water level can be a little lower while we are moving down, it's a
+    // bit too much at the end of the page"): the lake rises late (a power curve, so it stays
+    // low through the story) and tops out lower (poolMax 0.3 -> 0.2).
+    let poolT =
+      smoothstep(heroH * 0.3, Math.max(heroH * 0.3 + 1, calmEnd), scroll.y) **
+      1.3;
     if (reduced) {
       heroExit = 1;
       spill = 1;

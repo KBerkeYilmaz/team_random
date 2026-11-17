@@ -277,7 +277,8 @@ export function defaultParams(): AllParams {
         heroHorizon: 0.76,
         heroDepth: 7,
         heroSwell: 22,
-        poolMax: 0.3,
+        // Round 11: lower (was 0.3): "a bit too much at the end of the page".
+        poolMax: 0.2,
         poolSwell: 16,
         swellSpeed: 1,
         chop: 0.6,
