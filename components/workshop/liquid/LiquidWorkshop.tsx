@@ -13,7 +13,9 @@ import { Suspense, useEffect } from "react";
 import { VariantSwitcher } from "../VariantSwitcher";
 
 import "./workshop.css";
+import PillarCopy from "./PillarCopy";
 import { WORKSHOP_VARIANTS, parseTier, parseVariant } from "./variants";
+import WorkshopNav from "./WorkshopNav";
 
 const LiquidCanvas = dynamic(() => import("./LiquidCanvas"), { ssr: false });
 
@@ -64,6 +66,13 @@ function Workshop() {
 
   return (
     <>
+      {variant !== "off" && (
+        <>
+          {/* Round 9: the glass pill nav and the pillars' copy (driven by the form story). */}
+          <WorkshopNav />
+          <PillarCopy />
+        </>
+      )}
       {variant !== "off" && (
         <LiquidCanvas
           variant={variant}

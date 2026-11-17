@@ -36,6 +36,8 @@ export interface FrameState {
   params: AllParams;
   /** True for one frame after __lw.settle(): snap to rest for clean screenshots. */
   settle: boolean;
+  /** 0..1, how far the workshop nav's phone menu has flooded the screen. */
+  flood: number;
 }
 
 /** Where the pour is, so the atmosphere can hang its light on it. */

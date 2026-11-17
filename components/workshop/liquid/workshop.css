@@ -9,8 +9,14 @@
    full scroll length and the section anchors the choreography is keyed to. The panel's
    "show site content" toggle brings them back. */
 html[data-liquid-workshop][data-lw-content="off"] main > section,
-html[data-liquid-workshop][data-lw-content="off"] nav,
 html[data-liquid-workshop][data-lw-content="off"] footer {
+  visibility: hidden;
+}
+
+/* Round 9: the site's own navbar gives way to the workshop's glass pill (WorkshopNav) in
+   every workshop mode. visibility, not display, so the layout and the section anchors the
+   story is keyed to don't move. */
+html[data-liquid-workshop] nav:not([data-lw-nav]) {
   visibility: hidden;
 }
 
@@ -79,4 +85,414 @@ html[data-lw-hud="off"] .lw-hud {
       transparent 75%
     ),
     #0c0a09;
+}
+
+/* ---- Round 9: the glass pill nav (WorkshopNav) and the pillars' copy (PillarCopy) -------
+   Ink follows the liquid's base (html[data-lw-ink], set by the engine): dark ink on a
+   bright base (the vivid orange, the porcelain light theme), light ink on ember. */
+html[data-liquid-workshop] {
+  --lw-ink: #1c0a03;
+  --lw-ink-soft: rgb(28 10 3 / 0.66);
+  --lw-glass: rgb(255 246 236 / 0.2);
+  --lw-glass-edge: rgb(255 255 255 / 0.5);
+  --lw-glass-shadow: 0 14px 40px -12px rgb(120 32 0 / 0.42);
+  --lw-cta-bg: #1c0a03;
+  --lw-cta-text: #fff4e6;
+  --lw-light: #fff4e2;
+  --lw-light-glow: rgb(255 220 170 / 0.95);
+}
+html[data-liquid-workshop]:not(.dark) {
+  /* Porcelain: the light is the orange itself. */
+  --lw-glass: rgb(255 255 255 / 0.5);
+  --lw-glass-edge: rgb(255 255 255 / 0.85);
+  --lw-glass-shadow: 0 14px 40px -14px rgb(160 60 20 / 0.28);
+  --lw-light: #f2601a;
+  --lw-light-glow: rgb(242 96 26 / 0.45);
+}
+html[data-liquid-workshop][data-lw-ink="light"] {
+  --lw-ink: #fff3e6;
+  --lw-ink-soft: rgb(255 243 230 / 0.68);
+  --lw-glass: rgb(24 14 10 / 0.42);
+  --lw-glass-edge: rgb(255 255 255 / 0.14);
+  --lw-glass-shadow: 0 14px 40px -12px rgb(0 0 0 / 0.6);
+  --lw-cta-bg: #fff3e6;
+  --lw-cta-text: #1c0a03;
+}
+
+/* No transform on the nav itself: it would trap the fixed-position menu inside it. */
+.lw-nav {
+  position: fixed;
+  top: 16px;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  width: min(1080px, calc(100vw - 32px));
+  margin: 0 auto;
+  color: var(--lw-ink);
+}
+.lw-nav-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 8px 0 22px;
+  border-radius: 999px;
+  border: 1px solid var(--lw-glass-edge);
+  background: var(--lw-glass);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    var(--lw-glass-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+}
+.lw-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  margin-right: auto;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--lw-ink);
+}
+.lw-brand-drop {
+  width: 11px;
+  height: 11px;
+  /* A drop: one sharp corner, turned to point up. */
+  border-radius: 0 50% 50% 50%;
+  transform: rotate(45deg);
+  background: radial-gradient(circle at 40% 40%, #fffaf0, #ffc98f 50%, #ea580c);
+  box-shadow: 0 0 12px var(--lw-light-glow);
+}
+.lw-nav-links {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transform: translateX(-50%);
+}
+.lw-nav-link {
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--lw-ink-soft);
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+.lw-nav-link:hover,
+.lw-nav-link[data-active="1"] {
+  color: var(--lw-ink);
+}
+.lw-nav-link:hover {
+  background-color: rgb(255 255 255 / 0.16);
+}
+.lw-nav-drop {
+  position: absolute;
+  left: 0;
+  bottom: 8px;
+  width: 20px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--lw-light);
+  box-shadow:
+    0 0 10px var(--lw-light-glow),
+    0 0 2px var(--lw-light-glow);
+  opacity: 0;
+  pointer-events: none;
+}
+.lw-cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--lw-cta-bg);
+  color: var(--lw-cta-text);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition:
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 220ms ease;
+}
+.lw-cta:active {
+  transform: scale(0.97);
+}
+.lw-cta[data-full="1"] {
+  color: #1c0a03;
+}
+/* The liquid filling "Let's talk". Two layers, so the wobble can't swing the level: the
+   wrapper rises with --fill (0 empty .. 1 full); inside it, a big rounded square turns
+   slowly about its own centre, so its top edge wobbles a few px like a liquid surface. */
+.lw-cta-fill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translateY(calc((1 - var(--fill, 0)) * 58px));
+}
+.lw-cta-fill::before {
+  content: "";
+  position: absolute;
+  left: -50%;
+  top: -8px;
+  width: 200%;
+  aspect-ratio: 1;
+  border-radius: 42%;
+  background: radial-gradient(
+    circle at 50% 12%,
+    #fff6e6,
+    #ffcf98 22%,
+    #ff9f55 42%
+  );
+  animation: lw-wave 5s linear infinite;
+}
+@keyframes lw-wave {
+  to {
+    rotate: 360deg;
+  }
+}
+.lw-cta-label {
+  position: relative;
+}
+.lw-menu-button {
+  display: none;
+  align-items: center;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--lw-cta-bg);
+  color: var(--lw-cta-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+.lw-menu-button:active {
+  transform: scale(0.97);
+}
+.lw-brand:focus-visible,
+.lw-nav-link:focus-visible,
+.lw-cta:focus-visible,
+.lw-menu-button:focus-visible,
+.lw-menu a:focus-visible {
+  outline: 2px solid var(--lw-ink);
+  outline-offset: 3px;
+}
+/* The thin line of liquid along the pill's bottom edge: how far down the page you are. */
+.lw-nav-progress {
+  position: absolute;
+  left: 26px;
+  right: 26px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.14);
+  pointer-events: none;
+}
+.lw-nav-progress-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform-origin: 0 50%;
+  transform: scaleX(var(--progress, 0));
+  background: var(--lw-light);
+  box-shadow: 0 0 8px var(--lw-light-glow);
+}
+.lw-nav-progress-head {
+  position: absolute;
+  inset: 0;
+  transform: translateX(calc(var(--progress, 0) * 100%));
+}
+.lw-nav-progress-head::before {
+  content: "";
+  opacity: clamp(0, calc(var(--progress, 0) * 40), 1);
+  position: absolute;
+  left: -3px;
+  top: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lw-light);
+  box-shadow: 0 0 10px 2px var(--lw-light-glow);
+}
+
+/* Phones: brand + Menu; the menu floods the screen (the engine raises the lake) and the
+   links come up out of it. */
+.lw-menu {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 28px 72px;
+  color: var(--lw-ink);
+}
+.lw-menu-backdrop {
+  position: absolute;
+  inset: 0;
+  cursor: default;
+}
+.lw-menu ul {
+  position: relative;
+  display: grid;
+  gap: 2px;
+}
+.lw-menu li {
+  opacity: 0;
+  transform: translateY(18px);
+  animation: lw-menu-in 420ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  animation-delay: calc(260ms + var(--i, 0) * 55ms);
+}
+.lw-menu a {
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+}
+@keyframes lw-menu-in {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The pillars' copy: driven per beat by --show (0..1) from the form variant. */
+.lw-copy {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  color: var(--lw-ink);
+}
+html[data-lw-content="on"] .lw-copy {
+  display: none;
+}
+.lw-copy-beat {
+  position: absolute;
+  inset: 0;
+  opacity: var(--show, 0);
+}
+.lw-copy-title,
+.lw-copy-services {
+  position: absolute;
+  top: 50%;
+  transform: translate3d(0, calc(-50% + (1 - var(--show, 0)) * 22px), 0);
+}
+.lw-copy-title {
+  left: 6vw;
+  max-width: 25vw;
+}
+.lw-copy-label {
+  display: block;
+  margin-bottom: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--lw-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.lw-copy-title h2 {
+  font-size: clamp(56px, 6.4vw, 112px);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.055em;
+}
+.lw-copy-services {
+  left: 71vw;
+  display: grid;
+  gap: 12px;
+  font-size: clamp(17px, 1.4vw, 22px);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  opacity: clamp(0, calc((var(--show, 0) - 0.3) / 0.7), 1);
+}
+.lw-copy-services li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.lw-copy-services li::before {
+  content: "";
+  width: 22px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.45;
+}
+
+@media (max-width: 767px) {
+  .lw-nav {
+    top: 12px;
+    width: calc(100vw - 24px);
+  }
+  .lw-nav-pill {
+    height: 52px;
+    padding: 0 6px 0 18px;
+  }
+  .lw-nav-links,
+  .lw-nav-drop,
+  .lw-cta {
+    display: none;
+  }
+  .lw-menu-button {
+    display: inline-flex;
+  }
+  .lw-copy-title,
+  .lw-copy-services {
+    left: 24px;
+    right: 24px;
+    max-width: none;
+    text-align: center;
+    transform: translate3d(0, calc((1 - var(--show, 0)) * 16px), 0);
+  }
+  .lw-copy-title {
+    top: 92px;
+  }
+  .lw-copy-label {
+    margin-bottom: 10px;
+  }
+  .lw-copy-title h2 {
+    font-size: 46px;
+  }
+  .lw-copy-services {
+    top: 180px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 16px;
+    font-size: 15px;
+  }
+  .lw-copy-services li::before {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lw-menu li {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .lw-cta-fill::before {
+    animation: none;
+  }
+  .lw-copy-title,
+  .lw-copy-services {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) and (max-width: 767px) {
+  .lw-copy-title,
+  .lw-copy-services {
+    transform: none;
+  }
 }

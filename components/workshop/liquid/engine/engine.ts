@@ -21,7 +21,14 @@ import {
 } from "./post";
 import { QualityGovernor } from "./quality";
 import { RippleField } from "./ripple";
-import { ScrollTracker, clamp, damp, smoothstep } from "./scroll";
+import {
+  ScrollTracker,
+  clamp,
+  damp,
+  lerp,
+  smoothstep,
+  springConstants,
+} from "./scroll";
 import type { Fonts } from "./shapes";
 import { createCascade } from "./variants/cascade";
 import { createCup } from "./variants/cup";
@@ -341,6 +348,9 @@ export function createEngine(opts: EngineOptions): Engine {
     (background.material.uniforms.uBaseD.value as THREE.Color).set(d.base);
     (finalMaterial.uniforms.uBase.value as THREE.Color).set(d.base);
     (background.material.uniforms.uBaseL.value as THREE.Color).set(l.base);
+    const lum = (c: THREE.Color) => 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+    baseLumD = lum(background.material.uniforms.uBaseD.value as THREE.Color);
+    baseLumL = lum(background.material.uniforms.uBaseL.value as THREE.Color);
     // The light fields' faint tails: deep crimson leaning magenta (see BACKGROUND_FRAG).
     (background.material.uniforms.uEdgeCol.value as THREE.Color)
       .copy(rampD[0])
@@ -376,6 +386,16 @@ export function createEngine(opts: EngineOptions): Engine {
   let lastContent = "";
   const glowList: GlowSpec[] = [];
   let lastBlend = "";
+  // The page's text (workshop nav + pillar copy) reads in dark ink on a bright base (the
+  // vivid orange, the porcelain light theme) and in light ink on a dark one (ember):
+  // whichever contrasts more with the base's relative luminance.
+  let baseLumD = 0;
+  let baseLumL = 1;
+  let lastInk = "";
+  // The workshop nav's phone menu floods the screen: the lake rises (html[data-lw-flood]).
+  let flood = 0;
+  let floodV = 0;
+  let lastFloodTarget = 0;
   let topDropClock = 0;
   const impacts: Impact[] = [];
   const beats = { heroExit: 0, spill: 0, pour: 0, poolT: 0, calm: 0 };
@@ -436,6 +456,28 @@ export function createEngine(opts: EngineOptions): Engine {
     const target = themeTarget();
     theme = reduced ? target : damp(theme, target, 9, rawDt);
     if (Math.abs(theme - target) < 0.002) theme = target;
+    const ink = lerp(baseLumD, baseLumL, theme) > 0.18 ? "dark" : "light";
+    if (ink !== lastInk) {
+      html.dataset.lwInk = ink;
+      lastInk = ink;
+    }
+
+    // Menu flood: a short spring with a little slosh at the top (it is liquid), snapped
+    // under reduced motion.
+    const floodTarget = html.dataset.lwFlood === "1" ? 1 : 0;
+    if (floodTarget !== lastFloodTarget) {
+      lastFloodTarget = floodTarget;
+      dirty = true;
+    }
+    if (reduced) {
+      flood = floodTarget;
+      floodV = 0;
+    } else {
+      const fs = springConstants(0.6, 0.82);
+      floodV += (fs.k * (floodTarget - flood) - fs.c * floodV) * rawDt;
+      flood = clamp(flood + floodV * rawDt, -0.05, 1.15);
+    }
+    const flooded = clamp(flood, 0, 1);
 
     // Beats.
     const heroH = Math.max(1, s.heroBottom - s.heroTop);
@@ -454,16 +496,17 @@ export function createEngine(opts: EngineOptions): Engine {
       calm = 0;
       poolT = 0.6;
     }
-    const pour = spill * (1 - calm);
+    const pour = spill * (1 - calm) * (1 - flooded);
     Object.assign(beats, { heroExit, spill, pour, poolT, calm });
 
     // Pools in screen px. The top pool is attached to the hero (scrolls with the page).
     const topHorizonY = s.heroTop + heroH * P.pools.heroHorizon - scroll.y;
     const topNearY = s.heroBottom + heroH * 0.06 - scroll.y;
-    const topAlpha = reduced
-      ? 0
-      : smoothstep(-heroH * 0.2, heroH * 0.05, topNearY);
-    const level = poolT * P.pools.poolMax * H;
+    const topAlpha =
+      (reduced ? 0 : smoothstep(-heroH * 0.2, heroH * 0.05, topNearY)) *
+      (1 - smoothstep(0, 0.6, flood));
+    // The lake rises past the top of the screen when the menu floods it.
+    const level = lerp(poolT * P.pools.poolMax * H, H * 1.2, flood);
     const bottomHorizonY = H - level;
     const bottomNearY = H * 1.08;
     const bottomAlpha = smoothstep(2, 24, level);
@@ -498,6 +541,7 @@ export function createEngine(opts: EngineOptions): Engine {
       sections: s,
       params,
       settle: settleFrames > 0,
+      flood: flooded,
     };
     variant.update(f);
     if (settleFrames > 0) settleFrames--;
@@ -673,7 +717,7 @@ export function createEngine(opts: EngineOptions): Engine {
         W * 0.6,
         Math.max(level, 30) + H * 0.1,
         glowTmp,
-        0.9 * bottomAlpha,
+        (0.9 + 0.5 * flooded) * bottomAlpha,
       );
       setGlow(3, focus.x, landY, W * 0.1, H * 0.06, rampD[2], impactGlow * 0.6);
       glowList.length = 0;
@@ -792,6 +836,7 @@ export function createEngine(opts: EngineOptions): Engine {
     delete html.dataset.lwReady;
     delete html.dataset.lwSee;
     delete html.dataset.lwContent;
+    delete html.dataset.lwInk;
     html.style.removeProperty("--lw-about-blend");
     if (g.__lw === debug) delete g.__lw;
     if (g.__lwEngine === engine) delete g.__lwEngine;

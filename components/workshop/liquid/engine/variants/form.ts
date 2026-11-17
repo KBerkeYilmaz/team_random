@@ -10,6 +10,9 @@
 // they are disconnected": one continuous liquid. The hero pool drains (scrubbed): it
 // slides over its near edge and pours, and the falls cross-fade out of that pour. Once it
 // is empty the falls come from above. Shapes sit lower.
+// Round 9: the four pillars (Design, Build, Scale, Advise) + contact, with their copy as
+// real text beside each shape (PillarCopy) and the glass pill nav (WorkshopNav). This
+// variant drives both: each copy block's --show, html[data-lw-beat] and __lwBeats.
 // Round 7: "it should fall a little bit before turning into the code shape ... not from
 // the actual pool ... pool, a couple of seconds going on, to turn into code": the pool
 // pours out completely into the falls first; then, after a stretch of just falls, falling
@@ -350,6 +353,14 @@ const DRAIN_END = 0.7;
 /** Share of the first shape's (longer) turn spent forming it. */
 const FIRST_POUR = 0.55;
 
+/** The story's beats for the page (WorkshopNav scrolls to these). */
+type StoryGlobal = typeof globalThis & { __lwBeats?: Record<string, number> };
+
+/** The furthest the page can scroll. */
+function s0Max(f: FrameState): number {
+  return f.sections.docH - f.H;
+}
+
 /** Cubic Hermite from (x0, y0, slope m0) to (x1, y1, slope m1); clamped outside. */
 function hermite(
   x: number,
@@ -589,6 +600,38 @@ export function createForm(ctx: VariantContext): VariantSystem {
   const rampD = ctx.common.uRampD.value as THREE.Color[];
   const glowSpecs: GlowSpec[] = [];
 
+  // The page reads the story from here: each copy block's --show (PillarCopy), the
+  // current beat (html[data-lw-beat], the nav's droplet) and the scroll position where
+  // each beat is fully formed (globalThis.__lwBeats, the nav's link targets).
+  const show = new Float32Array(n);
+  const copyEls: (HTMLElement | null)[] = new Array(n).fill(null);
+  const lastShow = new Float32Array(n).fill(-1);
+  let lastBeat = "";
+  const beatsY: Record<string, number> = {};
+  (globalThis as StoryGlobal).__lwBeats = beatsY;
+  const syncPage = (beat: string, dim: number) => {
+    for (let k = 0; k < n; k++) {
+      let el = copyEls[k];
+      if (!el || !el.isConnected) {
+        el = document.querySelector<HTMLElement>(
+          `[data-lw-copy="${SHAPES[k].key}"]`,
+        );
+        copyEls[k] = el;
+        lastShow[k] = -1;
+      }
+      if (!el) continue;
+      const v = Math.round(show[k] * dim * 1000) / 1000;
+      if (v !== lastShow[k]) {
+        el.style.setProperty("--show", String(v));
+        lastShow[k] = v;
+      }
+    }
+    if (beat !== lastBeat) {
+      document.documentElement.dataset.lwBeat = beat;
+      lastBeat = beat;
+    }
+  };
+
   const upload = (layer: Layer, a: number, b: number) => {
     if (layer.shape !== a) {
       (layer.target.array as Float32Array).set(targets![a].points);
@@ -656,6 +699,73 @@ export function createForm(ctx: VariantContext): VariantSystem {
       const { at, len, unit } = layout;
       // The first shape's pour-in, scrubbed (0..1).
       const form0 = clamp((y - at(0)) / (FIRST_POUR * len(0)), 0, 1);
+
+      // Per-shape pour-in / melt-out (melt mode draws from these; the copy reads them in
+      // every mode), the morph's current pair, and from both: what the page shows.
+      for (let k = 0; k < n; k++) {
+        const s0 = at(k);
+        release[k] = 0;
+        if (pinned >= 0) {
+          form[k] = k === pinned ? 1 : 0;
+        } else if (f.reduced) {
+          // No pours or melts under reduced motion: the slot's shape, simply there.
+          const inSlot = y >= s0 && (y < s0 + len(k) || k === n - 1);
+          form[k] = inSlot || (k === 0 && y < s0) ? 1 : 0;
+        } else {
+          form[k] =
+            k === 0 ? form0 : clamp((y - s0) / (p.pourLen * unit), 0, 1);
+          if (k < n - 1) {
+            const m0 = s0 + len(k) - 0.45 * p.meltLen * unit;
+            release[k] = clamp((y - m0) / (p.meltLen * unit), 0, 1);
+          }
+        }
+      }
+      let pair = 0;
+      let M = 0;
+      for (let k = 0; k < n - 1; k++) {
+        const m0 = at(k + 1) - 0.45 * p.meltLen * unit;
+        const m1 = at(k + 1) + p.pourLen * unit;
+        if (y >= m0) {
+          pair = k;
+          M = clamp((y - m0) / (m1 - m0), 0, 1);
+        }
+      }
+      // Copy: in as its shape finishes forming, out as soon as the hand-over starts.
+      for (let k = 0; k < n; k++) show[k] = 0;
+      if (pinned >= 0 || f.reduced) {
+        for (let k = 0; k < n; k++) show[k] = form[k];
+      } else if (morph) {
+        if (M <= 0 && pair === 0) {
+          show[0] = smoothstep(0.55, 0.95, form0);
+        } else {
+          show[pair] = 1 - smoothstep(0, 0.3, M);
+          show[pair + 1] = smoothstep(0.7, 1, M);
+        }
+      } else {
+        for (let k = 0; k < n; k++) {
+          show[k] =
+            smoothstep(0.55, 0.95, form[k]) *
+            (1 - smoothstep(0, 0.35, release[k]));
+        }
+      }
+      // The beat (the nav's active link) switches halfway through each hand-over.
+      let beatIdx = -1;
+      if (pinned >= 0) beatIdx = pinned;
+      else if (y >= at(0) + 0.5 * FIRST_POUR * len(0)) {
+        beatIdx = 0;
+        for (let k = 1; k < n; k++) {
+          const mid = at(k) + 0.5 * (p.pourLen - 0.45 * p.meltLen) * unit;
+          if (y >= mid) beatIdx = k;
+        }
+      } else if (f.reduced) beatIdx = 0;
+      // Where each beat is fully formed (a touch past, so it has settled).
+      const maxY = Math.max(0, s0Max(f));
+      for (let k = 0; k < n; k++) {
+        const formed =
+          k === 0 ? at(0) + FIRST_POUR * len(0) : at(k) + p.pourLen * unit;
+        beatsY[SHAPES[k].key] = Math.min(maxY, formed + 0.04 * unit);
+      }
+      syncPage(beatIdx < 0 ? "hero" : SHAPES[beatIdx].key, 1 - f.flood);
 
       // One liquid. The hero pool empties, scrubbed: while the hero scrolls away it slides
       // over its near edge and pours into the falls, slowly at first (poolToFalls of it),
@@ -763,9 +873,12 @@ export function createForm(ctx: VariantContext): VariantSystem {
       const a = clock * 0.35;
       const cx = f.W / 2;
       const cy = f.H * p.shapeY;
+      const wide = f.W >= 768;
       const scaleOf = (k: number) =>
-        Math.min(f.H * 0.4, (f.W * 0.84) / Math.max(0.2, shapes[k].aspect)) *
-        p.shapeSize;
+        Math.min(
+          f.H * (wide ? 0.4 : 0.3),
+          (f.W * (wide ? 0.36 : 0.8)) / Math.max(0.2, shapes[k].aspect),
+        ) * p.shapeSize;
 
       // Shared per-layer state: the follow spring, light, splash, pointer, reflection.
       const drive = (l: Layer, landBelow: number) => {
@@ -800,9 +913,10 @@ export function createForm(ctx: VariantContext): VariantSystem {
           .set(Math.cos(a) * 0.55, 0.5 + 0.2 * Math.sin(a * 0.7), 0.75)
           .normalize();
         u.uMirrorY.value = mirrorY;
-        u.uReflect.value = reflect;
-        l.points.visible = true;
-        l.mirror.visible = reflect > 0.01;
+        u.uReflect.value = reflect * (1 - f.flood);
+        u.uAlphaK.value = 0.5 * (1 - f.flood);
+        l.points.visible = f.flood < 0.995;
+        l.mirror.visible = reflect * (1 - f.flood) > 0.01;
       };
 
       const glowFor = (
@@ -828,19 +942,9 @@ export function createForm(ctx: VariantContext): VariantSystem {
       };
 
       if (morph) {
-        // Which hand-over the story is in: pair k -> k + 1, progress M. Before the first
-        // hand-over, the first shape pours in (out of the hero pool); after the last, it
-        // holds.
-        let pair = 0;
-        let M = 0;
-        for (let k = 0; k < n - 1; k++) {
-          const m0 = at(k + 1) - 0.45 * p.meltLen * unit;
-          const m1 = at(k + 1) + p.pourLen * unit;
-          if (y >= m0) {
-            pair = k;
-            M = clamp((y - m0) / (m1 - m0), 0, 1);
-          }
-        }
+        // Which hand-over the story is in (pair k -> k + 1, progress M, from above). Before
+        // the first hand-over, the first shape pours in (out of the falls); after the last,
+        // it holds.
         const pour = form0;
         const l = layers[0];
         hide(layers[1]);
@@ -909,26 +1013,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
 
       // Melt mode (and reduced motion / a pinned shape): pour in over the first part of
       // each slot, melt out across the end of it (overlapping the next shape's pour); the
-      // last one never melts.
-      for (let k = 0; k < n; k++) {
-        const s0 = at(k);
-        release[k] = 0;
-        if (pinned >= 0) {
-          form[k] = k === pinned ? 1 : 0;
-        } else if (f.reduced) {
-          // No pours or melts under reduced motion: the slot's shape, simply there.
-          const inSlot = y >= s0 && (y < s0 + len(k) || k === n - 1);
-          form[k] = inSlot || (k === 0 && y < s0) ? 1 : 0;
-        } else {
-          form[k] =
-            k === 0 ? form0 : clamp((y - s0) / (p.pourLen * unit), 0, 1);
-          if (k < n - 1) {
-            const m0 = s0 + len(k) - 0.45 * p.meltLen * unit;
-            release[k] = clamp((y - m0) / (p.meltLen * unit), 0, 1);
-          }
-        }
-      }
-
+      // last one never melts. (form / release are computed above.)
       const shown = [false, false];
       for (let k = 0; k < n; k++) {
         const dR = release[k] - lastRelease[k];
@@ -1011,6 +1096,12 @@ export function createForm(ctx: VariantContext): VariantSystem {
       disposed = true;
       // The hero pool belongs to the engine: put it back to rest for the next variant.
       ctx.topPool.setSpill(null);
+      // Hide the copy and drop the story the nav reads.
+      show.fill(0);
+      syncPage("", 0);
+      delete document.documentElement.dataset.lwBeat;
+      const g = globalThis as StoryGlobal;
+      if (g.__lwBeats === beatsY) delete g.__lwBeats;
       sheet.dispose();
       for (const l of layers) {
         l.geometry.dispose();

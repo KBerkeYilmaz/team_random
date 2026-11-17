@@ -3,11 +3,13 @@
 // own fonts, or a lucide icon), then sampled into N particle targets.
 //
 // Swappable on purpose: any text, icon, logo SVG path or (later) a photo's luminance can
-// become a target set. The section-to-shape mapping lives in variants/form.ts.
+// become a target set. Round 9: one shape per pillar of the story (../story.ts), then
+// contact. Earlier test shapes (palette, browser, CRM users, a pixel TEAM RANDOM
+// wordmark the user called hideous) are gone.
 //
 // Icon geometry below is copied from lucide-react 0.364.0 (already a dependency of the
-// site; ISC licence, https://lucide.dev/license): code-xml, palette, panels-top-left,
-// send. (users, the CRM shape, was dropped in round 8: CRM is not a main area.)
+// site; ISC licence, https://lucide.dev/license): pen-tool, code-xml, trending-up
+// (polylines written as paths), compass (polygon written as a path), send.
 
 export interface Fonts {
   /** CSS font-family strings from next/font (app/fonts.ts). */
@@ -42,31 +44,34 @@ export type ShapeSpec =
       fill?: boolean;
     };
 
+/** Design: the vector pen. */
+const ICON_PEN: IconNode[] = [
+  ["path", { d: "m12 19 7-7 3 3-7 7-3-3z" }],
+  ["path", { d: "m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" }],
+  ["path", { d: "m2 2 7.586 7.586" }],
+  ["circle", { cx: 11, cy: 11, r: 2 }],
+];
+
+/** Build: code. */
 const ICON_CODE: IconNode[] = [
   ["path", { d: "m18 16 4-4-4-4" }],
   ["path", { d: "m6 8-4 4 4 4" }],
   ["path", { d: "m14.5 4-5 16" }],
 ];
 
-const ICON_PALETTE: IconNode[] = [
-  ["circle", { cx: 13.5, cy: 6.5, r: 0.5 }],
-  ["circle", { cx: 17.5, cy: 10.5, r: 0.5 }],
-  ["circle", { cx: 8.5, cy: 7.5, r: 0.5 }],
-  ["circle", { cx: 6.5, cy: 12.5, r: 0.5 }],
-  [
-    "path",
-    {
-      d: "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z",
-    },
-  ],
+/** Scale: the growth line. */
+const ICON_TRENDING: IconNode[] = [
+  ["path", { d: "M22 7 13.5 15.5 8.5 10.5 2 17" }],
+  ["path", { d: "M16 7 22 7 22 13" }],
 ];
 
-const ICON_PANELS: IconNode[] = [
-  ["rect", { width: 18, height: 18, x: 3, y: 3, rx: 2 }],
-  ["path", { d: "M3 9h18" }],
-  ["path", { d: "M9 21V9" }],
+/** Advise: a compass (filled needle, so it reads as one). */
+const ICON_COMPASS: IconNode[] = [
+  ["circle", { cx: 12, cy: 12, r: 10 }],
+  ["path", { d: "M16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88Z" }],
 ];
 
+/** Contact: the paper plane. */
 const ICON_SEND: IconNode[] = [
   ["path", { d: "m22 2-7 20-4-9-9-4Z" }],
   // Filled, the plane's fold would vanish inside it: cut it back out as a crease.
@@ -74,14 +79,15 @@ const ICON_SEND: IconNode[] = [
 ];
 
 /**
- * The scroll story, top to bottom (keys are what the panel's "shape" picker shows). Test
- * shapes for now: the site's own lucide icons. (The round-3 TEAM RANDOM wordmark is gone:
- * the user called it hideous. Text shapes still work, see ShapeSpec.)
+ * The scroll story, top to bottom: one shape per beat in ../story.ts (same keys, which
+ * are also what the panel's "shape" picker shows). Strokes are set so the lines come out
+ * about equally thick on screen (each shape is scaled to its own bounding box).
  */
 export const SHAPES: readonly ShapeSpec[] = [
-  { key: "code", kind: "icon", nodes: ICON_CODE, stroke: 2.4 },
-  { key: "design", kind: "icon", nodes: ICON_PALETTE, stroke: 2.2 },
-  { key: "web", kind: "icon", nodes: ICON_PANELS, stroke: 2.2 },
+  { key: "design", kind: "icon", nodes: ICON_PEN, stroke: 2.6 },
+  { key: "build", kind: "icon", nodes: ICON_CODE, stroke: 2.4 },
+  { key: "scale", kind: "icon", nodes: ICON_TRENDING, stroke: 2 },
+  { key: "advise", kind: "icon", nodes: ICON_COMPASS, stroke: 2.4, fill: true },
   { key: "contact", kind: "icon", nodes: ICON_SEND, stroke: 2.2, fill: true },
 ];
 
