@@ -94,6 +94,11 @@ export interface CommonParams {
     catch: boolean;
     /** Quiet time (ms) after the last wheel input before the page settles. */
     settleDelay: number;
+    /**
+     * Round 14: Lenis takes over touch scrolling too (consistent swipes, no browser
+     * toolbar sliding or rubber-banding). Off hands touch back to the browser.
+     */
+    touch: boolean;
   };
   sections: {
     /** Workshop stage: false hides the site's header, sections and footer (keeps scroll length). */
@@ -315,6 +320,7 @@ export function defaultParams(): AllParams {
         snap: true,
         catch: true,
         settleDelay: 160,
+        touch: true,
       },
       sections: {
         showContent: false,

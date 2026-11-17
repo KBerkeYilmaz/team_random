@@ -334,6 +334,7 @@ export function createPanel(opts: {
   // Round 11: settle on the pillars, never skip one.
   scrolling.addBinding(C.scroll, "snap", { label: "settle on pillars" });
   scrolling.addBinding(C.scroll, "catch", { label: "never skip a pillar" });
+  scrolling.addBinding(C.scroll, "touch", { label: "take over touch" });
   scrolling.addBinding(C.scroll, "settleDelay", {
     min: 60,
     max: 600,

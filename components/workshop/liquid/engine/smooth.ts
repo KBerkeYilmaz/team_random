@@ -23,12 +23,22 @@
 // - Catch: one wheel or trackpad gesture (its momentum included) carries the page at most
 //   to the next pillar, landing on it softly. Scroll again to go on. Keyboard, scrollbar
 //   and the nav's links are deliberate jumps and are never caught.
-// Phones scroll natively, so there the browser does both: CSS proximity snap points with
-// scroll-snap-stop: always (html[data-lw-snap="touch"], markers at the pillars).
+// Round 14, the user on a phone: "when we scroll up the whole browser moves with it ...
+// we need consistency" and "gestures should stick on each individual icon ... I can just
+// skip 2 icons and hang on a half-built icon". Native touch scrolling let Safari slide its
+// toolbar and rubber-band the page, and the CSS snap fallback did not hold on the phone.
+// So Lenis now takes over touch too (syncTouch): the browser never scrolls natively. And
+// touch is a pager: the stops are the top (the pool) and each pillar; every swipe moves
+// exactly one stop forward or back, or springs back if it was too small. The finger
+// drags the page 1:1 up to the next stop and with rubbery resistance past it; on release
+// a spring carries the finger's own speed into the glide onto the chosen stop (no
+// restart). A swipe made while a glide is still running counts from where that glide is
+// heading, so quick swipes step one stop each. The panel can hand touch back to the
+// browser (then the CSS snap markers below are the fallback).
 import Lenis, { type VirtualScrollData } from "lenis";
 
 import type { CommonParams } from "./params";
-import { clamp } from "./scroll";
+import { clamp, lerp } from "./scroll";
 import type { SnapStory } from "./variants/types";
 
 export type LenisGlobal = typeof globalThis & { __lwLenis?: Lenis };
@@ -38,6 +48,10 @@ const GESTURE_GAP = 180;
 
 const easeInOutCubic = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+
+/** Apple's rubber band: the further past the limit, the less the page follows. */
+const rubberband = (over: number, size: number) =>
+  (over * size * 0.55) / (size + 0.55 * over);
 
 /**
  * Where a gesture starting at `from` and heading `dir` gets caught: the next pillar ahead
@@ -119,7 +133,17 @@ export class SmoothScroll {
   private handled: number | null = null;
   private pendingBack: number | null = null;
   private pointerDown = false;
-  // Phones: CSS snap markers.
+  // Touch gestures (round 14): where the page was (base) and the stop it was at or heading
+  // for (from) when the finger came down, and how far the finger has dragged since.
+  private touch = { active: false, base: 0, from: 0, raw: 0 };
+  // The glide onto a stop after a swipe: a critically damped spring (px, px/s), never
+  // faster than `vmax` (the finger's own release speed, or a calm cruise if that was slow).
+  private glide: { x: number; v: number; to: number; vmax: number } | null =
+    null;
+  // The page's own speed (px/s), measured from frame to frame.
+  private vel = 0;
+  private lastFrame = 0;
+  // Phones: CSS snap markers (only when touch is left to the browser).
   private readonly coarse = window.matchMedia("(pointer: coarse)");
   private markers: HTMLDivElement | null = null;
   private markerKey = "";
@@ -135,6 +159,8 @@ export class SmoothScroll {
       virtualScroll: this.onInput,
     });
     (globalThis as LenisGlobal).__lwLenis = this.lenis;
+    // Debug handle (workshop only): the pager's state for the test harness.
+    (globalThis as { __lwSmooth?: unknown }).__lwSmooth = this;
     this.lastY = this.lenis.scroll;
     window.addEventListener("pointerdown", this.onPointerDown, true);
     window.addEventListener("pointerup", this.onPointerUp, true);
@@ -156,22 +182,37 @@ export class SmoothScroll {
     o.smoothWheel = p.smooth && !reduced;
     o.lerp = p.glide;
     o.wheelMultiplier = p.wheel;
+    const takeTouch = this.coarse.matches && p.smooth && p.touch && !reduced;
+    o.syncTouch = takeTouch;
     if (locked && !this.lenis.isStopped) this.lenis.stop();
     else if (!locked && this.lenis.isStopped) this.lenis.start();
 
     const snapping = p.snap && !reduced && story !== null;
     this.story = story;
-    this.catching = snapping && p.catch && p.smooth && !this.coarse.matches;
+    this.catching =
+      snapping && p.catch && p.smooth && (takeTouch || !this.coarse.matches);
+    // A wheel glide may not carry past the pillar its gesture is caught at.
+    this.guardCatch();
+    const dt = Math.min(0.05, Math.max(0, (now - this.lastFrame) / 1000));
+    this.lastFrame = now;
+    // Touch: the spring that carries the page onto the chosen stop.
+    if (this.glide && (locked || !takeTouch)) this.glide = null;
+    if (this.glide && dt > 0) this.stepGlide(dt);
     this.lenis.raf(now);
 
     const y = this.lenis.scroll;
+    if (dt > 0) this.vel = lerp(this.vel, (y - this.lastY) / dt, 0.6);
     if (Math.abs(y - this.lastY) > 0.5) {
       this.lastMoveAt = now;
       this.travelDir = Math.sign(y - this.lastY);
     }
     this.lastY = y;
+    if (this.glide) return;
 
-    this.syncMarkers(snapping && this.coarse.matches && !locked, story);
+    this.syncMarkers(
+      snapping && this.coarse.matches && !takeTouch && !locked,
+      story,
+    );
     if (!snapping || locked || this.pointerDown) {
       this.pendingBack = null;
       return;
@@ -190,8 +231,9 @@ export class SmoothScroll {
     window.removeEventListener("pointercancel", this.onPointerUp, true);
     this.syncMarkers(false, null);
     this.lenis.destroy();
-    const g = globalThis as LenisGlobal;
+    const g = globalThis as LenisGlobal & { __lwSmooth?: unknown };
     if (g.__lwLenis === this.lenis) delete g.__lwLenis;
+    if (g.__lwSmooth === this) delete g.__lwSmooth;
   }
 
   // ---- The catch ----------------------------------------------------------------------
@@ -203,6 +245,7 @@ export class SmoothScroll {
     if (target?.closest?.("[data-lw-panel]")) return true;
     this.handled = null;
     this.pendingBack = null;
+    if (data.event.type.startsWith("touch")) return this.onTouch(data, now);
     const dy = data.deltaY;
     const dir = Math.sign(dy);
     if (data.event.type !== "wheel" || dir === 0) {
@@ -240,6 +283,145 @@ export class SmoothScroll {
     }
     return true;
   };
+
+  /** The touch pager's stops: the top of the page (the pool) and each pillar. */
+  private stops(): number[] {
+    return this.story ? [0, ...this.story.points] : [0];
+  }
+
+  /** The stop nearest to `y`. */
+  private nearestStop(y: number): number {
+    const stops = this.stops();
+    let best = 0;
+    for (let i = 1; i < stops.length; i++) {
+      if (Math.abs(stops[i] - y) < Math.abs(stops[best] - y)) best = i;
+    }
+    return best;
+  }
+
+  /**
+   * Round 14: a touch swipe under Lenis (syncTouch), as a pager. The finger drags the
+   * page 1:1 up to the neighbouring stop and with rubbery resistance past it; on release
+   * the page glides onto the next stop (or back onto this one) on a spring that starts
+   * at the finger's speed.
+   */
+  private onTouch(data: VirtualScrollData, now: number): boolean {
+    this.lastInputAt = now;
+    const lenis = this.lenis;
+    if (!lenis.options.syncTouch || lenis.isStopped) return true;
+    const type = data.event.type;
+    if (type === "touchstart") {
+      // A swipe made while a glide is still running counts from the stop that glide is
+      // heading for. (Lenis halts any glide of its own right after this.)
+      this.touch.from = this.glide
+        ? this.nearestStop(this.glide.to)
+        : this.nearestStop(lenis.actualScroll);
+      this.glide = null;
+      this.touch.base = lenis.actualScroll;
+      this.touch.raw = 0;
+      this.touch.active = true;
+      this.gestureDir = 0;
+      this.catchY = null;
+      return true;
+    }
+    if (type !== "touchmove") {
+      // Released: pick the stop and glide there; Lenis's own momentum is not used.
+      this.touch.active = false;
+      if (!this.catching) return true;
+      this.release();
+      return false;
+    }
+    const dy = data.deltaY;
+    if (!dy) return true;
+    this.touch.raw += dy;
+    const dir = Math.sign(this.touch.raw) || Math.sign(dy);
+    const stops = this.stops();
+    const next = clamp(this.touch.from + dir, 0, stops.length - 1);
+    this.gestureDir = dir;
+    this.catchY =
+      this.catching && next !== this.touch.from ? stops[next] : null;
+    const free = this.touch.base + this.touch.raw;
+    let want = free;
+    if (this.catchY !== null) {
+      const over = (free - this.catchY) * dir;
+      if (over > 0)
+        want = this.catchY + dir * rubberband(over, window.innerHeight);
+    }
+    data.deltaY = want - lenis.targetScroll;
+    return true;
+  }
+
+  /** On release: one stop on in the swipe's direction if it went far or fast enough. */
+  private release() {
+    const stops = this.stops();
+    const from = this.touch.from;
+    const pos = this.lenis.animatedScroll;
+    const v = clamp(this.vel, -7000, 7000);
+    // Where the swipe was headed: where the finger left the page plus a short glide. Its
+    // direction is the finger's (a swipe made mid-glide may start behind its stop, which
+    // must not read as a swipe back).
+    const projected = pos + v * 0.18;
+    const dir = Math.sign(this.touch.raw) || Math.sign(v);
+    let to = from;
+    if (dir !== 0) {
+      const next = clamp(from + dir, 0, stops.length - 1);
+      const span = Math.abs(stops[next] - stops[from]) || 1;
+      // The swipe's own travel, from where the finger came down: a quick swipe made while
+      // the page still trails its stop counts just like one made at rest.
+      if (next !== from && (projected - this.touch.base) * dir > 0.18 * span) {
+        to = next;
+      }
+    }
+    // A slow release glides at a calm cruise (about two screens a second, so the pour into
+    // the first shape or a morph never rushes); a fast flick keeps its own speed.
+    const vmax = Math.max(Math.abs(v), 2 * window.innerHeight);
+    this.glide = { x: pos, v, to: stops[to], vmax };
+    this.catchY = null;
+  }
+
+  /**
+   * Steps the glide: a critically damped spring (response 0.55 s) from the finger's speed,
+   * which never overshoots the stop (the next morph must not start), capped at vmax.
+   */
+  private stepGlide(dt: number) {
+    const g = this.glide!;
+    const w = (2 * Math.PI) / 0.55;
+    const d = g.to - g.x;
+    // Too much speed toward the stop would carry it past; keep what still lands.
+    if (Math.sign(g.v) === Math.sign(d)) {
+      g.v = Math.sign(g.v) * Math.min(Math.abs(g.v), 0.9 * w * Math.abs(d));
+    }
+    const sub = Math.max(1, Math.ceil(dt / (1 / 240)));
+    const h = dt / sub;
+    for (let i = 0; i < sub; i++) {
+      g.v += (w * w * (g.to - g.x) - 2 * w * g.v) * h;
+      g.v = clamp(g.v, -g.vmax, g.vmax);
+      g.x += g.v * h;
+    }
+    const done = Math.abs(g.to - g.x) < 0.5 && Math.abs(g.v) < 8;
+    this.lenis.scrollTo(done ? g.to : g.x, { immediate: true, force: true });
+    if (done) this.glide = null;
+  }
+
+  /** Keeps a user glide (a touch fling's momentum) from carrying past its catch. */
+  private guardCatch() {
+    const lenis = this.lenis;
+    if (!this.catching || this.catchY === null || this.touch.active) return;
+    if (lenis.isScrolling !== "smooth") return;
+    const initiator = (lenis.userData as { initiator?: string } | undefined)
+      ?.initiator;
+    if (initiator) return;
+    const t = lenis.targetScroll;
+    const past =
+      this.gestureDir > 0 ? t > this.catchY + 0.5 : t < this.catchY - 0.5;
+    if (!past) return;
+    lenis.scrollTo(this.catchY, {
+      programmatic: false,
+      lerp: lenis.options.syncTouch
+        ? lenis.options.syncTouchLerp
+        : lenis.options.lerp,
+    });
+  }
 
   // ---- The settle ---------------------------------------------------------------------
 
