@@ -8,14 +8,25 @@ import { LampDemo } from "@/components/ui/lamp";
 import { TracingBeam } from "@/components/ui/tracing-beam";
 import LiquidWorkshop from "@/components/workshop/liquid/LiquidWorkshop";
 
-export default function Home() {
+export default function Home({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
+  // PROTOTYPE (liquid workshop, throwaway branch, never merge). Shown in dev, and (so the
+  // user can try it on a phone) on Vercel preview deployments, or on any build when the URL
+  // asks for a variant (?variant=form), in case the preview build can't see VERCEL_ENV.
+  // NODE_ENV / VERCEL_ENV are build constants, not app config (lib/env.ts is server-only
+  // and fails fast on this workspace's blank secrets).
+  const workshop =
+    process.env.NODE_ENV !== "production" ||
+    process.env.VERCEL_ENV === "preview" ||
+    searchParams?.variant !== undefined;
   return (
     <main className="flex w-full animate-fadeIn flex-col">
-      {/* PROTOTYPE (liquid workshop, throwaway branch, never merge): dev-only background
-          workshop over the real sections. See components/workshop/liquid/LiquidWorkshop.tsx.
-          NODE_ENV is a Next-inlined build constant, not app config (lib/env.ts is
-          server-only and fails fast on this workspace's blank secrets). */}
-      {process.env.NODE_ENV !== "production" && <LiquidWorkshop />}
+      {/* The liquid workshop over the real sections. See
+          components/workshop/liquid/LiquidWorkshop.tsx. */}
+      {workshop && <LiquidWorkshop />}
       <section
         id="hero"
         className="flex h-screen w-full items-center justify-center"
