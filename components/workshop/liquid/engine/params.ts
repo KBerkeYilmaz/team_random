@@ -138,6 +138,8 @@ export interface FormParams extends CascadeParams {
   meltLen: number;
   /** Scrub smoothing: seconds the story takes to catch up with the scroll (0 = locked). */
   scrub: number;
+  /** Round 13: the same on touch screens, where the story must ride the finger. */
+  touchScrub: number;
   /**
    * Round 10 ("more breathing room between the scroll movements and transitions"): screens
    * of scroll per beat. The workshop stage lengthens the page to fit (site content off).
@@ -336,6 +338,7 @@ export function defaultParams(): AllParams {
       meltLen: 0.28,
       // Round 10: a heavier story (was 0.35): the liquid trails the scroll, then settles.
       scrub: 0.55,
+      touchScrub: 0.2,
       beatLen: 1.4,
       splash: 1,
       handover: "morph",

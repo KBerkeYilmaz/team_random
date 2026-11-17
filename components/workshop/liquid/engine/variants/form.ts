@@ -716,6 +716,9 @@ export function createForm(ctx: VariantContext): VariantSystem {
   // The hover flow (round 11): the layer flows from shape `a` to shape `b`, t of the way.
   // `base` is the pillar it started from, which it always returns to before handing back.
   const flow = { a: -1, b: -1, t: 0, base: -1 };
+  // Round 13 (the user, on a phone: "scroll triggers are not aligned with the icons"):
+  // touch scrolls natively, so there the story rides the finger instead of trailing it.
+  const coarse = window.matchMedia("(pointer: coarse)");
   // Round 12: a hovered service's shape stays while the pointer travels from the list to
   // the shape (to pull it, say) and while it is held; the hover only ends once the
   // pointer has been off both for a moment.
@@ -941,9 +944,14 @@ export function createForm(ctx: VariantContext): VariantSystem {
         storyV = 0;
       } else {
         const formedFirst = at(0) + FIRST_POUR * len(0);
-        const intro = clamp((formedFirst - y) / (0.25 * f.H), 0, 1);
+        // Touch (round 13): a light spring and no intro speed limit, so the liquid moves
+        // with the finger and is formed where the page comes to rest.
+        const touch = coarse.matches;
+        const intro = touch ? 0 : clamp((formedFirst - y) / (0.25 * f.H), 0, 1);
         const spring = springConstants(
-          lerp(p.scrub, Math.max(p.scrub, INTRO_SCRUB), intro),
+          touch
+            ? Math.min(p.scrub, p.touchScrub)
+            : lerp(p.scrub, Math.max(p.scrub, INTRO_SCRUB), intro),
           1,
         );
         // The speed limit saturates softly (tanh), so the story eases into its cruise
@@ -1051,7 +1059,11 @@ export function createForm(ctx: VariantContext): VariantSystem {
       }
       snapStory =
         pinned < 0 && !f.reduced
-          ? { points: snapPoints, zones: snapZones }
+          ? {
+              points: snapPoints,
+              zones: snapZones,
+              rest: at(0) + 0.2 * firstPour,
+            }
           : null;
       syncPage(beatIdx < 0 ? "hero" : SHAPES[beatIdx].key, copyState);
 
@@ -1146,9 +1158,17 @@ export function createForm(ctx: VariantContext): VariantSystem {
       };
 
       // A hard fling bursts the shapes; they gather again as the scroll slows.
+      // On touch a fling is simply how a phone scrolls (round 13): only a really hard one
+      // bursts the shape.
+      const touchFling = coarse.matches;
       const fling = f.reduced
         ? 0
-        : clamp((Math.abs(f.velN) - 0.5) / 2, 0, 1) * p.splash;
+        : clamp(
+            (Math.abs(f.velN) - (touchFling ? 1.4 : 0.5)) /
+              (touchFling ? 3 : 2),
+            0,
+            1,
+          ) * p.splash;
       splash = snap
         ? fling
         : damp(splash, fling, fling > splash ? 14 : 2.2, f.dt);

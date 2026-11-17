@@ -94,6 +94,11 @@ export interface SnapStory {
    * The scroll moves freely inside one; it only settles when it stops outside them all.
    */
   zones: readonly (readonly [number, number])[];
+  /**
+   * Round 13: before the first pillar the scroll may rest freely up to here (the pool and
+   * the falls); past it the first shape is visibly forming.
+   */
+  rest: number;
 }
 
 export interface VariantSystem {

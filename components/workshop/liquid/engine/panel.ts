@@ -180,6 +180,11 @@ export function createPanel(opts: {
         max: 1.2,
         label: "scrub smooth (s)",
       });
+      folder.addBinding(m, "touchScrub", {
+        min: 0,
+        max: 1.2,
+        label: "scrub smooth, touch (s)",
+      });
       folder.addBinding(m, "splash", {
         min: 0,
         max: 2,

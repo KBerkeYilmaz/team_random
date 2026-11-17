@@ -67,12 +67,21 @@ function settleTarget(
   dest: number,
   dir: number,
   vh: number,
+  strict: boolean,
 ): number | null {
   const { points, zones } = story;
   const n = points.length;
   if (n === 0) return null;
   for (let k = 0; k < n; k++) {
     if (dest >= zones[k][0] && dest <= zones[k][1]) return null;
+  }
+  if (dest < zones[0][0] && strict) {
+    // Touch (round 13): the page rides the finger, so it may rest in the pool and the
+    // falls, but never on a half-formed first shape: once it is visibly forming, it
+    // finishes (or, barely started, backs off to the falls).
+    if (dest <= story.rest) return null;
+    const m = (dest - story.rest) / Math.max(1, zones[0][0] - story.rest);
+    return dir > 0 || m > 0.5 ? points[0] : story.rest;
   }
   if (dest < zones[0][0]) {
     // Before the first pillar the pool and the falls are fine to rest in; only once the
@@ -163,11 +172,16 @@ export class SmoothScroll {
     this.lastY = y;
 
     this.syncMarkers(snapping && this.coarse.matches && !locked, story);
-    if (!snapping || locked || this.pointerDown || this.coarse.matches) {
+    if (!snapping || locked || this.pointerDown) {
       this.pendingBack = null;
       return;
     }
-    this.settle(now, p.settleDelay);
+    // Round 13: phones settle too (after the native momentum and the browser's own snap
+    // have finished), so a swipe never leaves a half-formed shape on screen.
+    this.settle(
+      now,
+      this.coarse.matches ? Math.max(p.settleDelay, 240) : p.settleDelay,
+    );
   }
 
   dispose(): void {
@@ -265,6 +279,7 @@ export class SmoothScroll {
       dest,
       this.travelDir,
       window.innerHeight,
+      this.coarse.matches,
     );
     if (target === null || Math.abs(target - dest) < 2) return;
     const ahead = Math.sign(target - lenis.animatedScroll);
