@@ -177,6 +177,8 @@ export interface FormParams extends CascadeParams {
   shapeGlow: number;
   /** Round 11: the highlights follow the mouse (0 = the light only orbits). */
   cursorLight: number;
+  /** Round 11: press and drag on a shape to pull a strand of it (0 = off; scales the reach). */
+  pull: number;
 }
 
 export interface CupParams {
@@ -351,6 +353,7 @@ export function defaultParams(): AllParams {
       sheetVeil: 0.75,
       shapeGlow: 1,
       cursorLight: 1,
+      pull: 1,
     },
     cup: {
       fillStart: 0.42,

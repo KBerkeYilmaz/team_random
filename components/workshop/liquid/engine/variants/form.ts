@@ -100,6 +100,9 @@ uniform float uSize;
 uniform float uAlphaK;
 uniform vec3 uLight;      // light direction (shape space, z towards the viewer)
 uniform float uCursorLight; // 0..1: the pointer carries a light (round 11)
+uniform vec4 uGrab;       // round 11, pull: xy the grabbed spot (px), zw how far it is pulled
+uniform float uGrabR;     // the grab's reach (px); 0 when nothing is held or springing back
+uniform float uHold;      // 1 while the mouse holds the liquid
 uniform float uFirstFrom; // where a pour-in comes from: 0 above, 1 the hero pool, 2 the falls
 uniform float uPoolLeft;  // how much of the hero pool's surface is left (v units, 0..1)
 uniform float uFallTop;   // where the falls start on screen (px)
@@ -316,11 +319,28 @@ void main() {
   pos += burst * uSplash * (24.0 + 110.0 * r4) * (0.35 + 0.65 * (1.0 - tau));
   alpha *= 1.0 - 0.35 * uSplash;
 
-  // The pointer parts the liquid and warms it where it touches.
+  // The pointer parts the liquid and warms it where it touches (not while it holds it).
   vec2 dp = pos - uPointer.xy;
-  float touch = exp(-dot(dp, dp) / (120.0 * 120.0)) * uPointer.z;
+  float touch = exp(-dot(dp, dp) / (120.0 * 120.0)) * uPointer.z * (1.0 - uHold);
   pos += normalize(dp + 1e-4) * touch * 48.0;
   tcol += touch * 0.3 * (1.0 - uTheme);
+
+  // Round 11, pull the liquid: the grabbed spot follows the pointer and the liquid around
+  // it strings out after it (the closer a droplet, the further it follows), thinning as
+  // the strand lengthens, like surface tension rounding it in. Let go and the pull
+  // springs back past rest and wobbles out.
+  if (uGrabR > 0.0) {
+    vec2 rel = pos - uGrab.xy;
+    float w = exp(-dot(rel, rel) / (uGrabR * uGrabR));
+    float len = length(uGrab.zw);
+    if (len > 0.5) {
+      vec2 dir = uGrab.zw / len;
+      pos += uGrab.zw * w;
+      vec2 lateral = rel - dot(rel, dir) * dir;
+      pos -= lateral * w * clamp(len / (uGrabR * 3.0), 0.0, 0.7);
+      tcol += w * min(len / 200.0, 1.0) * 0.18 * (1.0 - uTheme);
+    }
+  }
 
 #ifdef MIRROR
   // The reflection in the bottom pool: mirrored about its surface line, squashed by the
@@ -542,6 +562,9 @@ export function createForm(ctx: VariantContext): VariantSystem {
       uFallTop: { value: 0 },
       uFallFirst: { value: 0.45 },
       uCursorLight: { value: 0 },
+      uGrab: { value: new THREE.Vector4() },
+      uGrabR: { value: 0 },
+      uHold: { value: 0 },
       // The hero pool's own uniforms, so poolSurface() always matches what it draws.
       ...poolSurfaceUniforms(ctx.topPool),
     };
@@ -678,6 +701,78 @@ export function createForm(ctx: VariantContext): VariantSystem {
     if (px > 0) html.style.setProperty("--lw-track", `${px}px`);
     else html.style.removeProperty("--lw-track");
     lastTrack = px;
+  };
+
+  // Round 11, pull the liquid ("doable, let's try it"): press on a formed shape and drag. A
+  // mouse or pen only: on a phone the same gesture scrolls the page. `onScreen` is the shape
+  // on screen and where (updated every frame), for hit-testing the press.
+  const grab = {
+    held: false,
+    // The grabbed spot, relative to the shape's (moving) centre.
+    ax: 0,
+    ay: 0,
+    // The pointer.
+    px: -1e4,
+    py: -1e4,
+    // The pull vector and its spring.
+    x: 0,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    hover: false,
+    moved: false,
+  };
+  const onScreen = { k: -1, cx: 0, cy: 0, scale: 1, off: 0 };
+  let lastGrab = "";
+  /** Is (x, y) on the liquid of the shape on screen (within a few px of a droplet)? */
+  const onShape = (x: number, y: number) => {
+    if (!targets || onScreen.k < 0) return false;
+    const pts = targets[onScreen.k].points;
+    const sx = (x - onScreen.cx) / onScreen.scale;
+    const sy = -(y - onScreen.cy - onScreen.off) / onScreen.scale;
+    const r = 22 / onScreen.scale;
+    const r2 = r * r;
+    // Every third droplet is plenty: they sit a few px apart.
+    for (let i = 0; i < pts.length; i += 12) {
+      const dx = pts[i] - sx;
+      const dy = pts[i + 1] - sy;
+      if (dx * dx + dy * dy < r2) return true;
+    }
+    return false;
+  };
+  const INTERACTIVE =
+    "a, button, input, textarea, select, label, summary, [role='button'], " +
+    "[data-lw-panel], [data-lw-nav], .lw-hud, .lw-copy-services";
+  const onGrabDown = (event: PointerEvent) => {
+    if (event.button !== 0) return;
+    if (event.pointerType !== "mouse" && event.pointerType !== "pen") return;
+    if ((event.target as Element | null)?.closest?.(INTERACTIVE)) return;
+    if (!onShape(event.clientX, event.clientY)) return;
+    // No text selection, no native drag.
+    event.preventDefault();
+    grab.held = true;
+    grab.ax = event.clientX - onScreen.cx;
+    grab.ay = event.clientY - onScreen.cy - onScreen.off;
+    grab.px = event.clientX;
+    grab.py = event.clientY;
+  };
+  const onGrabMove = (event: PointerEvent) => {
+    grab.px = event.clientX;
+    grab.py = event.clientY;
+    grab.moved = event.pointerType === "mouse" || event.pointerType === "pen";
+  };
+  const onGrabUp = () => {
+    grab.held = false;
+  };
+  window.addEventListener("pointerdown", onGrabDown);
+  window.addEventListener("pointermove", onGrabMove, { passive: true });
+  window.addEventListener("pointerup", onGrabUp);
+  window.addEventListener("pointercancel", onGrabUp);
+  const setGrabCursor = (state: string) => {
+    if (state === lastGrab) return;
+    if (state) html.dataset.lwGrab = state;
+    else delete html.dataset.lwGrab;
+    lastGrab = state;
   };
 
   const upload = (layer: Layer, a: number, b: number) => {
@@ -977,6 +1072,8 @@ export function createForm(ctx: VariantContext): VariantSystem {
           stretch,
         );
         u.uOffset.value = l.off;
+        u.uGrabR.value = 0;
+        u.uHold.value = 0;
         u.uSplash.value = splash;
         u.uLandY.value =
           heroLand > landBelow ? Math.min(heroLand, f.landY) : f.landY;
@@ -1028,6 +1125,9 @@ export function createForm(ctx: VariantContext): VariantSystem {
         for (let k = 0; k < n; k++) lastRelease[k] = 0;
         if (pour <= 0) {
           hide(l);
+          onScreen.k = -1;
+          grab.held = false;
+          setGrabCursor("");
           label =
             drain < 0.01
               ? ""
@@ -1059,6 +1159,68 @@ export function createForm(ctx: VariantContext): VariantSystem {
           u.uPuddleW.value = 0.5 * Math.max(wA, wB) * (intoPool ? 1.5 : 0.95);
           u.uPuddleT.value =
             (intoPool ? 0.05 : 0.09) * Math.max(scaleA, scaleB);
+
+          // Pull the liquid (round 11): only a fully formed shape can be held.
+          const holding =
+            M >= 1
+              ? Math.min(pair + 1, n - 1)
+              : M <= 0 && pour >= 1
+                ? pair
+                : -1;
+          const pullOn =
+            holding >= 0 && p.pull > 0 && f.flood < 0.5 && !f.reduced;
+          onScreen.k = pullOn ? holding : -1;
+          onScreen.cx = cx;
+          onScreen.cy = cy;
+          onScreen.scale = holding === pair ? scaleA : scaleB;
+          onScreen.off = l.off;
+          if (!pullOn) grab.held = false;
+          if (grab.moved && !grab.held) {
+            grab.hover = pullOn && onShape(grab.px, grab.py);
+            grab.moved = false;
+          }
+          setGrabCursor(
+            grab.held ? "pull" : grab.hover && pullOn ? "hover" : "",
+          );
+          // The grabbed spot rides with the shape; the pull follows the pointer on a stiff
+          // spring with a rubber band (the further out, the harder), and on release springs
+          // back loosely enough to overshoot and wobble.
+          const anchorX = cx + grab.ax;
+          const anchorY = cy + l.off + grab.ay;
+          let tx = 0;
+          let ty = 0;
+          if (grab.held) {
+            const dx = grab.px - anchorX;
+            const dy = grab.py - anchorY;
+            const reach = Math.hypot(dx, dy);
+            const max = f.H * 0.5 * p.pull;
+            const k =
+              reach > 0 ? (max * (1 - Math.exp(-reach / max))) / reach : 0;
+            tx = dx * k;
+            ty = dy * k;
+          }
+          const ps = grab.held
+            ? springConstants(0.14, 0.9)
+            : springConstants(0.6, 0.3);
+          for (let i = 0; i < sub; i++) {
+            grab.vx += (ps.k * (tx - grab.x) - ps.c * grab.vx) * hStep;
+            grab.vy += (ps.k * (ty - grab.y) - ps.c * grab.vy) * hStep;
+            grab.x += grab.vx * hStep;
+            grab.y += grab.vy * hStep;
+          }
+          const live =
+            grab.held ||
+            Math.hypot(grab.x, grab.y) + Math.hypot(grab.vx, grab.vy) * 0.02 >
+              0.3;
+          if (!live) grab.x = grab.y = grab.vx = grab.vy = 0;
+          (u.uGrab.value as THREE.Vector4).set(
+            anchorX,
+            anchorY,
+            grab.x,
+            grab.y,
+          );
+          u.uGrabR.value = live ? clamp(onScreen.scale * 0.22, 48, 110) : 0;
+          u.uHold.value = grab.held ? 1 : 0;
 
           // The light follows the liquid down into the puddle and back up.
           const puddled =
@@ -1173,6 +1335,11 @@ export function createForm(ctx: VariantContext): VariantSystem {
 
     dispose() {
       disposed = true;
+      window.removeEventListener("pointerdown", onGrabDown);
+      window.removeEventListener("pointermove", onGrabMove);
+      window.removeEventListener("pointerup", onGrabUp);
+      window.removeEventListener("pointercancel", onGrabUp);
+      setGrabCursor("");
       // The hero pool belongs to the engine: put it back to rest for the next variant.
       ctx.topPool.setSpill(null);
       // Hide the copy, drop the story the nav reads and give the page its length back.

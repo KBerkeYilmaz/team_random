@@ -217,6 +217,11 @@ export function createPanel(opts: {
         max: 1,
         label: "cursor light",
       });
+      folder.addBinding(m, "pull", {
+        min: 0,
+        max: 2,
+        label: "pull the liquid",
+      });
       folder.addBinding(m, "sheetVeil", {
         min: 0,
         max: 1,
