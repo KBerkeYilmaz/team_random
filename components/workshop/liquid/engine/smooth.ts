@@ -35,6 +35,9 @@
 // restart). A swipe made while a glide is still running counts from where that glide is
 // heading, so quick swipes step one stop each. The panel can hand touch back to the
 // browser (then the CSS snap markers below are the fallback).
+// Round 15, a regression pass ("make sure all is well gelled"):
+// - Leaving the first shape upward (desktop) no longer stops on it half-built: past the
+//   small band of regret it carries on up to where the falls begin.
 import Lenis, { type VirtualScrollData } from "lenis";
 
 import type { CommonParams } from "./params";
@@ -102,7 +105,11 @@ function settleTarget(
     // first shape is more than half formed does it settle onto it (round 12: was 0.8 of
     // a screen, which glided the whole pour through too fast).
     const gap = zones[0][0] - dest;
-    return gap <= 0.2 * vh || (dir > 0 && gap <= 0.45 * vh) ? points[0] : null;
+    if (gap <= 0.2 * vh || (dir > 0 && gap <= 0.45 * vh)) return points[0];
+    // Round 15: leaving it upward, past that band of regret, it carries on up to where
+    // the falls begin rather than stopping on a shape three quarters built.
+    if (dir < 0 && dest > story.rest) return story.rest;
+    return null;
   }
   if (dest > zones[n - 1][1]) return points[n - 1];
   // Between two pillars: the one the scroll was heading for, unless it had barely left the
