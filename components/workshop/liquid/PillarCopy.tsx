@@ -9,6 +9,7 @@
 // the services, each rising out of a mask. Exits leave the way the scroll goes. Every beat
 // stays in the DOM (readable and crawlable); the title's letters are aria-hidden behind a
 // screen-reader copy of the whole word. Nothing here re-renders while you scroll.
+// Round 11: hovering (or tapping) a service turns the pillar's liquid into its shape.
 import { Fragment, type CSSProperties } from "react";
 
 import { BEATS, PILLARS } from "./story";
@@ -29,6 +30,17 @@ function words(title: string) {
     return entry;
   });
 }
+
+// Round 11, services that react on hover: the hovered service's key on <html>, which the
+// form variant reads every frame (it only acts while that service's pillar holds, and it
+// clears the key when the story moves on). Decorative: the list reads the same without it.
+const hovered = () => document.documentElement.dataset.lwHover;
+const hover = (key: string) => {
+  document.documentElement.dataset.lwHover = key;
+};
+const unhover = (key: string) => {
+  if (hovered() === key) delete document.documentElement.dataset.lwHover;
+};
 
 export default function PillarCopy() {
   return (
@@ -74,9 +86,24 @@ export default function PillarCopy() {
           {beat.services.length > 0 && (
             <ul className="lw-copy-services">
               {beat.services.map((service, i) => (
-                <li key={service} className="lw-mask">
+                <li
+                  key={service.key}
+                  className="lw-mask"
+                  onPointerEnter={(event) => {
+                    if (event.pointerType !== "touch") hover(service.key);
+                  }}
+                  onPointerLeave={(event) => {
+                    if (event.pointerType !== "touch") unhover(service.key);
+                  }}
+                  onPointerUp={(event) => {
+                    // A tap shows it (and a second tap hides it again).
+                    if (event.pointerType !== "touch") return;
+                    if (hovered() === service.key) unhover(service.key);
+                    else hover(service.key);
+                  }}
+                >
                   <span className="lw-rise" style={vars({ "--i": i })}>
-                    {service}
+                    {service.label}
                   </span>
                 </li>
               ))}

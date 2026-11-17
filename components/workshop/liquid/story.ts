@@ -9,12 +9,21 @@
 // Shared by the engine (shapes.ts maps each key to its liquid shape) and the page (the
 // copy overlay and the nav), so keys must match SHAPES in engine/shapes.ts.
 
+/**
+ * One service under a pillar. Round 11: hovering it flows the pillar's liquid into its own
+ * shape (engine/shapes.ts SERVICE_SHAPES, same key).
+ */
+export interface Service {
+  key: string;
+  label: string;
+}
+
 export interface Beat {
   key: string;
   /** Small label above the title ("01"); empty for contact. */
   label: string;
   title: string;
-  services: readonly string[];
+  services: readonly Service[];
 }
 
 export const PILLARS: readonly Beat[] = [
@@ -22,25 +31,36 @@ export const PILLARS: readonly Beat[] = [
     key: "design",
     label: "01",
     title: "Design",
-    services: ["Product design", "SaaS strategy"],
+    services: [
+      { key: "product-design", label: "Product design" },
+      { key: "saas-strategy", label: "SaaS strategy" },
+    ],
   },
   {
     key: "build",
     label: "02",
     title: "Build",
-    services: ["Web", "Mobile", "SaaS platforms"],
+    services: [
+      { key: "web", label: "Web" },
+      { key: "mobile", label: "Mobile" },
+      { key: "saas-platforms", label: "SaaS platforms" },
+    ],
   },
   {
     key: "scale",
     label: "03",
     title: "Scale",
-    services: ["Infrastructure", "DevOps", "SEO"],
+    services: [
+      { key: "infrastructure", label: "Infrastructure" },
+      { key: "devops", label: "DevOps" },
+      { key: "seo", label: "SEO" },
+    ],
   },
   {
     key: "advise",
     label: "04",
     title: "Advise",
-    services: ["Technical advisory"],
+    services: [{ key: "technical-advisory", label: "Technical advisory" }],
   },
 ];
 

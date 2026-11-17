@@ -91,6 +91,89 @@ export const SHAPES: readonly ShapeSpec[] = [
   { key: "contact", kind: "icon", nodes: ICON_SEND, stroke: 2.2, fill: true },
 ];
 
+// Round 11 ("services that react on hover", the user: "sure, let's try this"): one more
+// shape per service, shown only while its name is hovered; form flows the pillar's liquid
+// into it and back. Keys match the services in ../story.ts. Copied from lucide-react 0.364.0
+// like the ones above: layers, target, app-window, smartphone, layout-dashboard, server,
+// infinity, search, lightbulb (lucide's <line> dots written as paths).
+const ICON_LAYERS: IconNode[] = [
+  [
+    "path",
+    {
+      d: "m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z",
+    },
+  ],
+  ["path", { d: "m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" }],
+  ["path", { d: "m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" }],
+];
+const ICON_TARGET: IconNode[] = [
+  ["circle", { cx: 12, cy: 12, r: 10 }],
+  ["circle", { cx: 12, cy: 12, r: 6 }],
+  ["circle", { cx: 12, cy: 12, r: 2 }],
+];
+const ICON_BROWSER: IconNode[] = [
+  ["rect", { x: 2, y: 4, width: 20, height: 16, rx: 2 }],
+  ["path", { d: "M10 4v4" }],
+  ["path", { d: "M2 8h20" }],
+  ["path", { d: "M6 4v4" }],
+];
+const ICON_PHONE: IconNode[] = [
+  ["rect", { x: 5, y: 2, width: 14, height: 20, rx: 2 }],
+  ["path", { d: "M12 18h.01" }],
+];
+const ICON_DASHBOARD: IconNode[] = [
+  ["rect", { x: 3, y: 3, width: 7, height: 9, rx: 1 }],
+  ["rect", { x: 14, y: 3, width: 7, height: 5, rx: 1 }],
+  ["rect", { x: 14, y: 12, width: 7, height: 9, rx: 1 }],
+  ["rect", { x: 3, y: 16, width: 7, height: 5, rx: 1 }],
+];
+const ICON_SERVER: IconNode[] = [
+  ["rect", { x: 2, y: 2, width: 20, height: 8, rx: 2 }],
+  ["rect", { x: 2, y: 14, width: 20, height: 8, rx: 2 }],
+  ["path", { d: "M6 6h.01" }],
+  ["path", { d: "M6 18h.01" }],
+];
+const ICON_INFINITY: IconNode[] = [
+  [
+    "path",
+    {
+      d: "M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z",
+    },
+  ],
+];
+const ICON_SEARCH: IconNode[] = [
+  ["circle", { cx: 11, cy: 11, r: 8 }],
+  ["path", { d: "m21 21-4.3-4.3" }],
+];
+const ICON_LIGHTBULB: IconNode[] = [
+  [
+    "path",
+    {
+      d: "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5",
+    },
+  ],
+  ["path", { d: "M9 18h6" }],
+  ["path", { d: "M10 22h4" }],
+];
+
+/** One shape per service (round 11), keyed like the services in ../story.ts. */
+export const SERVICE_SHAPES: readonly ShapeSpec[] = [
+  { key: "product-design", kind: "icon", nodes: ICON_LAYERS, stroke: 2.2 },
+  { key: "saas-strategy", kind: "icon", nodes: ICON_TARGET, stroke: 2.2 },
+  { key: "web", kind: "icon", nodes: ICON_BROWSER, stroke: 2.2 },
+  { key: "mobile", kind: "icon", nodes: ICON_PHONE, stroke: 2.4 },
+  { key: "saas-platforms", kind: "icon", nodes: ICON_DASHBOARD, stroke: 2.2 },
+  { key: "infrastructure", kind: "icon", nodes: ICON_SERVER, stroke: 2.2 },
+  { key: "devops", kind: "icon", nodes: ICON_INFINITY, stroke: 2.4 },
+  { key: "seo", kind: "icon", nodes: ICON_SEARCH, stroke: 2.4 },
+  {
+    key: "technical-advisory",
+    kind: "icon",
+    nodes: ICON_LIGHTBULB,
+    stroke: 2.4,
+  },
+];
+
 export interface ShapeTargets {
   count: number;
   /** Per point: x, y (shape units: height 1, centred, y up), h (0 bottom .. 1 top), edge. */

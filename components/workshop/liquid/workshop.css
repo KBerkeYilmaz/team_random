@@ -534,6 +534,33 @@ html[data-lw-content="on"] .lw-copy {
   display: inline-flex;
 }
 
+/* Round 11: the services answer the pointer (the form variant turns the pillar's liquid
+   into the hovered one's shape). Only while their beat is in; the rest of the copy stays
+   click-through. The hovered one firms up and its marker reaches out; the others step
+   back. */
+.lw-copy-beat[data-state="in"] .lw-copy-services li {
+  pointer-events: auto;
+  cursor: default;
+}
+.lw-copy-services li {
+  transition: opacity 260ms ease;
+}
+.lw-copy-services .lw-rise::before {
+  transform-origin: left center;
+  transition:
+    transform 320ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 260ms ease;
+}
+@media (hover: hover) {
+  .lw-copy-services:hover li:not(:hover) {
+    opacity: 0.5;
+  }
+  .lw-copy-services li:hover .lw-rise::before {
+    transform: scaleX(1.35);
+    opacity: 0.9;
+  }
+}
+
 @media (max-width: 767px) {
   .lw-nav {
     top: 12px;

@@ -48,6 +48,7 @@
 // progress.
 import * as THREE from "three";
 
+import { BEATS } from "../../story";
 import { NOISE, PARTICLE_COMMON, SPRITE_FRAG } from "../glsl";
 import type { CascadeParams } from "../params";
 import {
@@ -56,7 +57,13 @@ import {
   poolSurfaceUniforms,
 } from "../pool";
 import { clamp, damp, lerp, smoothstep, springConstants } from "../scroll";
-import { SHAPES, loadFonts, sampleShape, type ShapeTargets } from "../shapes";
+import {
+  SERVICE_SHAPES,
+  SHAPES,
+  loadFonts,
+  sampleShape,
+  type ShapeTargets,
+} from "../shapes";
 
 import { createCascade } from "./cascade";
 import type {
@@ -103,6 +110,7 @@ uniform float uCursorLight; // 0..1: the pointer carries a light (round 11)
 uniform vec4 uGrab;       // round 11, pull: xy the grabbed spot (px), zw how far it is pulled
 uniform float uGrabR;     // the grab's reach (px); 0 when nothing is held or springing back
 uniform float uHold;      // 1 while the mouse holds the liquid
+uniform float uFlow;      // round 11: 0..1, the liquid flows straight from shape A into B (hover)
 uniform float uFirstFrom; // where a pour-in comes from: 0 above, 1 the hero pool, 2 the falls
 uniform float uPoolLeft;  // how much of the hero pool's surface is left (v units, 0..1)
 uniform float uFallTop;   // where the falls start on screen (px)
@@ -135,7 +143,14 @@ void main() {
     t1 = clamp((uMorph - 0.08 * r1) / 0.42, 0.0, 1.0);
     t2 = clamp((uMorph - 0.48 - 0.28 * aTargetB.z - 0.04 * r1) / 0.2, 0.0, 1.0);
   }
-  bool onB = t2 > 0.0;
+  // Round 11, hover flow: droplets set off in order of where they land in B, bottom first
+  // (so B fills from the bottom up like a pour, and flowing back drains it from the top),
+  // and fly straight there (no puddle), swirling a little on the way.
+  float tf = uFlow > 0.0
+    ? clamp((uFlow - 0.5 * aTargetB.z - 0.1 * r1) / 0.4, 0.0, 1.0)
+    : 0.0;
+  bool flowing = tf > 0.0 && tf < 1.0;
+  bool onB = t2 > 0.0 || tf >= 0.5;
   vec4 T = onB ? aTargetB : aTarget;
   vec4 S = onB ? aShadeB : aShade;
   float h = T.z;
@@ -277,7 +292,21 @@ void main() {
     }
   }
 
-  bool held = q >= 1.0 && uRelease <= 0.0 && !morphing;
+  if (flowing) {
+    vec2 a = slotOf(aTarget, uScale) + wobble;
+    vec2 b = slotOf(aTargetB, uScaleB) + wobble;
+    float e = tf * tf * (3.0 - 2.0 * tf);
+    vec2 d = b - a;
+    vec2 side = vec2(-d.y, d.x) * (r4 - 0.5) * 0.18;
+    vec2 swirl = vec2(
+      snoise(vec3(a * 0.01, uTime * 0.7 + r2 * 5.0)),
+      snoise(vec3(a * 0.01 + 7.0, uTime * 0.7))
+    ) * 10.0;
+    pos = mix(a, b, e) + (side + swirl) * sin(3.14159 * e);
+    tcol = mix(tcol, mix(0.85, 0.55, uTheme), sin(3.14159 * e) * 0.6);
+  }
+
+  bool held = q >= 1.0 && uRelease <= 0.0 && !morphing && !flowing;
   if (held && edge > 1.5 && r2 < 0.35 * uDrips) {
     // Drips: a drop swells on a bottom edge, lets go, falls into the pool, then the
     // mould refills it.
@@ -565,6 +594,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
       uGrab: { value: new THREE.Vector4() },
       uGrabR: { value: 0 },
       uHold: { value: 0 },
+      uFlow: { value: 0 },
       // The hero pool's own uniforms, so poolSurface() always matches what it draws.
       ...poolSurfaceUniforms(ctx.topPool),
     };
@@ -621,14 +651,55 @@ export function createForm(ctx: VariantContext): VariantSystem {
   // Shapes are sampled once the site's fonts are in (text shapes draw with them).
   let targets: ShapeTargets[] | null = null;
   let disposed = false;
+  // Round 11: each service's shape (hover), sampled one per idle moment after the
+  // pillars, so the page never stalls on them.
+  const serviceTargets: (ShapeTargets | null)[] = SERVICE_SHAPES.map(
+    () => null,
+  );
+  const idle = (fn: () => void) => {
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(fn, { timeout: 400 });
+    } else setTimeout(fn, 50);
+  };
+  const sampleServices = (j: number) => {
+    if (disposed || j >= SERVICE_SHAPES.length) return;
+    serviceTargets[j] = pairForMorph(
+      sampleShape(SERVICE_SHAPES[j], capacity, ctx.fonts),
+      perm,
+    );
+    idle(() => sampleServices(j + 1));
+  };
   void loadFonts(ctx.fonts).then(() => {
     if (disposed) return;
     targets = SHAPES.map((spec) =>
       pairForMorph(sampleShape(spec, capacity, ctx.fonts), perm),
     );
+    idle(() => sampleServices(0));
   });
 
   const n = SHAPES.length;
+  /**
+   * A shape by index: 0..n-1 the story's pillars (SHAPES), n + j service j (round 11,
+   * SERVICE_SHAPES), null until sampled.
+   */
+  const targetsAt = (k: number) =>
+    k < n ? (targets?.[k] ?? null) : (serviceTargets[k - n] ?? null);
+  const keyOf = (k: number) =>
+    k < n ? SHAPES[k].key : (SERVICE_SHAPES[k - n]?.key ?? "?");
+  /** Which pillar each service belongs to (story.ts), and its index in SERVICE_SHAPES. */
+  const SERVICE_OF = new Map<string, { j: number; pillar: number }>();
+  BEATS.forEach((beat, pillar) => {
+    for (const service of beat.services) {
+      const j = SERVICE_SHAPES.findIndex((spec) => spec.key === service.key);
+      if (j >= 0) SERVICE_OF.set(service.key, { j, pillar });
+    }
+  });
+  // The hover flow (round 11): the layer flows from shape `a` to shape `b`, t of the way.
+  // `base` is the pillar it started from, which it always returns to before handing back.
+  const flow = { a: -1, b: -1, t: 0, base: -1 };
+  // After a flow hands back mid hand-over, the morph eases up to where the scroll already
+  // is instead of jumping there (0 just handed back .. 1 caught up).
+  let morphCatch = 1;
   const form = new Float32Array(n);
   const release = new Float32Array(n);
   const lastRelease = new Float32Array(n);
@@ -726,8 +797,9 @@ export function createForm(ctx: VariantContext): VariantSystem {
   let lastGrab = "";
   /** Is (x, y) on the liquid of the shape on screen (within a few px of a droplet)? */
   const onShape = (x: number, y: number) => {
-    if (!targets || onScreen.k < 0) return false;
-    const pts = targets[onScreen.k].points;
+    const shape = onScreen.k < 0 ? null : targetsAt(onScreen.k);
+    if (!shape) return false;
+    const pts = shape.points;
     const sx = (x - onScreen.cx) / onScreen.scale;
     const sy = -(y - onScreen.cy - onScreen.off) / onScreen.scale;
     const r = 22 / onScreen.scale;
@@ -777,14 +849,14 @@ export function createForm(ctx: VariantContext): VariantSystem {
 
   const upload = (layer: Layer, a: number, b: number) => {
     if (layer.shape !== a) {
-      (layer.target.array as Float32Array).set(targets![a].points);
-      (layer.shade.array as Float32Array).set(targets![a].shade);
+      (layer.target.array as Float32Array).set(targetsAt(a)!.points);
+      (layer.shade.array as Float32Array).set(targetsAt(a)!.shade);
       layer.target.needsUpdate = layer.shade.needsUpdate = true;
       layer.shape = a;
     }
     if (b >= 0 && layer.shapeB !== b) {
-      (layer.targetB.array as Float32Array).set(targets![b].points);
-      (layer.shadeB.array as Float32Array).set(targets![b].shade);
+      (layer.targetB.array as Float32Array).set(targetsAt(b)!.points);
+      (layer.shadeB.array as Float32Array).set(targetsAt(b)!.shade);
       layer.targetB.needsUpdate = layer.shadeB.needsUpdate = true;
       layer.shapeB = b;
     }
@@ -912,6 +984,8 @@ export function createForm(ctx: VariantContext): VariantSystem {
         if (activeCopy >= 0 && inside(activeCopy, keep)) copyNow = activeCopy;
         else for (let k = 0; k < n; k++) if (inside(k, 0)) copyNow = k;
       }
+      // A hovered service belongs to the beat it was hovered on (round 11).
+      if (copyNow !== activeCopy) delete html.dataset.lwHover;
       activeCopy = copyNow;
       for (let k = 0; k < n; k++) {
         copyState[k] = k === copyNow ? "in" : y > holdAt(k) ? "above" : "below";
@@ -1048,7 +1122,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
       const scaleOf = (k: number) =>
         Math.min(
           f.H * (wide ? 0.4 : 0.3),
-          (f.W * (wide ? 0.36 : 0.8)) / Math.max(0.2, shapes[k].aspect),
+          (f.W * (wide ? 0.36 : 0.8)) / Math.max(0.2, targetsAt(k)!.aspect),
         ) * p.shapeSize;
 
       // Shared per-layer state: the follow spring, light, splash, pointer, reflection.
@@ -1074,6 +1148,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
         u.uOffset.value = l.off;
         u.uGrabR.value = 0;
         u.uHold.value = 0;
+        u.uFlow.value = 0;
         u.uSplash.value = splash;
         u.uLandY.value =
           heroLand > landBelow ? Math.min(heroLand, f.landY) : f.landY;
@@ -1128,6 +1203,8 @@ export function createForm(ctx: VariantContext): VariantSystem {
           onScreen.k = -1;
           grab.held = false;
           setGrabCursor("");
+          flow.a = flow.b = -1;
+          flow.t = 0;
           label =
             drain < 0.01
               ? ""
@@ -1135,11 +1212,76 @@ export function createForm(ctx: VariantContext): VariantSystem {
                 ? `pool pouring ${Math.round((drain / (1 + POUR_V)) * 100)}%`
                 : "falls";
         } else {
-          upload(l, pair, Math.min(pair + 1, n - 1));
-          const scaleA = scaleOf(pair);
-          const scaleB = scaleOf(Math.min(pair + 1, n - 1));
-          const wA = scaleA * shapes[pair].aspect;
-          const wB = scaleB * shapes[Math.min(pair + 1, n - 1)].aspect;
+          // Which shape holds (fully formed, no hand-over running), if any.
+          const holding =
+            M >= 1
+              ? Math.min(pair + 1, n - 1)
+              : M <= 0 && pour >= 1
+                ? pair
+                : -1;
+          // Round 11, services that react on hover: while a shape holds and the story is
+          // still, the hovered service (html[data-lw-hover], one of this pillar's) flows the
+          // liquid straight into its own shape, and back when the pointer leaves. The
+          // layer's two target sets become that flow's from and to; each swap happens while
+          // the visible shape equals one of them, so nothing ever jumps. When the story
+          // moves on, the flow unwinds quickly and hands back to it.
+          let want = holding;
+          const hk = html.dataset.lwHover;
+          if (
+            holding >= 0 &&
+            hk &&
+            !grab.held &&
+            Math.abs(storyV) < 60 &&
+            f.flood < 0.5
+          ) {
+            const service = SERVICE_OF.get(hk);
+            if (
+              service &&
+              service.pillar === holding &&
+              serviceTargets[service.j]
+            ) {
+              want = n + service.j;
+            }
+          }
+          if (holding >= 0 && flow.a < 0) {
+            flow.a = flow.b = flow.base = holding;
+            flow.t = 0;
+          }
+          if (flow.a >= 0) {
+            if (holding >= 0) flow.base = holding;
+            else want = flow.base;
+            // Leaving a service unwinds gently; once the page moves it hurries back.
+            const moving = holding < 0 || Math.abs(storyV) >= 60;
+            const into = f.dt / 0.9;
+            const back = f.dt / (holding < 0 ? 0.2 : moving ? 0.3 : 0.6);
+            if (want === flow.a) flow.t = Math.max(0, flow.t - back);
+            else if (want === flow.b) flow.t = Math.min(1, flow.t + into);
+            else if (flow.t <= 0) {
+              flow.b = want;
+              flow.t = Math.min(1, into);
+            } else if (flow.t >= 1) {
+              flow.a = flow.b;
+              flow.b = want;
+              flow.t = 0;
+            } else if (flow.t < 0.5) flow.t = Math.max(0, flow.t - back);
+            else flow.t = Math.min(1, flow.t + into);
+            // Back on the pillar with the story moving: hand back to it.
+            const visible = flow.t <= 0 ? flow.a : flow.t >= 1 ? flow.b : -1;
+            if (holding < 0 && visible === flow.base) {
+              flow.a = flow.b = -1;
+              morphCatch = 0;
+            }
+          }
+          morphCatch = Math.min(1, morphCatch + f.dt / 0.35);
+          const Mshow = M * (1 - (1 - morphCatch) ** 2);
+          const flowing = flow.a >= 0;
+          const showA = flowing ? flow.a : pair;
+          const showB = flowing ? flow.b : Math.min(pair + 1, n - 1);
+          upload(l, showA, showB);
+          const scaleA = scaleOf(showA);
+          const scaleB = scaleOf(showB);
+          const wA = scaleA * targetsAt(showA)!.aspect;
+          const wB = scaleB * targetsAt(showB)!.aspect;
           // The puddle either gathers under the shapes, or (puddle: "pool") the liquid
           // dives into the lake below and the next shape rises out of it.
           const intoPool = p.puddle === "pool" && level > 2;
@@ -1150,29 +1292,32 @@ export function createForm(ctx: VariantContext): VariantSystem {
           const u = l.material.uniforms;
           u.uScale.value = scaleA;
           u.uScaleB.value = scaleB;
-          u.uForm.value = pair === 0 && M === 0 ? pour : 1;
-          setFirst(l, pair === 0 && M === 0);
+          const pouring = !flowing && pair === 0 && M === 0;
+          u.uForm.value = pouring ? pour : 1;
+          setFirst(l, pouring);
           u.uRelease.value = 0;
           u.uMorphOn.value = 1;
-          u.uMorph.value = M;
+          u.uMorph.value = flowing ? 0 : Mshow;
+          u.uFlow.value = flowing ? flow.t : 0;
           u.uPuddleY.value = puddleY;
           u.uPuddleW.value = 0.5 * Math.max(wA, wB) * (intoPool ? 1.5 : 0.95);
           u.uPuddleT.value =
             (intoPool ? 0.05 : 0.09) * Math.max(scaleA, scaleB);
 
-          // Pull the liquid (round 11): only a fully formed shape can be held.
-          const holding =
-            M >= 1
-              ? Math.min(pair + 1, n - 1)
-              : M <= 0 && pour >= 1
-                ? pair
+          // Pull the liquid (round 11): only a fully formed, still shape can be held.
+          const settled = !flowing
+            ? holding
+            : flow.t <= 0
+              ? flow.a
+              : flow.t >= 1
+                ? flow.b
                 : -1;
           const pullOn =
-            holding >= 0 && p.pull > 0 && f.flood < 0.5 && !f.reduced;
-          onScreen.k = pullOn ? holding : -1;
+            settled >= 0 && p.pull > 0 && f.flood < 0.5 && !f.reduced;
+          onScreen.k = pullOn ? settled : -1;
           onScreen.cx = cx;
           onScreen.cy = cy;
-          onScreen.scale = holding === pair ? scaleA : scaleB;
+          onScreen.scale = settled >= 0 ? scaleOf(settled) : scaleA;
           onScreen.off = l.off;
           if (!pullOn) grab.held = false;
           if (grab.moved && !grab.held) {
@@ -1223,11 +1368,18 @@ export function createForm(ctx: VariantContext): VariantSystem {
           u.uHold.value = grab.held ? 1 : 0;
 
           // The light follows the liquid down into the puddle and back up.
-          const puddled =
-            smoothstep(0.15, 0.45, M) * (1 - smoothstep(0.55, 0.85, M));
-          const formed = pair === 0 && M === 0 ? smoothstep(0.2, 1, pour) : 1;
-          const width = M < 0.5 ? wA : wB;
-          const height = M < 0.5 ? scaleA : scaleB;
+          const puddled = flowing
+            ? 0
+            : smoothstep(0.15, 0.45, Mshow) *
+              (1 - smoothstep(0.55, 0.85, Mshow));
+          const formed = pouring ? smoothstep(0.2, 1, pour) : 1;
+          // In a hover flow the light moves over to the shape it is becoming.
+          const width = flowing ? lerp(wA, wB, flow.t) : Mshow < 0.5 ? wA : wB;
+          const height = flowing
+            ? lerp(scaleA, scaleB, flow.t)
+            : Mshow < 0.5
+              ? scaleA
+              : scaleB;
           glowFor(
             l,
             width + (Math.max(wA, wB) - width) * puddled,
@@ -1235,11 +1387,16 @@ export function createForm(ctx: VariantContext): VariantSystem {
             formed * (1 + 0.3 * puddled),
             cy + (puddleY - cy) * puddled,
           );
-          const from = SHAPES[pair].key;
-          const to = SHAPES[Math.min(pair + 1, n - 1)].key;
+          const from = keyOf(showA);
+          const to = keyOf(showB);
           const pourLabel = `${["above", "pool", "falls"][first]} -> ${from} ${Math.round(pour * 100)}%`;
-          label =
-            M <= 0
+          label = flowing
+            ? flow.t <= 0 || flow.a === flow.b
+              ? `${from} holding`
+              : flow.t >= 1
+                ? `${to} holding${showB >= n ? " (hover)" : ""}`
+                : `${from} -> ${to} ${Math.round(flow.t * 100)}% (hover)`
+            : M <= 0
               ? pour < 1
                 ? pourLabel
                 : `${from} holding`
@@ -1249,6 +1406,10 @@ export function createForm(ctx: VariantContext): VariantSystem {
         }
         return;
       }
+
+      // No hover flows outside the morph story.
+      flow.a = flow.b = -1;
+      flow.t = 0;
 
       // Melt mode (and reduced motion / a pinned shape): pour in over the first part of
       // each slot, melt out across the end of it (overlapping the next shape's pour); the
@@ -1340,6 +1501,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
       window.removeEventListener("pointerup", onGrabUp);
       window.removeEventListener("pointercancel", onGrabUp);
       setGrabCursor("");
+      delete html.dataset.lwHover;
       // The hero pool belongs to the engine: put it back to rest for the next variant.
       ctx.topPool.setSpill(null);
       // Hide the copy, drop the story the nav reads and give the page its length back.
