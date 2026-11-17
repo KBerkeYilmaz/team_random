@@ -60,6 +60,8 @@ function scrollToBeat(key: string, fallback: string) {
     duration: clamp(0.9 + screens * 0.22, 1.1, 2.8),
     easing: easeInOutQuart,
     force: true,
+    // Round 11: the page's settle leaves a nav glide alone (it lands on a pillar anyway).
+    userData: { initiator: "nav" },
   });
 }
 

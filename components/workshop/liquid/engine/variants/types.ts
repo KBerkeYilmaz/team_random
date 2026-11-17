@@ -77,6 +77,20 @@ export interface GlowSpec {
   intensity: number;
 }
 
+/**
+ * Round 11: where the scroll should come to rest (form). The page settles onto the pillars
+ * and a single flick can't carry it past one (engine/smooth.ts).
+ */
+export interface SnapStory {
+  /** Where each pillar holds, in px of scroll, ascending (the snap points). */
+  points: readonly number[];
+  /**
+   * Each pillar's free zone [from, to]: its shape fully formed and no hand-over started.
+   * The scroll moves freely inside one; it only settles when it stops outside them all.
+   */
+  zones: readonly (readonly [number, number])[];
+}
+
 export interface VariantSystem {
   readonly key: VariantKey;
   readonly object: THREE.Object3D;
@@ -96,6 +110,8 @@ export interface VariantSystem {
    * its light.
    */
   poolDrain?(): number;
+  /** Where the scroll should come to rest (form's pillars), or null when anywhere goes. */
+  snap?(): SnapStory | null;
   update(f: FrameState): void;
   focus(): PourFocus;
   /** Push this frame's impacts into `out` and clear them. */

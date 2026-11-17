@@ -19,6 +19,23 @@ html[data-liquid-workshop][data-lw-content="off"] main {
   min-height: var(--lw-track, auto);
 }
 
+/* Round 11, phones (they scroll natively, so the browser snaps): settle near a pillar, and
+   never fling past one (scroll-snap-stop). The markers sit where each pillar holds
+   (engine/smooth.ts writes them). */
+html[data-lw-snap="touch"] {
+  scroll-snap-type: y proximity;
+}
+.lw-snap-mark {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
 /* Round 9: the site's own navbar gives way to the workshop's glass pill (WorkshopNav) in
    every workshop mode. visibility, not display, so the layout and the section anchors the
    story is keyed to don't move. */

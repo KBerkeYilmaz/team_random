@@ -316,6 +316,15 @@ export function createPanel(opts: {
     max: 2,
     label: "wheel speed",
   });
+  // Round 11: settle on the pillars, never skip one.
+  scrolling.addBinding(C.scroll, "snap", { label: "settle on pillars" });
+  scrolling.addBinding(C.scroll, "catch", { label: "never skip a pillar" });
+  scrolling.addBinding(C.scroll, "settleDelay", {
+    min: 60,
+    max: 600,
+    step: 10,
+    label: "settle after (ms)",
+  });
 
   const liquid = pane.addFolder({ title: "Liquid feel", expanded: true });
   liquid.addBinding(C.liquid, "response", {

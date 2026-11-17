@@ -85,6 +85,15 @@ export interface CommonParams {
     glide: number;
     /** Wheel distance multiplier. */
     wheel: number;
+    /**
+     * Round 11 ("move towards the snap"): when the scroll stops between pillars, the page
+     * glides onto one (inside a pillar's hold it stays free). Phones: CSS proximity snap.
+     */
+    snap: boolean;
+    /** Round 11: one flick carries the page at most to the next pillar, never past it. */
+    catch: boolean;
+    /** Quiet time (ms) after the last wheel input before the page settles. */
+    settleDelay: number;
   };
   sections: {
     /** Workshop stage: false hides the site's header, sections and footer (keeps scroll length). */
@@ -293,7 +302,14 @@ export function defaultParams(): AllParams {
         dotSpacing: 5,
       },
       interaction: { pointer: 1 },
-      scroll: { smooth: true, glide: 0.08, wheel: 1 },
+      scroll: {
+        smooth: true,
+        glide: 0.08,
+        wheel: 1,
+        snap: true,
+        catch: true,
+        settleDelay: 160,
+      },
       sections: {
         showContent: false,
         seeThrough: true,

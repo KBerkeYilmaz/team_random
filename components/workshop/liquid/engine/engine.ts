@@ -451,6 +451,7 @@ export function createEngine(opts: EngineOptions): Engine {
         params.common.scroll,
         html.dataset.lwFlood === "1",
         reduced,
+        variant.snap?.() ?? null,
       );
     }
     if (paused || lost || disposed) return;

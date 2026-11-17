@@ -63,6 +63,7 @@ import type {
   FrameState,
   GlowSpec,
   Impact,
+  SnapStory,
   VariantContext,
   VariantSystem,
 } from "./types";
@@ -629,6 +630,14 @@ export function createForm(ctx: VariantContext): VariantSystem {
   let lastTrack = 0;
   const beatsY: Record<string, number> = {};
   (globalThis as StoryGlobal).__lwBeats = beatsY;
+  // Round 11: where the scroll should come to rest (engine/smooth.ts): each pillar's hold
+  // point and its free zone (shape fully formed, no hand-over started).
+  const snapPoints: number[] = new Array(n).fill(0);
+  const snapZones: [number, number][] = Array.from(
+    { length: n },
+    () => [0, 0] as [number, number],
+  );
+  let snapStory: SnapStory | null = null;
   const syncPage = (beat: string, states: readonly string[] | null) => {
     for (let k = 0; k < n; k++) {
       let el = copyEls[k];
@@ -809,8 +818,16 @@ export function createForm(ctx: VariantContext): VariantSystem {
           if (y >= mid) beatIdx = k;
         }
       } else if (f.reduced) beatIdx = 0;
-      // Where each beat holds (the nav's link targets).
-      for (let k = 0; k < n; k++) beatsY[SHAPES[k].key] = holdAt(k);
+      // Where each beat holds (the nav's link targets, the scroll's snap points).
+      for (let k = 0; k < n; k++) {
+        beatsY[SHAPES[k].key] = snapPoints[k] = holdAt(k);
+        snapZones[k][0] = Math.min(formedAt(k), holdAt(k));
+        snapZones[k][1] = Math.max(Math.min(leaveAt(k), maxY), holdAt(k));
+      }
+      snapStory =
+        pinned < 0 && !f.reduced
+          ? { points: snapPoints, zones: snapZones }
+          : null;
       syncPage(beatIdx < 0 ? "hero" : SHAPES[beatIdx].key, copyState);
 
       // One liquid. The hero pool empties, scrubbed: while the hero scrolls away it slides
@@ -1112,6 +1129,8 @@ export function createForm(ctx: VariantContext): VariantSystem {
     debug: () => ({ story: label || "pool (no shape)" }),
 
     poolDrain: () => drain,
+
+    snap: () => snapStory,
 
     focus: () => sheet.focus(),
 
