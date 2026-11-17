@@ -702,6 +702,10 @@ export function createForm(ctx: VariantContext): VariantSystem {
   // The hover flow (round 11): the layer flows from shape `a` to shape `b`, t of the way.
   // `base` is the pillar it started from, which it always returns to before handing back.
   const flow = { a: -1, b: -1, t: 0, base: -1 };
+  // Round 12: a hovered service's shape stays while the pointer travels from the list to
+  // the shape (to pull it, say) and while it is held; the hover only ends once the
+  // pointer has been off both for a moment.
+  const latch = { key: "", until: 0 };
   // After a flow hands back mid hand-over, the morph eases up to where the scroll already
   // is instead of jumping there (0 just handed back .. 1 caught up).
   let morphCatch = 1;
@@ -992,7 +996,10 @@ export function createForm(ctx: VariantContext): VariantSystem {
         else for (let k = 0; k < n; k++) if (inside(k, 0)) copyNow = k;
       }
       // A hovered service belongs to the beat it was hovered on (round 11).
-      if (copyNow !== activeCopy) delete html.dataset.lwHover;
+      if (copyNow !== activeCopy) {
+        delete html.dataset.lwHover;
+        latch.key = "";
+      }
       activeCopy = copyNow;
       for (let k = 0; k < n; k++) {
         copyState[k] = k === copyNow ? "in" : y > holdAt(k) ? "above" : "below";
@@ -1212,6 +1219,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
           setGrabCursor("");
           flow.a = flow.b = -1;
           flow.t = 0;
+          latch.key = "";
           label =
             drain < 0.01
               ? ""
@@ -1233,14 +1241,15 @@ export function createForm(ctx: VariantContext): VariantSystem {
           // the visible shape equals one of them, so nothing ever jumps. When the story
           // moves on, the flow unwinds quickly and hands back to it.
           let want = holding;
-          const hk = html.dataset.lwHover;
-          if (
-            holding >= 0 &&
-            hk &&
-            !grab.held &&
-            Math.abs(storyV) < 60 &&
-            f.flood < 0.5
-          ) {
+          const listed = html.dataset.lwHover ?? "";
+          if (listed) {
+            latch.key = listed;
+            latch.until = clock + 0.45;
+          } else if (latch.key && (grab.held || grab.hover)) {
+            latch.until = clock + 0.45;
+          } else if (latch.key && clock > latch.until) latch.key = "";
+          const hk = latch.key;
+          if (holding >= 0 && hk && Math.abs(storyV) < 60 && f.flood < 0.5) {
             const service = SERVICE_OF.get(hk);
             if (
               service &&
@@ -1257,6 +1266,11 @@ export function createForm(ctx: VariantContext): VariantSystem {
           if (flow.a >= 0) {
             if (holding >= 0) flow.base = holding;
             else want = flow.base;
+            // While the mouse holds the liquid, the shape it holds stays put.
+            if (grab.held && holding >= 0) {
+              const held = flow.t <= 0 ? flow.a : flow.t >= 1 ? flow.b : -1;
+              if (held >= 0) want = held;
+            }
             // Leaving a service unwinds gently; once the page moves it hurries back.
             const moving = holding < 0 || Math.abs(storyV) >= 60;
             const into = f.dt / 0.9;
@@ -1427,6 +1441,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
       // No hover flows outside the morph story.
       flow.a = flow.b = -1;
       flow.t = 0;
+      latch.key = "";
 
       // Melt mode (and reduced motion / a pinned shape): pour in over the first part of
       // each slot, melt out across the end of it (overlapping the next shape's pour); the
