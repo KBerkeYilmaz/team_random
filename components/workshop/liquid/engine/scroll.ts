@@ -96,6 +96,14 @@ export class ScrollTracker {
       top: Math.max(services.bottom, docH - vh),
       bottom: docH,
     };
+    // Round 10: the form variant's story track can make the page much longer than its
+    // (hidden) sections. The contact beat is then the end of the page, so the falls run dry
+    // and the pool settles at the end of the story, not halfway through it.
+    const tail = docH - cta.bottom;
+    if (tail > vh) {
+      cta.top += tail;
+      cta.bottom += tail;
+    }
     return {
       heroTop: hero.top,
       heroBottom: hero.bottom,

@@ -13,28 +13,54 @@
 // Phones: brand + Menu. Opening the menu floods the screen with the liquid (the engine's
 // lake rises, html[data-lw-flood]) and the links come up in big type; closing drains it.
 //
-// The story (which beat is on, where each beat is fully formed) comes from the form
-// variant: html[data-lw-beat] and globalThis.__lwBeats. Continuous values never touch
-// React state; one rAF loop writes styles directly.
+// The story (which beat is on, where each beat holds) comes from the form variant:
+// html[data-lw-beat] and globalThis.__lwBeats. Continuous values never touch React state;
+// one rAF loop writes styles directly. Round 10: links glide there through the engine's
+// Lenis (globalThis.__lwLenis), which the menu's flood also holds still.
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { damp, springConstants } from "./engine/scroll";
+import { clamp, damp, springConstants } from "./engine/scroll";
+import type { LenisGlobal } from "./engine/smooth";
 import { PILLARS } from "./story";
 
-type StoryGlobal = typeof globalThis & { __lwBeats?: Record<string, number> };
+type StoryGlobal = LenisGlobal & { __lwBeats?: Record<string, number> };
 
 const PILLAR_KEYS = new Set(PILLARS.map((pillar) => pillar.key));
 
 const reducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/** Scrolls to where a beat of the story is fully formed (or to an anchor without one). */
+/** Quartic ease-in-out: a calm start and a long, soft landing. */
+const easeInOutQuart = (t: number) =>
+  t < 0.5 ? 8 * t ** 4 : 1 - (-2 * t + 2) ** 4 / 2;
+
+/**
+ * Glides to where a beat of the story holds (or to an anchor without one). Round 10: through
+ * the engine's Lenis, taking longer the further it goes, so a jump across the whole story
+ * plays it through instead of cutting.
+ */
 function scrollToBeat(key: string, fallback: string) {
-  const behavior = reducedMotion() ? "auto" : "smooth";
-  const y = (globalThis as StoryGlobal).__lwBeats?.[key];
-  if (typeof y === "number") window.scrollTo({ top: y, behavior });
-  else document.querySelector(fallback)?.scrollIntoView({ behavior });
+  const g = globalThis as StoryGlobal;
+  const reduce = reducedMotion();
+  const y = g.__lwBeats?.[key];
+  if (typeof y !== "number") {
+    document
+      .querySelector(fallback)
+      ?.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
+    return;
+  }
+  const lenis = g.__lwLenis;
+  if (!lenis || reduce) {
+    window.scrollTo({ top: y, behavior: reduce ? "auto" : "smooth" });
+    return;
+  }
+  const screens = Math.abs(y - window.scrollY) / window.innerHeight;
+  lenis.scrollTo(y, {
+    duration: clamp(0.9 + screens * 0.22, 1.1, 2.8),
+    easing: easeInOutQuart,
+    force: true,
+  });
 }
 
 interface Edge {

@@ -170,6 +170,11 @@ export function createPanel(opts: {
         max: 0.6,
         label: "melt share",
       });
+      folder.addBinding(m, "beatLen", {
+        min: 0.5,
+        max: 3,
+        label: "scroll per beat (screens)",
+      });
       folder.addBinding(m, "scrub", {
         min: 0,
         max: 1.2,
@@ -298,6 +303,20 @@ export function createPanel(opts: {
   buildVariantFolder(opts.variant);
 
   const C = params.common;
+  // Round 10: the page's own glide (Lenis; see smooth.ts).
+  const scrolling = pane.addFolder({ title: "Scroll", expanded: true });
+  scrolling.addBinding(C.scroll, "smooth", { label: "smooth wheel" });
+  scrolling.addBinding(C.scroll, "glide", {
+    min: 0.02,
+    max: 0.3,
+    label: "glide (lower = longer)",
+  });
+  scrolling.addBinding(C.scroll, "wheel", {
+    min: 0.3,
+    max: 2,
+    label: "wheel speed",
+  });
+
   const liquid = pane.addFolder({ title: "Liquid feel", expanded: true });
   liquid.addBinding(C.liquid, "response", {
     min: 0.15,

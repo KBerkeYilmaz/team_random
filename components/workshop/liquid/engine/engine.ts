@@ -30,6 +30,7 @@ import {
   springConstants,
 } from "./scroll";
 import type { Fonts } from "./shapes";
+import { SmoothScroll } from "./smooth";
 import { createCascade } from "./variants/cascade";
 import { createCup } from "./variants/cup";
 import { createDrip } from "./variants/drip";
@@ -205,6 +206,8 @@ export function createEngine(opts: EngineOptions): Engine {
   particles.add(variant.object);
 
   const scroll = new ScrollTracker();
+  // Round 10: the page glides (Lenis), stepped at the top of every frame below.
+  const smooth = new SmoothScroll();
   let W = 1;
   let H = 1;
   let dpr = 1;
@@ -440,6 +443,16 @@ export function createEngine(opts: EngineOptions): Engine {
   // ---- The frame ----------------------------------------------------------------------
   function frame(now: number) {
     raf = requestAnimationFrame(frame);
+    // The glide runs even while the liquid can't draw (a lost context), or the page would
+    // stop scrolling: Lenis has already swallowed the wheel events.
+    if (!disposed) {
+      smooth.frame(
+        now,
+        params.common.scroll,
+        html.dataset.lwFlood === "1",
+        reduced,
+      );
+    }
     if (paused || lost || disposed) return;
     const frameMs = now - last;
     const rawDt = Math.min(0.05, Math.max(0, frameMs / 1000));
@@ -812,6 +825,7 @@ export function createEngine(opts: EngineOptions): Engine {
     if (disposed) return;
     disposed = true;
     cancelAnimationFrame(raf);
+    smooth.dispose();
     hostObserver.disconnect();
     layoutObserver.disconnect();
     themeObserver.disconnect();

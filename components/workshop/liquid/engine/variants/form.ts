@@ -18,6 +18,13 @@
 // pours out completely into the falls first; then, after a stretch of just falls, falling
 // droplets bend out of the falls into the first shape. (Out of the pool, round 6, and
 // from above, round 4, stay as panel options.)
+// Round 10: "scroll movements can be a bit slicker it feels a bit instant", then "more
+// breathing room between the scroll movements and transitions". Each beat now gets its
+// own length of scroll (beatLen screens; the page grows to fit, via --lw-track on main),
+// most of it a hold where the formed shape just sits there; the story spring is heavier;
+// and the copy no longer fades with the scrub: each block plays a timed entrance as its
+// shape settles and a timed exit as its hand-over starts (data-state: in, or the side it
+// rests on, above or below, so it always leaves and returns the way the scroll goes).
 //
 // The story. Scroll position, smoothed by a critically damped spring so wheel steps glide:
 //   hero   -> only the pool and its light; scrolling out, it slowly slides over its near
@@ -350,8 +357,8 @@ const POUR_V = 0.18;
 const DRAIN_SLOW_END = 0.55;
 /** ...and the rest has poured into the falls by this one. */
 const DRAIN_END = 0.7;
-/** Share of the first shape's (longer) turn spent forming it. */
-const FIRST_POUR = 0.55;
+/** Share of the first shape's (longer) turn spent forming it (round 10: was 0.55). */
+const FIRST_POUR = 0.5;
 
 /** The story's beats for the page (WorkshopNav scrolls to these). */
 type StoryGlobal = typeof globalThis & { __lwBeats?: Record<string, number> };
@@ -386,22 +393,29 @@ function hermite(
 /**
  * The story's scroll layout (px of scroll). It starts as the hero pool runs dry. The first
  * shape's turn is `firstSlot` times longer than the others (it is formed out of the falls,
- * which takes a while); the rest share what is left of the page evenly.
+ * which takes a while). With `beatLen` (round 10) every turn is that many screens long and
+ * the page grows to fit; without it (site content shown) the turns share what is left of
+ * the page evenly.
  */
 function storyLayout(
   f: FrameState,
   n: number,
   firstSlot: number,
   startExit: number,
+  beatLen: number | null,
 ) {
   const s = f.sections;
   const heroH = Math.max(1, s.heroBottom - s.heroTop);
   const start = s.heroTop + heroH * startExit;
   const units = n - 1 + firstSlot;
-  const end = Math.max(start + units * f.H * 0.3, s.docH - f.H);
-  const unit = (end - start) / units;
+  const unit =
+    beatLen !== null
+      ? beatLen * f.H
+      : (Math.max(start + units * f.H * 0.3, s.docH - f.H) - start) / units;
   return {
     unit,
+    /** Where the story ends: the last shape holds from its turn to here. */
+    end: start + units * unit,
     /** Where shape k's turn starts. */
     at: (k: number) => start + (k === 0 ? 0 : (firstSlot + k - 1) * unit),
     /** How long shape k's turn is. */
@@ -600,16 +614,22 @@ export function createForm(ctx: VariantContext): VariantSystem {
   const rampD = ctx.common.uRampD.value as THREE.Color[];
   const glowSpecs: GlowSpec[] = [];
 
-  // The page reads the story from here: each copy block's --show (PillarCopy), the
-  // current beat (html[data-lw-beat], the nav's droplet) and the scroll position where
-  // each beat is fully formed (globalThis.__lwBeats, the nav's link targets).
-  const show = new Float32Array(n);
+  // The page reads the story from here: each copy block's data-state (PillarCopy: "in",
+  // or the side it rests on, "above" once the story has passed it, else "below"; CSS plays
+  // the timed entrances and exits), the current beat (html[data-lw-beat], the nav's
+  // droplet) and the scroll position where each beat holds (globalThis.__lwBeats, the
+  // nav's link targets). Plus, round 10, the story's length (--lw-track: the page grows to
+  // fit it).
+  const html = document.documentElement;
+  const copyState: string[] = new Array(n).fill("below");
   const copyEls: (HTMLElement | null)[] = new Array(n).fill(null);
-  const lastShow = new Float32Array(n).fill(-1);
+  const lastCopy: string[] = new Array(n).fill("");
+  let activeCopy = -1;
   let lastBeat = "";
+  let lastTrack = 0;
   const beatsY: Record<string, number> = {};
   (globalThis as StoryGlobal).__lwBeats = beatsY;
-  const syncPage = (beat: string, dim: number) => {
+  const syncPage = (beat: string, states: readonly string[] | null) => {
     for (let k = 0; k < n; k++) {
       let el = copyEls[k];
       if (!el || !el.isConnected) {
@@ -617,19 +637,25 @@ export function createForm(ctx: VariantContext): VariantSystem {
           `[data-lw-copy="${SHAPES[k].key}"]`,
         );
         copyEls[k] = el;
-        lastShow[k] = -1;
+        lastCopy[k] = "";
       }
       if (!el) continue;
-      const v = Math.round(show[k] * dim * 1000) / 1000;
-      if (v !== lastShow[k]) {
-        el.style.setProperty("--show", String(v));
-        lastShow[k] = v;
-      }
+      const state = states ? states[k] : "";
+      if (state === lastCopy[k]) continue;
+      if (state) el.dataset.state = state;
+      else delete el.dataset.state;
+      lastCopy[k] = state;
     }
     if (beat !== lastBeat) {
-      document.documentElement.dataset.lwBeat = beat;
+      html.dataset.lwBeat = beat;
       lastBeat = beat;
     }
+  };
+  const setTrack = (px: number) => {
+    if (Math.abs(px - lastTrack) < 1) return;
+    if (px > 0) html.style.setProperty("--lw-track", `${px}px`);
+    else html.style.removeProperty("--lw-track");
+    lastTrack = px;
   };
 
   const upload = (layer: Layer, a: number, b: number) => {
@@ -690,13 +716,19 @@ export function createForm(ctx: VariantContext): VariantSystem {
             : p.firstFrom === "above"
               ? 0
               : 2;
+      // Round 10: on the workshop stage (site content hidden) every beat gets beatLen
+      // screens and the page grows to fit; with the old sections shown, the story fits
+      // their length as before.
+      const tracked = !f.params.common.sections.showContent;
       const layout = storyLayout(
         f,
         n,
         Math.max(1, p.firstSlot),
         firstFrom === 1 ? DRAIN_SLOW_END : DRAIN_END,
+        tracked ? Math.max(0.3, p.beatLen) : null,
       );
-      const { at, len, unit } = layout;
+      const { at, len, unit, end } = layout;
+      setTrack(tracked ? Math.ceil(end + f.H) : 0);
       // The first shape's pour-in, scrubbed (0..1).
       const form0 = clamp((y - at(0)) / (FIRST_POUR * len(0)), 0, 1);
 
@@ -730,23 +762,42 @@ export function createForm(ctx: VariantContext): VariantSystem {
           M = clamp((y - m0) / (m1 - m0), 0, 1);
         }
       }
-      // Copy: in as its shape finishes forming, out as soon as the hand-over starts.
-      for (let k = 0; k < n; k++) show[k] = 0;
-      if (pinned >= 0 || f.reduced) {
-        for (let k = 0; k < n; k++) show[k] = form[k];
-      } else if (morph) {
-        if (M <= 0 && pair === 0) {
-          show[0] = smoothstep(0.55, 0.95, form0);
-        } else {
-          show[pair] = 1 - smoothstep(0, 0.3, M);
-          show[pair + 1] = smoothstep(0.7, 1, M);
-        }
+      // Copy (round 10): each block is "in" from just before its shape settles until its
+      // hand-over starts; it plays a timed entrance and exit (CSS) instead of following the
+      // scrub, so it always arrives with the same composure however fast you scroll. Out
+      // of its window it rests on the side the story left it: above once passed, else
+      // below. A little hysteresis stops it flickering on a window's edge.
+      const maxY = Math.max(0, s0Max(f));
+      const firstPour = FIRST_POUR * len(0);
+      const handLen = (0.45 * p.meltLen + p.pourLen) * unit;
+      const formedAt = (k: number) =>
+        k === 0 ? at(0) + firstPour : at(k) + p.pourLen * unit;
+      const leaveAt = (k: number) =>
+        k < n - 1
+          ? at(k + 1) - 0.45 * p.meltLen * unit
+          : Number.POSITIVE_INFINITY;
+      const enterAt = (k: number) =>
+        formedAt(k) - 0.15 * (k === 0 ? firstPour : handLen);
+      const exitAt = (k: number) => leaveAt(k) + 0.06 * handLen;
+      /** Where beat k holds: halfway through its hold (the nav glides here). */
+      const holdAt = (k: number) =>
+        Math.min(maxY, (formedAt(k) + Math.min(leaveAt(k), end, maxY)) / 2);
+      let copyNow = -1;
+      if (f.flood > 0.5) copyNow = -1;
+      else if (pinned >= 0) copyNow = pinned;
+      else if (f.reduced) {
+        copyNow = 0;
+        for (let k = 1; k < n; k++) if (y >= at(k)) copyNow = k;
       } else {
-        for (let k = 0; k < n; k++) {
-          show[k] =
-            smoothstep(0.55, 0.95, form[k]) *
-            (1 - smoothstep(0, 0.35, release[k]));
-        }
+        const keep = 0.03 * unit;
+        const inside = (k: number, margin: number) =>
+          y >= enterAt(k) - margin && y < exitAt(k) + margin;
+        if (activeCopy >= 0 && inside(activeCopy, keep)) copyNow = activeCopy;
+        else for (let k = 0; k < n; k++) if (inside(k, 0)) copyNow = k;
+      }
+      activeCopy = copyNow;
+      for (let k = 0; k < n; k++) {
+        copyState[k] = k === copyNow ? "in" : y > holdAt(k) ? "above" : "below";
       }
       // The beat (the nav's active link) switches halfway through each hand-over.
       let beatIdx = -1;
@@ -758,14 +809,9 @@ export function createForm(ctx: VariantContext): VariantSystem {
           if (y >= mid) beatIdx = k;
         }
       } else if (f.reduced) beatIdx = 0;
-      // Where each beat is fully formed (a touch past, so it has settled).
-      const maxY = Math.max(0, s0Max(f));
-      for (let k = 0; k < n; k++) {
-        const formed =
-          k === 0 ? at(0) + FIRST_POUR * len(0) : at(k) + p.pourLen * unit;
-        beatsY[SHAPES[k].key] = Math.min(maxY, formed + 0.04 * unit);
-      }
-      syncPage(beatIdx < 0 ? "hero" : SHAPES[beatIdx].key, 1 - f.flood);
+      // Where each beat holds (the nav's link targets).
+      for (let k = 0; k < n; k++) beatsY[SHAPES[k].key] = holdAt(k);
+      syncPage(beatIdx < 0 ? "hero" : SHAPES[beatIdx].key, copyState);
 
       // One liquid. The hero pool empties, scrubbed: while the hero scrolls away it slides
       // over its near edge and pours into the falls, slowly at first (poolToFalls of it),
@@ -1096,10 +1142,10 @@ export function createForm(ctx: VariantContext): VariantSystem {
       disposed = true;
       // The hero pool belongs to the engine: put it back to rest for the next variant.
       ctx.topPool.setSpill(null);
-      // Hide the copy and drop the story the nav reads.
-      show.fill(0);
-      syncPage("", 0);
-      delete document.documentElement.dataset.lwBeat;
+      // Hide the copy, drop the story the nav reads and give the page its length back.
+      syncPage("", null);
+      setTrack(0);
+      delete html.dataset.lwBeat;
       const g = globalThis as StoryGlobal;
       if (g.__lwBeats === beatsY) delete g.__lwBeats;
       sheet.dispose();

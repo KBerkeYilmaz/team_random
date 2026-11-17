@@ -12,6 +12,8 @@ import { Suspense, useEffect } from "react";
 
 import { VariantSwitcher } from "../VariantSwitcher";
 
+// Lenis' own rules (round 10: the engine smooths the page's scroll; see engine/smooth.ts).
+import "lenis/dist/lenis.css";
 import "./workshop.css";
 import PillarCopy from "./PillarCopy";
 import { WORKSHOP_VARIANTS, parseTier, parseVariant } from "./variants";

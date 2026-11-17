@@ -12,6 +12,12 @@ html[data-liquid-workshop][data-lw-content="off"] main > section,
 html[data-liquid-workshop][data-lw-content="off"] footer {
   visibility: hidden;
 }
+/* Round 10 ("more breathing room"): the form story gives every beat its own length of
+   scroll and sets --lw-track to fit it. Without it (other variants) the page keeps its
+   own length. */
+html[data-liquid-workshop][data-lw-content="off"] main {
+  min-height: var(--lw-track, auto);
+}
 
 /* Round 9: the site's own navbar gives way to the workshop's glass pill (WorkshopNav) in
    every workshop mode. visibility, not display, so the layout and the section anchors the
@@ -363,8 +369,15 @@ html[data-liquid-workshop][data-lw-ink="light"] {
   }
 }
 
-/* The pillars' copy: driven per beat by --show (0..1) from the form variant. */
+/* The pillars' copy (round 9). Round 10 ("it feels a bit instant", "more breathing room"):
+   timed, not scrubbed. The form variant sets each beat's data-state: "in" plays the
+   entrance; "above" (the story has passed it) or no state (below: not reached yet) is where
+   it rests. So exits leave, and returns arrive, the way the scroll goes. Transitions, not
+   keyframes: a beat that flips back mid-exit turns around from where it is. */
 .lw-copy {
+  /* Arrivals decelerate hard and settle slowly; departures ease both ways, quicker. */
+  --lw-arrive: cubic-bezier(0.16, 1, 0.3, 1);
+  --lw-leave: cubic-bezier(0.65, 0, 0.35, 1);
   position: fixed;
   inset: 0;
   z-index: 1;
@@ -377,20 +390,18 @@ html[data-lw-content="on"] .lw-copy {
 .lw-copy-beat {
   position: absolute;
   inset: 0;
-  opacity: var(--show, 0);
 }
 .lw-copy-title,
 .lw-copy-services {
   position: absolute;
   top: 50%;
-  transform: translate3d(0, calc(-50% + (1 - var(--show, 0)) * 22px), 0);
+  transform: translate3d(0, -50%, 0);
 }
 .lw-copy-title {
   left: 6vw;
   max-width: 25vw;
 }
 .lw-copy-label {
-  display: block;
   margin-bottom: 18px;
   font-size: 13px;
   font-weight: 600;
@@ -411,20 +422,88 @@ html[data-lw-content="on"] .lw-copy {
   font-size: clamp(17px, 1.4vw, 22px);
   font-weight: 500;
   letter-spacing: -0.015em;
-  opacity: clamp(0, calc((var(--show, 0) - 0.3) / 0.7), 1);
 }
-.lw-copy-services li {
-  display: flex;
+
+/* The mask text rises out of. Padded, and pulled back by the same margins, so the
+   descender in "Design" and the tight tracking are not clipped. */
+.lw-mask {
+  display: block;
+  overflow: hidden;
+  padding: 0.08em 0.06em 0.2em;
+  margin: -0.08em -0.06em -0.2em;
+}
+.lw-copy-word {
+  display: inline-block;
+  vertical-align: top;
+}
+
+/* At rest below (not reached yet), above once passed, in while its shape holds. */
+.lw-char,
+.lw-rise {
+  display: inline-block;
+  opacity: 0;
+  transform: translate3d(0, 118%, 0);
+}
+.lw-char {
+  filter: blur(8px);
+}
+.lw-copy-beat[data-state="above"] .lw-char,
+.lw-copy-beat[data-state="above"] .lw-rise {
+  transform: translate3d(0, -118%, 0);
+}
+.lw-copy-beat[data-state="in"] .lw-char,
+.lw-copy-beat[data-state="in"] .lw-rise {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* Departures, to either side: quick and nearly together. */
+.lw-char {
+  transition:
+    transform 640ms var(--lw-leave) calc(var(--c, 0) * 14ms),
+    opacity 380ms ease calc(var(--c, 0) * 14ms + 140ms),
+    filter 440ms ease calc(var(--c, 0) * 14ms);
+}
+.lw-rise {
+  transition:
+    transform 580ms var(--lw-leave) calc(var(--i, 0) * 30ms),
+    opacity 340ms ease calc(var(--i, 0) * 30ms + 120ms);
+}
+
+/* The arrival: the label leads, the title follows letter by letter, the services settle
+   last. Long and slow on purpose: it is the moment each beat lands. */
+.lw-copy-beat[data-state="in"] .lw-copy-label .lw-rise {
+  transition:
+    transform 1000ms var(--lw-arrive),
+    opacity 700ms ease;
+}
+.lw-copy-beat[data-state="in"] .lw-char {
+  transition:
+    transform 1250ms var(--lw-arrive) calc(140ms + var(--c, 0) * 50ms),
+    opacity 800ms ease calc(140ms + var(--c, 0) * 50ms),
+    filter 1000ms var(--lw-arrive) calc(140ms + var(--c, 0) * 50ms);
+}
+.lw-copy-beat[data-state="in"] .lw-copy-services .lw-rise {
+  transition:
+    transform 1150ms var(--lw-arrive) calc(460ms + var(--i, 0) * 95ms),
+    opacity 800ms ease calc(460ms + var(--i, 0) * 95ms);
+}
+
+.lw-copy-services .lw-rise {
   align-items: center;
   gap: 14px;
 }
-.lw-copy-services li::before {
+.lw-copy-services .lw-rise::before {
   content: "";
   width: 22px;
   height: 1.5px;
   border-radius: 2px;
   background: currentColor;
   opacity: 0.45;
+}
+.lw-copy-services .lw-rise {
+  display: inline-flex;
 }
 
 @media (max-width: 767px) {
@@ -450,7 +529,7 @@ html[data-lw-content="on"] .lw-copy {
     right: 24px;
     max-width: none;
     text-align: center;
-    transform: translate3d(0, calc((1 - var(--show, 0)) * 16px), 0);
+    transform: none;
   }
   .lw-copy-title {
     top: 92px;
@@ -469,7 +548,7 @@ html[data-lw-content="on"] .lw-copy {
     gap: 6px 16px;
     font-size: 15px;
   }
-  .lw-copy-services li::before {
+  .lw-copy-services .lw-rise::before {
     width: 4px;
     height: 4px;
     border-radius: 50%;
@@ -485,14 +564,13 @@ html[data-lw-content="on"] .lw-copy {
   .lw-cta-fill::before {
     animation: none;
   }
-  .lw-copy-title,
-  .lw-copy-services {
-    transform: translate3d(0, -50%, 0);
-  }
-}
-@media (prefers-reduced-motion: reduce) and (max-width: 767px) {
-  .lw-copy-title,
-  .lw-copy-services {
+  /* The copy simply cross-fades: no rising, no blur, no stagger. */
+  .lw-copy .lw-char,
+  .lw-copy .lw-rise,
+  .lw-copy-beat[data-state] .lw-char,
+  .lw-copy-beat[data-state] .lw-rise {
     transform: none;
+    filter: none;
+    transition: opacity 240ms ease;
   }
 }

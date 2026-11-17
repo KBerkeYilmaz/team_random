@@ -74,6 +74,18 @@ export interface CommonParams {
   };
   /** Touching the liquid with the pointer: pushes shapes aside, ripples the pools. */
   interaction: { pointer: number };
+  /**
+   * Round 10 ("scroll movements can be a bit slicker, it feels a bit instant"): the page
+   * itself glides. Lenis smooths wheel and trackpad input (phones keep native momentum).
+   */
+  scroll: {
+    /** Smooth the wheel (off = the browser's own stepped scrolling). */
+    smooth: boolean;
+    /** Lenis lerp: how much of the remaining distance each frame covers (lower = longer glide). */
+    glide: number;
+    /** Wheel distance multiplier. */
+    wheel: number;
+  };
   sections: {
     /** Workshop stage: false hides the site's header, sections and footer (keeps scroll length). */
     showContent: boolean;
@@ -117,6 +129,11 @@ export interface FormParams extends CascadeParams {
   meltLen: number;
   /** Scrub smoothing: seconds the story takes to catch up with the scroll (0 = locked). */
   scrub: number;
+  /**
+   * Round 10 ("more breathing room between the scroll movements and transitions"): screens
+   * of scroll per beat. The workshop stage lengthens the page to fit (site content off).
+   */
+  beatLen: number;
   /** A hard fling bursts the shape into droplets that gather again as the scroll slows. */
   splash: number;
   /**
@@ -275,6 +292,7 @@ export function defaultParams(): AllParams {
         dotSpacing: 5,
       },
       interaction: { pointer: 1 },
+      scroll: { smooth: true, glide: 0.08, wheel: 1 },
       sections: {
         showContent: false,
         seeThrough: true,
@@ -292,16 +310,20 @@ export function defaultParams(): AllParams {
       shapeSize: 1,
       // Lower than round 4 (0.42): the pool pours down into the first shape (user, round 6).
       shapeY: 0.5,
-      pourLen: 0.35,
-      meltLen: 0.35,
-      scrub: 0.35,
+      // Round 10: shorter hand-overs inside longer beats, so each shape holds a while.
+      pourLen: 0.28,
+      meltLen: 0.28,
+      // Round 10: a heavier story (was 0.35): the liquid trails the scroll, then settles.
+      scrub: 0.55,
+      beatLen: 1.4,
       splash: 1,
       handover: "morph",
       puddle: "base",
       reflect: 1,
       firstFrom: "falls",
       fallFirst: 0.45,
-      firstSlot: 1.6,
+      // Round 10: 1.45 of the longer beats (was 1.6 of the short ones).
+      firstSlot: 1.45,
       poolToFalls: 0.45,
       wobble: 2.5,
       glint: 1,
