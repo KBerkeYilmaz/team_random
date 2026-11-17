@@ -468,7 +468,9 @@ export function createEngine(opts: EngineOptions): Engine {
       smooth.frame(
         now,
         params.common.scroll,
-        html.dataset.lwFlood === "1",
+        // Round 13: the phone menu (a blurred backdrop now, html[data-lw-menu]) or the
+        // old flood holds the page still.
+        html.dataset.lwFlood === "1" || html.dataset.lwMenu === "1",
         reduced,
         variant.snap?.() ?? null,
       );

@@ -10,8 +10,9 @@
 //   contact beat it runs over to "Let's talk" and pours into it, and the button fills up.
 //   Its two edges ride separate springs (the leading one quicker), so it stretches toward
 //   the next link and gathers up behind it, like a drop.
-// Phones: brand + Menu. Opening the menu floods the screen with the liquid (the engine's
-// lake rises, html[data-lw-flood]) and the links come up in big type; closing drains it.
+// Phones: brand + Menu. Opening the menu frosts the page behind a blurred, tinted backdrop
+// (round 13; it used to flood the screen with the liquid, which the user found "a bit too
+// much") and the links come up in big type; closing fades it all out.
 //
 // The story (which beat is on, where each beat holds) comes from the form variant:
 // html[data-lw-beat] and globalThis.__lwBeats. Continuous values never touch React state;
@@ -189,11 +190,13 @@ export default function WorkshopNav() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  // The phone menu: flood, scroll lock, Escape, focus.
+  // The phone menu: scroll lock, Escape, focus. Round 13 ("background drop elements are a
+  // bit too much, a simple blur might do the trick"): no more flood; the menu is a frosted
+  // backdrop (workshop.css), and html[data-lw-menu] holds the page still.
   useEffect(() => {
     const html = document.documentElement;
     if (!open) return;
-    html.dataset.lwFlood = "1";
+    html.dataset.lwMenu = "1";
     const overflow = html.style.overflow;
     html.style.overflow = "hidden";
     firstMenuLinkRef.current?.focus();
@@ -208,7 +211,7 @@ export default function WorkshopNav() {
     wide.addEventListener("change", onWide);
     const button = menuButtonRef.current;
     return () => {
-      delete html.dataset.lwFlood;
+      delete html.dataset.lwMenu;
       html.style.overflow = overflow;
       window.removeEventListener("keydown", onKey);
       wide.removeEventListener("change", onWide);
@@ -280,40 +283,40 @@ export default function WorkshopNav() {
         </span>
       </div>
 
-      {open && (
-        <div id="lw-menu" className="lw-menu">
-          {/* Tapping anywhere off the links closes it (Escape and Close work too). */}
-          <button
-            type="button"
-            className="lw-menu-backdrop"
-            aria-label="Close menu"
-            tabIndex={-1}
-            onClick={close}
-          />
-          <ul>
-            <li style={{ "--i": 0 } as React.CSSProperties}>
-              <Link ref={firstMenuLinkRef} href="/works" onClick={close}>
-                Work
-              </Link>
-            </li>
-            <li style={{ "--i": 1 } as React.CSSProperties}>
-              <a href="#services" onClick={goTo(PILLARS[0].key, "#services")}>
-                Services
-              </a>
-            </li>
-            <li style={{ "--i": 2 } as React.CSSProperties}>
-              <Link href="/about" onClick={close}>
-                About
-              </Link>
-            </li>
-            <li style={{ "--i": 3 } as React.CSSProperties}>
-              <a href="#cta" onClick={goTo("contact", "#cta")}>
-                Let’s talk
-              </a>
-            </li>
-          </ul>
-        </div>
-      )}
+      {/* Always mounted (round 13), so it can fade out too; hidden (and so neither focusable
+          nor read out) while closed. */}
+      <div id="lw-menu" className="lw-menu" data-open={open ? "1" : "0"}>
+        {/* Tapping anywhere off the links closes it (Escape and Close work too). */}
+        <button
+          type="button"
+          className="lw-menu-backdrop"
+          aria-label="Close menu"
+          tabIndex={-1}
+          onClick={close}
+        />
+        <ul>
+          <li style={{ "--i": 0 } as React.CSSProperties}>
+            <Link ref={firstMenuLinkRef} href="/works" onClick={close}>
+              Work
+            </Link>
+          </li>
+          <li style={{ "--i": 1 } as React.CSSProperties}>
+            <a href="#services" onClick={goTo(PILLARS[0].key, "#services")}>
+              Services
+            </a>
+          </li>
+          <li style={{ "--i": 2 } as React.CSSProperties}>
+            <Link href="/about" onClick={close}>
+              About
+            </Link>
+          </li>
+          <li style={{ "--i": 3 } as React.CSSProperties}>
+            <a href="#cta" onClick={goTo("contact", "#cta")}>
+              Let’s talk
+            </a>
+          </li>
+        </ul>
+      </div>
     </nav>
   );
 }
