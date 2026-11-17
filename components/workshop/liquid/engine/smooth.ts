@@ -75,10 +75,11 @@ function settleTarget(
     if (dest >= zones[k][0] && dest <= zones[k][1]) return null;
   }
   if (dest < zones[0][0]) {
-    // Before the first pillar the pool and the falls are fine to rest in; only the last
-    // stretch of the first pour (the shape half formed) settles onto it.
+    // Before the first pillar the pool and the falls are fine to rest in; only once the
+    // first shape is more than half formed does it settle onto it (round 12: was 0.8 of
+    // a screen, which glided the whole pour through too fast).
     const gap = zones[0][0] - dest;
-    return gap <= 0.25 * vh || (dir > 0 && gap <= 0.8 * vh) ? points[0] : null;
+    return gap <= 0.2 * vh || (dir > 0 && gap <= 0.45 * vh) ? points[0] : null;
   }
   if (dest > zones[n - 1][1]) return points[n - 1];
   // Between two pillars: the one the scroll was heading for, unless it had barely left the

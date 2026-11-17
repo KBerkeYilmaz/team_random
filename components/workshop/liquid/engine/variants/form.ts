@@ -426,6 +426,20 @@ const DRAIN_SLOW_END = 0.55;
 const DRAIN_END = 0.7;
 /** Share of the first shape's (longer) turn spent forming it (round 10: was 0.55). */
 const FIRST_POUR = 0.5;
+/**
+ * Round 12 ("transition between pool and the first icon is still a bit abrupt"), out of
+ * the falls (the default): the pool drains in one even, eased stretch of the hero's
+ * scroll, from DRAIN_FROM to DRAIN_TO (the old curve rushed most of it out at the end and
+ * then left a long empty stretch)...
+ */
+const DRAIN_FROM = 0.03;
+const DRAIN_TO = 0.88;
+/** ...and the first shape starts gathering out of the falls while the pool still pours. */
+const FIRST_START = 0.5;
+/** ...and the story is heavier through that intro, so even a flick plays it through... */
+const INTRO_SCRUB = 0.95;
+/** ...at most this many screens per second (a soft limit), however fast the page goes. */
+const INTRO_MAX_SPEED = 0.9;
 
 /** The story's beats for the page (WorkshopNav scrolls to these). */
 type StoryGlobal = typeof globalThis & { __lwBeats?: Record<string, number> };
@@ -888,23 +902,6 @@ export function createForm(ctx: VariantContext): VariantSystem {
       const P = f.params.common.pools;
       clock += f.dt;
 
-      // The story position: the scroll, smoothed so wheel steps and flicks glide.
-      const snap = f.reduced || f.settle || storyY === null || p.scrub < 0.02;
-      let y = storyY ?? f.scrollY;
-      if (snap) {
-        y = f.scrollY;
-        storyV = 0;
-      } else {
-        const spring = springConstants(p.scrub, 1);
-        const sub = Math.max(1, Math.ceil(f.dt / (1 / 120)));
-        const h = f.dt / sub;
-        for (let i = 0; i < sub; i++) {
-          storyV += (spring.k * (f.scrollY - y) - spring.c * storyV) * h;
-          y += storyV * h;
-        }
-      }
-      storyY = y;
-
       const pinned = SHAPES.findIndex((s) => s.key === p.shape);
       const morph = p.handover === "morph" && !f.reduced && pinned < 0;
       // Where the first shape comes from: 2 the falls, 1 the hero pool, 0 above.
@@ -924,11 +921,43 @@ export function createForm(ctx: VariantContext): VariantSystem {
         f,
         n,
         Math.max(1, p.firstSlot),
-        firstFrom === 1 ? DRAIN_SLOW_END : DRAIN_END,
+        firstFrom === 1
+          ? DRAIN_SLOW_END
+          : firstFrom === 2
+            ? FIRST_START
+            : DRAIN_END,
         tracked ? Math.max(0.3, p.beatLen) : null,
       );
       const { at, len, unit, end } = layout;
       setTrack(tracked ? Math.ceil(end + f.H) : 0);
+
+      // The story position: the scroll, smoothed so wheel steps and flicks glide. Round 12:
+      // heavier until the first shape has formed (blending back over a quarter screen), so
+      // the pool -> falls -> first shape handover never plays faster than the liquid can.
+      const snap = f.reduced || f.settle || storyY === null || p.scrub < 0.02;
+      let y = storyY ?? f.scrollY;
+      if (snap) {
+        y = f.scrollY;
+        storyV = 0;
+      } else {
+        const formedFirst = at(0) + FIRST_POUR * len(0);
+        const intro = clamp((formedFirst - y) / (0.25 * f.H), 0, 1);
+        const spring = springConstants(
+          lerp(p.scrub, Math.max(p.scrub, INTRO_SCRUB), intro),
+          1,
+        );
+        // The speed limit saturates softly (tanh), so the story eases into its cruise
+        // and out of it rather than hitting a wall.
+        const vmax = f.H * lerp(8, INTRO_MAX_SPEED, intro);
+        const sub = Math.max(1, Math.ceil(f.dt / (1 / 120)));
+        const h = f.dt / sub;
+        for (let i = 0; i < sub; i++) {
+          storyV += (spring.k * (f.scrollY - y) - spring.c * storyV) * h;
+          if (intro > 0) storyV = vmax * Math.tanh(storyV / vmax);
+          y += storyV * h;
+        }
+      }
+      storyY = y;
       // The first shape's pour-in, scrubbed (0..1).
       const form0 = clamp((y - at(0)) / (FIRST_POUR * len(0)), 0, 1);
 
@@ -1048,9 +1077,13 @@ export function createForm(ctx: VariantContext): VariantSystem {
         ? 1 + POUR_V // the static frame hides the hero pool: the falls come from above
         : firstFrom === 1
           ? slow + rest * form0 // round 6: the rest pours into the first shape
-          : exit <= e1
-            ? slow
-            : hermite(exit, e1, DRAIN_END, toFalls, 1 + POUR_V, seam, 0);
+          : firstFrom === 2
+            ? // Round 12: one even, eased drain (no rush at the end), overlapping the
+              // first shape's gathering.
+              (1 + POUR_V) * smoothstep(DRAIN_FROM, DRAIN_TO, exit)
+            : exit <= e1
+              ? slow
+              : hermite(exit, e1, DRAIN_END, toFalls, 1 + POUR_V, seam, 0);
       // Perspective crowds the far half of the pool into a thin strip at its horizon, so a
       // drain linear in depth would show nothing for a long while and then rush. Drain
       // linearly on screen instead: the back edge recedes evenly as you scroll.
@@ -1072,7 +1105,14 @@ export function createForm(ctx: VariantContext): VariantSystem {
       // particles below its edge). Once the pool is dry, their top leaves its edge for the
       // top of the screen.
       const dry = smoothstep(1, 1 + POUR_V, drain);
-      sheetParams.veil = Math.max(p.veil, shapeVeil);
+      // Round 12: while the pool pours and the first shape gathers, the falls carry it
+      // visibly (denser, and not dimmed in the centre), easing back as the shape forms.
+      const handover =
+        firstFrom === 2 && !f.reduced
+          ? smoothstep(DRAIN_FROM + 0.08, 0.45, exit) *
+            (1 - smoothstep(0.55, 1, form0))
+          : 0;
+      sheetParams.veil = Math.max(p.veil * (1 - 0.8 * handover), shapeVeil);
       sheetParams.veilWidth = Math.max(p.veilWidth, shapeVeilW);
       sheetParams.mist = p.mist;
       sheetParams.sway = p.sway;
@@ -1080,7 +1120,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
       sheetParams.fadeIn = lerp(0.2, 0.03, dry);
       sheet.update({
         ...f,
-        pour: f.pour * smoothstep(0, 0.25, drain),
+        pour: f.pour * smoothstep(0, 0.25, drain) * (1 + 0.7 * handover),
         sourceY: lerp(f.sourceY, -40, dry),
         params: { ...f.params, cascade: sheetParams },
       });
