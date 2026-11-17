@@ -89,8 +89,13 @@ export default function PillarCopy() {
                 <li
                   key={service.key}
                   className="lw-mask"
-                  onPointerEnter={(event) => {
-                    if (event.pointerType !== "touch") hover(service.key);
+                  // Round 15: only a pointer that really moves starts a hover. When the page
+                  // glides onto a pillar under a resting cursor, the list slides in beneath
+                  // it, and that used to swap the pillar's shape for a service nobody chose.
+                  onPointerMove={(event) => {
+                    if (event.pointerType === "touch") return;
+                    if (event.movementX === 0 && event.movementY === 0) return;
+                    if (hovered() !== service.key) hover(service.key);
                   }}
                   onPointerLeave={(event) => {
                     if (event.pointerType !== "touch") unhover(service.key);
