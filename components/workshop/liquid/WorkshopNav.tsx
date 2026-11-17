@@ -44,7 +44,8 @@ const easeInOutQuart = (t: number) =>
 function scrollToBeat(key: string, fallback: string) {
   const g = globalThis as StoryGlobal;
   const reduce = reducedMotion();
-  const y = g.__lwBeats?.[key];
+  // Round 15: "top" is the pool (the brand link).
+  const y = key === "top" ? 0 : g.__lwBeats?.[key];
   if (typeof y !== "number") {
     document
       .querySelector(fallback)
@@ -222,6 +223,10 @@ export default function WorkshopNav() {
   /** Story links: close the menu first (it locks scrolling), then scroll. */
   const goTo = useCallback(
     (key: string, fallback: string) => (event: React.MouseEvent) => {
+      // A modified click (new tab, new window) is the browser's.
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
       event.preventDefault();
       setOpen(false);
       window.setTimeout(() => scrollToBeat(key, fallback), 60);
@@ -233,7 +238,9 @@ export default function WorkshopNav() {
   return (
     <nav data-lw-nav="" aria-label="Main" className="lw-nav">
       <div ref={pillRef} className="lw-nav-pill">
-        <Link href="/" className="lw-brand" onClick={close}>
+        {/* Round 15: on the landing page the brand glides back up to the pool (it used to
+            reload "/" without the workshop's URL flags, which brought the tuning panel up). */}
+        <Link href="/" className="lw-brand" onClick={goTo("top", "#hero")}>
           <span className="lw-brand-drop" aria-hidden="true" />
           team random
         </Link>
