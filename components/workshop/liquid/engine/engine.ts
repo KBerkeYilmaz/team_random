@@ -619,7 +619,8 @@ export function createEngine(opts: EngineOptions): Engine {
       rawDt,
     );
     const touching = now - pointer.moved < 140 ? 1 : 0;
-    pointer.touch = damp(pointer.touch, touching, touching ? 12 : 1.6, rawDt);
+    // Round 12: the parting opens a little softer (was 12), closer to the grip's feel.
+    pointer.touch = damp(pointer.touch, touching, touching ? 8 : 1.6, rawDt);
     (common.uPointer.value as THREE.Vector3).set(
       pointer.x,
       pointer.y,

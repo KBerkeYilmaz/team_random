@@ -109,7 +109,7 @@ uniform vec3 uLight;      // light direction (shape space, z towards the viewer)
 uniform float uCursorLight; // 0..1: the pointer carries a light (round 11)
 uniform vec4 uGrab;       // round 11, pull: xy the grabbed spot (px), zw how far it is pulled
 uniform float uGrabR;     // the grab's reach (px); 0 when nothing is held or springing back
-uniform float uHold;      // 1 while the mouse holds the liquid
+uniform float uGrip;      // round 12: 0..1, eased, how firmly the mouse holds the liquid
 uniform float uFlow;      // round 11: 0..1, the liquid flows straight from shape A into B (hover)
 uniform float uFirstFrom; // where a pour-in comes from: 0 above, 1 the hero pool, 2 the falls
 uniform float uPoolLeft;  // how much of the hero pool's surface is left (v units, 0..1)
@@ -350,7 +350,7 @@ void main() {
 
   // The pointer parts the liquid and warms it where it touches (not while it holds it).
   vec2 dp = pos - uPointer.xy;
-  float touch = exp(-dot(dp, dp) / (120.0 * 120.0)) * uPointer.z * (1.0 - uHold);
+  float touch = exp(-dot(dp, dp) / (120.0 * 120.0)) * uPointer.z * (1.0 - uGrip);
   pos += normalize(dp + 1e-4) * touch * 48.0;
   tcol += touch * 0.3 * (1.0 - uTheme);
 
@@ -361,6 +361,11 @@ void main() {
   if (uGrabR > 0.0) {
     vec2 rel = pos - uGrab.xy;
     float w = exp(-dot(rel, rel) / (uGrabR * uGrabR));
+    // Round 12 ("hover and pull snap between, connect the two"): the grip. As the mouse
+    // closes on the liquid, what it had parted flows back and gathers under it (a pinch);
+    // as it lets go, the pinch relaxes. The grip eases both ways, crossfading with the
+    // parting above, so hovering, grabbing and letting go read as one motion.
+    pos -= rel * w * 0.3 * uGrip;
     float len = length(uGrab.zw);
     if (len > 0.5) {
       vec2 dir = uGrab.zw / len;
@@ -593,7 +598,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
       uCursorLight: { value: 0 },
       uGrab: { value: new THREE.Vector4() },
       uGrabR: { value: 0 },
-      uHold: { value: 0 },
+      uGrip: { value: 0 },
       uFlow: { value: 0 },
       // The hero pool's own uniforms, so poolSurface() always matches what it draws.
       ...poolSurfaceUniforms(ctx.topPool),
@@ -792,6 +797,8 @@ export function createForm(ctx: VariantContext): VariantSystem {
     vy: 0,
     hover: false,
     moved: false,
+    // Round 12: how firmly it holds (eased toward 1 while held, back to 0 on release).
+    grip: 0,
   };
   const onScreen = { k: -1, cx: 0, cy: 0, scale: 1, off: 0 };
   let lastGrab = "";
@@ -1147,7 +1154,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
         );
         u.uOffset.value = l.off;
         u.uGrabR.value = 0;
-        u.uHold.value = 0;
+        u.uGrip.value = 0;
         u.uFlow.value = 0;
         u.uSplash.value = splash;
         u.uLandY.value =
@@ -1353,10 +1360,20 @@ export function createForm(ctx: VariantContext): VariantSystem {
             grab.x += grab.vx * hStep;
             grab.y += grab.vy * hStep;
           }
+          // The grip closes fast (the press should answer at once) and opens slower, as
+          // the strand springs home.
+          grab.grip = damp(
+            grab.grip,
+            grab.held ? 1 : 0,
+            grab.held ? 14 : 4.5,
+            f.dt,
+          );
           const live =
             grab.held ||
+            grab.grip > 0.01 ||
             Math.hypot(grab.x, grab.y) + Math.hypot(grab.vx, grab.vy) * 0.02 >
               0.3;
+          if (!live) grab.grip = 0;
           if (!live) grab.x = grab.y = grab.vx = grab.vy = 0;
           (u.uGrab.value as THREE.Vector4).set(
             anchorX,
@@ -1365,7 +1382,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
             grab.y,
           );
           u.uGrabR.value = live ? clamp(onScreen.scale * 0.22, 48, 110) : 0;
-          u.uHold.value = grab.held ? 1 : 0;
+          u.uGrip.value = grab.grip;
 
           // The light follows the liquid down into the puddle and back up.
           const puddled = flowing
