@@ -212,6 +212,11 @@ export function createPanel(opts: {
         max: 3,
         label: "shape glow",
       });
+      folder.addBinding(m, "cursorLight", {
+        min: 0,
+        max: 1,
+        label: "cursor light",
+      });
       folder.addBinding(m, "sheetVeil", {
         min: 0,
         max: 1,

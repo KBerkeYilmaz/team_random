@@ -99,6 +99,7 @@ uniform float uClock;
 uniform float uSize;
 uniform float uAlphaK;
 uniform vec3 uLight;      // light direction (shape space, z towards the viewer)
+uniform float uCursorLight; // 0..1: the pointer carries a light (round 11)
 uniform float uFirstFrom; // where a pour-in comes from: 0 above, 1 the hero pool, 2 the falls
 uniform float uPoolLeft;  // how much of the hero pool's surface is left (v units, 0..1)
 uniform float uFallTop;   // where the falls start on screen (px)
@@ -155,8 +156,19 @@ void main() {
     snoise(vec3(T.xy * 5.0 + 5.0, uTime * 0.6))
   ) * 0.25 * uGlint;
   vec3 nrm = normalize(vec3(-S.yz * (1.0 - tau) * 1.6 + ripple, 0.25 + tau));
-  float diff = max(dot(nrm, uLight), 0.0);
-  float spec = pow(max(dot(nrm, normalize(uLight + vec3(0.0, 0.0, 1.0))), 0.0), 28.0) * uGlint;
+  // Round 11, the cursor light: while a mouse is about, each droplet is lit from the
+  // pointer (a light hovering just above the page), so the liquid glints where you point,
+  // brightest close to it. It hands back to the orbiting light when the mouse rests.
+  vec3 L = uLight;
+  float near = 0.0;
+  if (uCursorLight > 0.0) {
+    vec2 toP = (uPointer.xy - pos) * vec2(1.0, -1.0);
+    L = normalize(mix(uLight, normalize(vec3(toP / 240.0, 0.6)), uCursorLight));
+    near = exp(-dot(toP, toP) / (260.0 * 260.0)) * uCursorLight;
+  }
+  float diff = max(dot(nrm, L), 0.0);
+  float spec = pow(max(dot(nrm, normalize(L + vec3(0.0, 0.0, 1.0))), 0.0), 28.0)
+    * uGlint * (1.0 + 1.5 * near);
   float rim = pow(1.0 - nrm.z, 3.0);
   // Additive looks: hotter = brighter (shadow -> cream highlights). Light: shadow = ink.
   float shaded = mix(
@@ -529,6 +541,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
       uPoolLeft: { value: 1 },
       uFallTop: { value: 0 },
       uFallFirst: { value: 0.45 },
+      uCursorLight: { value: 0 },
       // The hero pool's own uniforms, so poolSurface() always matches what it draws.
       ...poolSurfaceUniforms(ctx.topPool),
     };
@@ -969,6 +982,7 @@ export function createForm(ctx: VariantContext): VariantSystem {
           heroLand > landBelow ? Math.min(heroLand, f.landY) : f.landY;
         u.uWobble.value = f.reduced ? 0 : p.wobble;
         u.uGlint.value = p.glint;
+        u.uCursorLight.value = f.reduced ? 0 : f.cursor * p.cursorLight;
         u.uDrips.value = f.reduced ? 0 : p.drips;
         u.uClock.value = clock;
         // The light orbits slowly, so highlights glide over the liquid.

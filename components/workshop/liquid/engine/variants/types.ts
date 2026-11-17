@@ -38,6 +38,11 @@ export interface FrameState {
   settle: boolean;
   /** 0..1, how far the workshop nav's phone menu has flooded the screen. */
   flood: number;
+  /**
+   * Round 11: 0..1, a mouse (or pen) is over the page and has moved lately. Its position
+   * is common.uPointer.xy. Drives form's cursor light.
+   */
+  cursor: number;
 }
 
 /** Where the pour is, so the atmosphere can hang its light on it. */

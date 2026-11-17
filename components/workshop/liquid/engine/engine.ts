@@ -305,14 +305,33 @@ export function createEngine(opts: EngineOptions): Engine {
   document.addEventListener("visibilitychange", onVisibility);
 
   // The pointer touches the liquid (the canvas itself is pointer-events: none).
-  const pointer = { x: -1e4, y: -1e4, px: -1e4, py: -1e4, moved: 0, touch: 0 };
+  const pointer = {
+    x: -1e4,
+    y: -1e4,
+    px: -1e4,
+    py: -1e4,
+    moved: 0,
+    touch: 0,
+    // Round 11 (the cursor light): what kind of pointer, whether it has left the window,
+    // and how present it is (eased).
+    kind: "",
+    left: true,
+    present: 0,
+  };
   const onPointer = (event: PointerEvent) => {
     const r = opts.host.getBoundingClientRect();
     pointer.x = event.clientX - r.left;
     pointer.y = event.clientY - r.top;
     pointer.moved = performance.now();
+    pointer.kind = event.pointerType;
+    pointer.left = false;
   };
   window.addEventListener("pointermove", onPointer, { passive: true });
+  // Leaving the window: an out event with nowhere to go.
+  const onPointerOut = (event: PointerEvent) => {
+    if (!event.relatedTarget) pointer.left = true;
+  };
+  document.addEventListener("pointerout", onPointerOut, { passive: true });
 
   const onContextLost = (event: Event) => {
     event.preventDefault();
@@ -557,6 +576,7 @@ export function createEngine(opts: EngineOptions): Engine {
       params,
       settle: settleFrames > 0,
       flood: flooded,
+      cursor: pointer.present,
     };
     variant.update(f);
     if (settleFrames > 0) settleFrames--;
@@ -583,6 +603,21 @@ export function createEngine(opts: EngineOptions): Engine {
     }
     // Pointer: pushes the form variant's shapes aside, and ripples whichever pool is under
     // it, scaled by how fast it moves.
+    // A mouse about the page (not a finger): the shapes' cursor light. It lingers a few
+    // seconds after the last move, then hands back to the orbiting light.
+    const hovering =
+      !reduced &&
+      (pointer.kind === "mouse" || pointer.kind === "pen") &&
+      !pointer.left &&
+      now - pointer.moved < 4000
+        ? 1
+        : 0;
+    pointer.present = damp(
+      pointer.present,
+      hovering,
+      hovering ? 5 : 1.2,
+      rawDt,
+    );
     const touching = now - pointer.moved < 140 ? 1 : 0;
     pointer.touch = damp(pointer.touch, touching, touching ? 12 : 1.6, rawDt);
     (common.uPointer.value as THREE.Vector3).set(
@@ -834,6 +869,7 @@ export function createEngine(opts: EngineOptions): Engine {
     motionQuery.removeEventListener("change", onMotion);
     document.removeEventListener("visibilitychange", onVisibility);
     window.removeEventListener("pointermove", onPointer);
+    document.removeEventListener("pointerout", onPointerOut);
     // Detach our loss handler first so tearing down doesn't flip the page to the fallback.
     canvas.removeEventListener("webglcontextlost", onContextLost);
     panel?.dispose();

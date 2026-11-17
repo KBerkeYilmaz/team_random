@@ -175,6 +175,8 @@ export interface FormParams extends CascadeParams {
   /** How much a formed shape dims the cascade behind it. */
   sheetVeil: number;
   shapeGlow: number;
+  /** Round 11: the highlights follow the mouse (0 = the light only orbits). */
+  cursorLight: number;
 }
 
 export interface CupParams {
@@ -348,6 +350,7 @@ export function defaultParams(): AllParams {
       follow: 1,
       sheetVeil: 0.75,
       shapeGlow: 1,
+      cursorLight: 1,
     },
     cup: {
       fillStart: 0.42,
