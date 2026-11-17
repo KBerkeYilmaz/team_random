@@ -398,6 +398,9 @@ export function createEngine(opts: EngineOptions): Engine {
   // ---- Debug API (screenshots, verification) -----------------------------------------
   let frozenAt: number | null = null;
   let settleFrames = 0;
+  // Round 15: the page jumped on purpose (a restored scroll, a re-anchor after a resize):
+  // the liquid takes the new place as is, with no speed from the jump.
+  let jumpPending = false;
   let kick = 0;
   let impactGlow = 0;
   let time = 0;
@@ -465,7 +468,7 @@ export function createEngine(opts: EngineOptions): Engine {
     // The glide runs even while the liquid can't draw (a lost context), or the page would
     // stop scrolling: Lenis has already swallowed the wheel events.
     if (!disposed) {
-      smooth.frame(
+      const jumped = smooth.frame(
         now,
         params.common.scroll,
         // Round 13: the phone menu (a blurred backdrop now, html[data-lw-menu]) or the
@@ -474,6 +477,7 @@ export function createEngine(opts: EngineOptions): Engine {
         reduced,
         variant.snap?.() ?? null,
       );
+      if (jumped) jumpPending = true;
     }
     if (paused || lost || disposed) return;
     const frameMs = now - last;
@@ -484,6 +488,11 @@ export function createEngine(opts: EngineOptions): Engine {
     const animate = frozenAt === null && !reduced;
     const dt = animate ? rawDt : 0;
     time = frozenAt ?? (time + dt) % 3600;
+    if (jumpPending) {
+      jumpPending = false;
+      scroll.resync();
+      settleFrames = Math.max(settleFrames, 2);
+    }
     scroll.update(rawDt, H);
     const s = scroll.sections;
     const P = params.common;
@@ -801,6 +810,9 @@ export function createEngine(opts: EngineOptions): Engine {
     if (content !== lastContent) {
       html.dataset.lwContent = content;
       lastContent = content;
+      // Round 15: the story's track only applies with the content off, so the page has
+      // just changed height: re-measure the scroll now, not 250 ms later.
+      smooth.measure();
     }
     const see = P.sections.seeThrough ? "on" : "off";
     if (see !== lastSee) {

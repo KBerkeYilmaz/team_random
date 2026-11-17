@@ -64,6 +64,7 @@ import {
   sampleShape,
   type ShapeTargets,
 } from "../shapes";
+import type { LenisGlobal } from "../smooth";
 
 import { createCascade } from "./cascade";
 import type {
@@ -798,6 +799,10 @@ export function createForm(ctx: VariantContext): VariantSystem {
     if (px > 0) html.style.setProperty("--lw-track", `${px}px`);
     else html.style.removeProperty("--lw-track");
     lastTrack = px;
+    // Round 15: Lenis re-measures the page only 250 ms after it grows (debounced), and
+    // clamps every glide to its old height meanwhile: a nav click right after the page
+    // loads stopped short. Re-measure now (a track change is rare).
+    (globalThis as LenisGlobal).__lwLenis?.resize();
   };
 
   // Round 11, pull the liquid ("doable, let's try it"): press on a formed shape and drag. A

@@ -59,6 +59,11 @@ export class ScrollTracker {
     this.sections = this.read();
   }
 
+  /** Round 15: after a jump made on purpose (a restore, a re-anchor), no speed from it. */
+  resync(): void {
+    this.y = this.prevY = window.scrollY;
+  }
+
   update(dt: number, viewportH: number): void {
     this.y = window.scrollY;
     this.dy = this.y - this.prevY;

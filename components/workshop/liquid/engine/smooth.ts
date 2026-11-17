@@ -36,6 +36,14 @@
 // heading, so quick swipes step one stop each. The panel can hand touch back to the
 // browser (then the CSS snap markers below are the fallback).
 // Round 15, a regression pass ("make sure all is well gelled"):
+// - A resize or a phone turned sideways moves every stop (the story is laid out in screen
+//   heights). The page used to stay at the same pixel and wake up mid-morph, or on another
+//   pillar entirely (Build became Contact on a phone turned sideways). Now it keeps its
+//   place in the story: the scroll is mapped from the old stops onto the new ones.
+// - A reload, or Back from another page, used to land on another pillar: the browser
+//   restored the scroll before the story had made the page tall enough, and clamped it.
+//   The position now lives in this page's own history entry and is put back once the page
+//   is tall enough (scroll restoration is manual while the workshop is on).
 // - Leaving the first shape upward (desktop) no longer stops on it half-built: past the
 //   small band of regret it carries on up to where the falls begin.
 import Lenis, { type VirtualScrollData } from "lenis";
@@ -55,6 +63,32 @@ const easeInOutCubic = (t: number) =>
 /** Apple's rubber band: the further past the limit, the less the page follows. */
 const rubberband = (over: number, size: number) =>
   (over * size * 0.55) / (size + 0.55 * over);
+
+/**
+ * Round 15: maps a scroll position from one layout's stops onto another's, piecewise
+ * linearly, so the page keeps its place in the story (on a pillar, or the same share of
+ * the way through a hand-over) when a resize moves every stop. Past the last stop the
+ * overhang scales like the last span.
+ */
+function remap(y: number, from: number[], to: number[]): number {
+  const n = Math.min(from.length, to.length);
+  if (n === 0 || y <= from[0]) return y;
+  for (let i = 0; i < n - 1; i++) {
+    if (y <= from[i + 1]) {
+      const t = (y - from[i]) / Math.max(1, from[i + 1] - from[i]);
+      return to[i] + t * (to[i + 1] - to[i]);
+    }
+  }
+  const last = n - 1;
+  const k =
+    n > 1
+      ? (to[last] - to[last - 1]) / Math.max(1, from[last] - from[last - 1])
+      : 1;
+  return to[last] + (y - from[last]) * k;
+}
+
+/** This page's saved scroll, in its own history entry (survives a reload and Back). */
+type SavedState = { __lwScroll?: unknown } | null;
 
 /**
  * Where a gesture starting at `from` and heading `dir` gets caught: the next pillar ahead
@@ -154,6 +188,16 @@ export class SmoothScroll {
   private readonly coarse = window.matchMedia("(pointer: coarse)");
   private markers: HTMLDivElement | null = null;
   private markerKey = "";
+  // Round 15: last frame's stops (to follow a layout change), and the scroll this page's
+  // history entry asks to restore (a reload, Back) once the page is tall enough.
+  private layoutStops: number[] = [];
+  private viewport = `${window.innerWidth}x${window.innerHeight}`;
+  private resizedAt = -1e9;
+  private layoutChangedAt = -1e9;
+  private pendingRestore: number | null = null;
+  private readonly bornAt = performance.now();
+  private readonly path = window.location.pathname;
+  private savedY = -1;
 
   constructor() {
     this.lenis = new Lenis({
@@ -172,11 +216,19 @@ export class SmoothScroll {
     window.addEventListener("pointerdown", this.onPointerDown, true);
     window.addEventListener("pointerup", this.onPointerUp, true);
     window.addEventListener("pointercancel", this.onPointerUp, true);
+    // The browser would restore the scroll before the story makes the page tall enough
+    // (and clamp it); this page puts it back itself.
+    history.scrollRestoration = "manual";
+    const saved = (history.state as SavedState)?.__lwScroll;
+    if (typeof saved === "number" && saved > 0) this.pendingRestore = saved;
+    window.addEventListener("pagehide", this.save);
   }
 
   /**
    * Steps the glide. `locked` holds the page still (the phone menu's flood); `reduced`
    * hands the wheel back to the browser; `story` is where the scroll may come to rest.
+   * True when the page jumped on purpose this frame (a restore, a re-anchor after a
+   * resize): the liquid should take the new place as is, not glide there.
    */
   frame(
     now: number,
@@ -184,7 +236,9 @@ export class SmoothScroll {
     locked: boolean,
     reduced: boolean,
     story: SnapStory | null,
-  ): void {
+  ): boolean {
+    const restored = this.restore(now);
+    const jumped = this.followLayout(now, story) || restored;
     const o = this.lenis.options;
     o.smoothWheel = p.smooth && !reduced;
     o.lerp = p.glide;
@@ -214,7 +268,17 @@ export class SmoothScroll {
       this.travelDir = Math.sign(y - this.lastY);
     }
     this.lastY = y;
-    if (this.glide) return;
+    // Round 15: wherever the page comes to rest goes into its history entry.
+    if (
+      now - this.lastMoveAt > 400 &&
+      !this.glide &&
+      !this.lenis.isScrolling &&
+      this.pendingRestore === null &&
+      Math.abs(y - this.savedY) > 1
+    ) {
+      this.save();
+    }
+    if (this.glide) return jumped;
 
     this.syncMarkers(
       snapping && this.coarse.matches && !takeTouch && !locked,
@@ -222,26 +286,116 @@ export class SmoothScroll {
     );
     if (!snapping || locked || this.pointerDown) {
       this.pendingBack = null;
-      return;
+      return jumped;
     }
+    // Round 15: never settle onto stops that are still moving (the page laying itself out
+    // as it loads, a resize): they would send a restored page to the wrong pillar.
+    if (now - this.layoutChangedAt < 400) return jumped;
     // Round 13: phones settle too (after the native momentum and the browser's own snap
     // have finished), so a swipe never leaves a half-formed shape on screen.
     this.settle(
       now,
       this.coarse.matches ? Math.max(p.settleDelay, 240) : p.settleDelay,
     );
+    return jumped;
+  }
+
+  /**
+   * Round 15: re-measures the page now. Lenis re-measures 250 ms after the page changes
+   * height (debounced) and clamps every glide to the old height meanwhile.
+   */
+  measure(): void {
+    this.lenis.resize();
   }
 
   dispose(): void {
     window.removeEventListener("pointerdown", this.onPointerDown, true);
     window.removeEventListener("pointerup", this.onPointerUp, true);
     window.removeEventListener("pointercancel", this.onPointerUp, true);
+    window.removeEventListener("pagehide", this.save);
+    // Back to the browser's own restoration (the default). On a client-side navigation
+    // away, history has already moved on: this resets the next page's entry, and this
+    // page's own keeps "manual" for when it comes back.
+    history.scrollRestoration = "auto";
     this.syncMarkers(false, null);
     this.lenis.destroy();
     const g = globalThis as LenisGlobal & { __lwSmooth?: unknown };
     if (g.__lwLenis === this.lenis) delete g.__lwLenis;
     if (g.__lwSmooth === this) delete g.__lwSmooth;
   }
+
+  // ---- Keeping its place (round 15) ---------------------------------------------------
+
+  /**
+   * Puts back the scroll this page's history entry saved (a reload, Back from another
+   * page), as soon as the page is tall enough for it. True when it jumped.
+   */
+  private restore(now: number): boolean {
+    const want = this.pendingRestore;
+    if (want === null) return false;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    // Wait for the story to lay the page out (or give up after a few seconds).
+    if (max < want - 1 && now - this.bornAt < 5000) return false;
+    this.pendingRestore = null;
+    this.jumpTo(Math.min(want, Math.max(0, max)));
+    return true;
+  }
+
+  /**
+   * A resize (a phone turned sideways, a window made smaller) moves every stop: the story
+   * is laid out in screen heights. Keeps the page at the same place in the story rather
+   * than at the same pixel. Only for a change of the viewport: while the page loads, the
+   * stops settle too, and there the pixel is right (a restored scroll was saved in the
+   * settled layout). True when it jumped.
+   */
+  private followLayout(now: number, story: SnapStory | null): boolean {
+    const viewport = `${window.innerWidth}x${window.innerHeight}`;
+    if (viewport !== this.viewport) {
+      this.viewport = viewport;
+      this.resizedAt = now;
+    }
+    if (!story) return false;
+    const stops = [0, ...story.points];
+    const before = this.layoutStops;
+    this.layoutStops = stops;
+    const sameCount = before.length === stops.length;
+    if (sameCount && !stops.some((y, i) => Math.abs(y - before[i]) > 1)) {
+      return false;
+    }
+    // The settle waits for the stops to hold still (see frame()).
+    this.layoutChangedAt = now;
+    if (!sameCount || now - this.resizedAt > 1000) return false;
+    // Mid-swipe the finger owns the page; the release picks a stop in the new layout.
+    if (this.touch.active) return false;
+    this.jumpTo(Math.max(0, remap(this.lastY, before, stops)));
+    return true;
+  }
+
+  /** Moves the page at once, dropping any glide, catch or settle under way. */
+  private jumpTo(y: number) {
+    this.glide = null;
+    this.catchY = null;
+    this.handled = null;
+    this.pendingBack = null;
+    this.lenis.resize();
+    this.lenis.scrollTo(y, { immediate: true, force: true });
+    // A jump is not movement: no speed, no travel direction from it.
+    this.lastY = this.lenis.scroll;
+    this.vel = 0;
+  }
+
+  /** Saves the scroll into this page's own history entry (only while it is current). */
+  private save = () => {
+    if (window.location.pathname !== this.path) return;
+    const y = Math.round(this.lenis.scroll);
+    this.savedY = y;
+    try {
+      // With Next's own keys kept (spread), its router leaves this call alone.
+      history.replaceState({ ...(history.state ?? {}), __lwScroll: y }, "");
+    } catch {
+      // Safari limits how often history can be replaced; the next rest saves again.
+    }
+  };
 
   // ---- The catch ----------------------------------------------------------------------
 
